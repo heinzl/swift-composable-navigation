@@ -1,3 +1,6 @@
+[![CI](https://github.com/heinzl/swift-composable-navigation/actions/workflows/main.yml/badge.svg)](https://github.com/heinzl/swift-composable-navigation/actions/workflows/main.yml)
+[![codecov](https://codecov.io/gh/heinzl/swift-composable-navigation/branch/main/graph/badge.svg?token=PI59Z580YX)](https://codecov.io/gh/heinzl/swift-composable-navigation)
+
 # Composable Navigation
 
 The Composable Navigation is a Swift Package that builds on top of [The Composable Architecture](https://github.com/pointfreeco/swift-composable-architecture) (TCA, for short). It models UI navigation patterns using TCA. The corresponding navigation views are implemented in UIKit. 
