@@ -9,7 +9,7 @@ class StoreCompactMapTest: XCTestCase {
 			store.compactMap({ $0.scope(state: { $0 * 2 }) }),
 			"Store should not be nil after compactMap"
 		)
-		XCTAssertEqual(ViewStore(compactMappedStore).state, 24)
+		XCTAssertEqual(ViewStore(compactMappedStore).state, 25)
 	}
 	
 	func testCompactMapOptional() throws {
