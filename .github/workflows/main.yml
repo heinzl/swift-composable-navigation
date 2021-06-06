@@ -13,24 +13,32 @@ jobs:
     runs-on: macos-10.15
     steps:
       - uses: actions/checkout@v2
-      - run: xcrun simctl list
       - name: Run tests
         run: |
-            xcodebuild test \
-                -sdk iphonesimulator \
-                -project 'Examples/ComposableNavigation-Examples/ComposableNavigation-Examples.xcodeproj' \
-                -scheme 'ComposableNavigation-Examples' \
-                -derivedDataPath DerivedData \
-                -enableCodeCoverage YES \
-                -destination 'platform=iOS Simulator,name=iPhone 11' \
-                | xcpretty
+            xcodebuild -resolvePackageDependencies \
+              -project 'Examples/ComposableNavigation-Examples/ComposableNavigation-Examples.xcodeproj' \
+              -scheme 'ComposableNavigation-Examples' \
+              -derivedDataPath DerivedData \
+              -clonedSourcePackagesDirPath ClonedSourcePackages
+
+            xcodebuild clean test \
+              -sdk iphonesimulator \
+              -project 'Examples/ComposableNavigation-Examples/ComposableNavigation-Examples.xcodeproj' \
+              -scheme 'ComposableNavigation-Examples' \
+              -derivedDataPath DerivedData \
+              -clonedSourcePackagesDirPath ClonedSourcePackages \
+              -enableCodeCoverage YES \
+              -destination 'platform=iOS Simulator,name=iPhone 11' \
+              | xcpretty
       - name: Extract code coverage
         run: |
             binary=DerivedData/Build/Products/Debug-iphonesimulator/ComposableNavigation.o
             profile=DerivedData/Build/ProfileData/*/Coverage.profdata
             xcrun --run llvm-cov show $binary --instr-profile $profile >> coverage.txt
-      - uses: codecov/codecov-action@v1
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v1
         with:
+          token: ${{ secrets.CODECOV_TOKEN }}
           files: ./coverage.txt
-          verbose: true
+          fail_ci_if_error: true
      

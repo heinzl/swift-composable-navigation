@@ -42,20 +42,20 @@
             skipped = "NO">
             <BuildableReference
                BuildableIdentifier = "primary"
-               BlueprintIdentifier = "D8E7BAE8265C340200936E27"
-               BuildableName = "ComposableNavigation-ExamplesUITests.xctest"
-               BlueprintName = "ComposableNavigation-ExamplesUITests"
-               ReferencedContainer = "container:ComposableNavigation-Examples.xcodeproj">
+               BlueprintIdentifier = "ComposableNavigationTests"
+               BuildableName = "ComposableNavigationTests"
+               BlueprintName = "ComposableNavigationTests"
+               ReferencedContainer = "container:../..">
             </BuildableReference>
          </TestableReference>
          <TestableReference
             skipped = "NO">
             <BuildableReference
                BuildableIdentifier = "primary"
-               BlueprintIdentifier = "ComposableNavigationTests"
-               BuildableName = "ComposableNavigationTests"
-               BlueprintName = "ComposableNavigationTests"
-               ReferencedContainer = "container:../..">
+               BlueprintIdentifier = "D8E7BAE8265C340200936E27"
+               BuildableName = "ComposableNavigation-ExamplesUITests.xctest"
+               BlueprintName = "ComposableNavigation-ExamplesUITests"
+               ReferencedContainer = "container:ComposableNavigation-Examples.xcodeproj">
             </BuildableReference>
          </TestableReference>
       </Testables>
