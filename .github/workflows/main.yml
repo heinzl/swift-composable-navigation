@@ -1,0 +1,48 @@
+name: CI
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - '*'
+
+jobs:
+  test:
+    runs-on: macos-10.15
+    steps:
+      - uses: actions/checkout@v2
+      - name: Run tests
+        run: |
+            xcodebuild -resolvePackageDependencies \
+              -project 'Examples/ComposableNavigation-Examples/ComposableNavigation-Examples.xcodeproj' \
+              -scheme 'ComposableNavigation-Examples' \
+              -derivedDataPath DerivedData \
+              -clonedSourcePackagesDirPath ClonedSourcePackages
+
+            xcodebuild clean test \
+              -sdk iphonesimulator \
+              -project 'Examples/ComposableNavigation-Examples/ComposableNavigation-Examples.xcodeproj' \
+              -scheme 'ComposableNavigation-Examples' \
+              -derivedDataPath DerivedData \
+              -clonedSourcePackagesDirPath ClonedSourcePackages \
+              -enableCodeCoverage YES \
+              -destination 'platform=iOS Simulator,name=iPhone 11' \
+              | xcpretty --report junit --output test_report.xml
+      - name: Extract code coverage
+        run: |
+            binary=DerivedData/Build/Products/Debug-iphonesimulator/ComposableNavigation.o
+            profile=DerivedData/Build/ProfileData/*/Coverage.profdata
+            xcrun --run llvm-cov show $binary --instr-profile $profile >> coverage.txt
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v1
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          files: ./coverage.txt
+          fail_ci_if_error: true
+      - name: Publish Test Report
+        uses: mikepenz/action-junit-report@v2
+        with:
+          report_paths: 'test_report.xml'
+     
