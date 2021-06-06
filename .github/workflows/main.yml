@@ -1,0 +1,36 @@
+name: CI
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - '*'
+
+jobs:
+  test:
+    runs-on: macos-10.15
+    steps:
+      - uses: actions/checkout@v2
+      - run: xcrun simctl list
+      - name: Run tests
+        run: |
+            xcodebuild test \
+                -sdk iphonesimulator \
+                -project 'Examples/ComposableNavigation-Examples/ComposableNavigation-Examples.xcodeproj' \
+                -scheme 'ComposableNavigation-Examples' \
+                -derivedDataPath DerivedData \
+                -enableCodeCoverage YES \
+                -destination 'platform=iOS Simulator,name=iPhone 11' \
+                | xcpretty
+      - name: Extract code coverage
+        run: |
+            binary=DerivedData/Build/Products/Debug-iphonesimulator/ComposableNavigation.o
+            profile=DerivedData/Build/ProfileData/*/Coverage.profdata
+            xcrun --run llvm-cov show $binary --instr-profile $profile >> coverage.txt
+      - uses: codecov/codecov-action@v1
+        with:
+          files: ./coverage.txt
+          verbose: true
+     
