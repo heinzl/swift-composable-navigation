@@ -192,11 +192,11 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
 			return
 		}
 		
-        let controller = TabNavigationController(
+		let controller = TabNavigationController(
 			store: store.scope(
 				state: \.tabNavigation,
 				action: App.Action.tabNavigation
-            ),
+			),
 			viewProvider: App.ViewProvider(store: store)
 		)
 
