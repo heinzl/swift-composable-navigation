@@ -14,7 +14,7 @@ struct StackShowcase {
 	
 	struct State: Equatable {
 		var currentScreen: Screen = .counter(id: 0)
-		var counters: IdentifiedArrayOf<Counter.State> = IdentifiedArray((0..<3).map { Counter.State(id: $0) })
+		var counters: IdentifiedArrayOf<Counter.State> = .init(uniqueElements: (0..<3).map { Counter.State(id: $0) })
 		
 		var summary: Summary.State {
 			get {
