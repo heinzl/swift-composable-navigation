@@ -3,18 +3,20 @@ import SwiftUI
 import ComposableNavigation
 import ComposableArchitecture
 
-struct CountryTabBar {
+struct AdvancedTabBar {
 	
 	// MARK: TCA
 	
 	enum Screen: CaseIterable {
 		case deepLink
 		case listAndDetail
+		case alertPlayground
 	}
 	
 	struct State: Equatable {
 		var deepLink = CountryDeepLink.State()
 		var listAndDetail = CountryListAndDetail.State()
+		var alertPlayground = AlertPlayground.State()
 		
 		var tabNavigation = TabNavigation<Screen>.State(
 			items: Screen.allCases,
@@ -25,6 +27,7 @@ struct CountryTabBar {
 	enum Action: Equatable {
 		case deepLink(CountryDeepLink.Action)
 		case listAndDetail(CountryListAndDetail.Action)
+		case alertPlayground(AlertPlayground.Action)
 		case tabNavigation(TabNavigation<Screen>.Action)
 	}
 	
@@ -45,6 +48,11 @@ struct CountryTabBar {
 				.init(value: .tabNavigation(.setActiveItem(.listAndDetail))),
 				.init(value: .listAndDetail(.stackNavigation(.setItems([.list, .detail(id: countryId)]))))
 			])
+		case .deepLink(.showAlertOptions):
+			return .concatenate([
+				.init(value: .tabNavigation(.setActiveItem(.alertPlayground))),
+				.init(value: .alertPlayground(.alertNavigation(.presentFullScreen(.actionSheet))))
+			])
 		default:
 			break
 		}
@@ -64,6 +72,12 @@ struct CountryTabBar {
 				action: /Action.listAndDetail,
 				environment: { .init(countryProvider: $0.countryProvider) }
 			),
+		AlertPlayground.reducer
+			.pullback(
+				state: \.alertPlayground,
+				action: /Action.alertPlayground,
+				environment: { _ in .init() }
+			),
 		TabNavigation<Screen>.reducer()
 			.pullback(
 				state: \.tabNavigation,
@@ -81,13 +95,12 @@ struct CountryTabBar {
 		func makePresentable(for navigationItem: Screen) -> Presentable {
 			switch navigationItem {
 			case .deepLink:
-				let view = CountryDeepLinkView(
+				let viewController = CountryDeepLinkView(
 					store: store.scope(
 						state: \.deepLink,
-						action: CountryTabBar.Action.deepLink
+						action: AdvancedTabBar.Action.deepLink
 					)
-				)
-				let viewController = UIHostingController(rootView: view)
+				).viewController
 				viewController.tabBarItem = UITabBarItem(
 					title: "Deep link",
 					image: UIImage(systemName: "link"),
@@ -98,7 +111,7 @@ struct CountryTabBar {
 			case .listAndDetail:
 				let listAndDetailStore = store.scope(
 					state: \.listAndDetail,
-					action: CountryTabBar.Action.listAndDetail
+					action: AdvancedTabBar.Action.listAndDetail
 				)
 				ViewStore(listAndDetailStore).send(.loadCountries)
 				let stackNavigationController = StackNavigationViewController(
@@ -123,6 +136,26 @@ struct CountryTabBar {
 					tag: 1
 				)
 				return viewController
+				
+			case .alertPlayground:
+				let alertPlaygroundStore = store.scope(
+					state: \.alertPlayground,
+					action: AdvancedTabBar.Action.alertPlayground
+				)
+				let viewController = AlertPlaygroundView(store: alertPlaygroundStore).viewController
+					.withModal(
+						store: alertPlaygroundStore.scope(
+							state: \.alertNavigation,
+							action: AlertPlayground.Action.alertNavigation
+						),
+						viewProvider: AlertPlayground.ModalViewProvider(store: alertPlaygroundStore)
+					)
+				viewController.tabBarItem = UITabBarItem(
+					title: "Alerts",
+					image: UIImage(systemName: "exclamationmark.bubble"),
+					tag: 2
+				)
+				return viewController
 			}
 		}
 	}
@@ -131,9 +164,9 @@ struct CountryTabBar {
 		return TabNavigationViewController(
 			store: store.scope(
 				state: \.tabNavigation,
-				action: CountryTabBar.Action.tabNavigation
+				action: AdvancedTabBar.Action.tabNavigation
 			),
-			viewProvider: CountryTabBar.ViewProvider(store: store)
+			viewProvider: AdvancedTabBar.ViewProvider(store: store)
 		)
 	}
 }

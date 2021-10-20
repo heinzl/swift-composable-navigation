@@ -208,12 +208,10 @@ struct CountryListAndDetail {
 					)
 				)
 			case .sort:
-				return CountrySortView(
-					store: store.scope(
-						state: \.countrySort,
-						action: Action.countrySort
-					)
-				)
+				return CountrySort.makeView(store.scope(
+					state: \.countrySort,
+					action: Action.countrySort
+				))
 			}
 		}
 	}

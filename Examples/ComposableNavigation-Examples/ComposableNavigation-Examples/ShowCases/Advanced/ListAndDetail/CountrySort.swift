@@ -14,9 +14,18 @@ struct CountrySort {
 		case descending
 	}
 	
+	enum ModalScreen {
+		case resetAlert
+	}
+	
 	struct State: Equatable {
 		var sortKey: SortKey = .country
 		var sortOrder: SortOrder = .ascending
+		var alertNavigation = ModalNavigation<ModalScreen>.State()
+		
+		var isResetDisabled: Bool {
+			sortKey == .country && sortOrder == .ascending
+		}
 	}
 	
 	enum Action: Equatable {
@@ -24,20 +33,75 @@ struct CountrySort {
 		case selectSortOrder(SortOrder)
 		case done
 		case showFilter
+		case resetTapped
+		case resetConfirmed
+		case alertNavigation(ModalNavigation<ModalScreen>.Action)
 	}
 	
 	struct Environment {}
 	
-	static let reducer = Reducer<State, Action, Environment> { state, action, environment in
+	private static let privateReducer = Reducer<State, Action, Environment> { state, action, environment in
 		switch action {
 		case .selectSortKey(let sortKey):
 			state.sortKey = sortKey
 		case .selectSortOrder(let sortOrder):
 			state.sortOrder = sortOrder
+		case .resetTapped:
+			return Effect(value: .alertNavigation(.presentFullScreen(.resetAlert)))
+		case .resetConfirmed:
+			state.sortKey = .country
+			state.sortOrder = .ascending
 		default:
 			break
 		}
 		return .none
+	}
+	
+	static let reducer: Reducer<State, Action, Environment> = Reducer.combine([
+		ModalNavigation<ModalScreen>.reducer()
+			.pullback(
+				state: \.alertNavigation,
+				action: /Action.alertNavigation,
+				environment: { _ in () }
+			),
+		privateReducer
+	])
+	
+	// MARK: View creation
+	
+	struct ViewProvider: ViewProviding {
+		let store: Store<State, Action>
+		
+		func makePresentable(for navigationItem: ModalScreen) -> Presentable {
+			switch navigationItem {
+			case .resetAlert:
+				let viewStore = ViewStore(store)
+				let alert = UIAlertController(
+					title: "Confirmation",
+					message: "Reset sort settings?",
+					preferredStyle: .alert
+				)
+				alert.addAction(.init(title: "Cancel", style: .cancel, handler: { _ in
+					viewStore.send(.alertNavigation(.dismiss))
+				}))
+				alert.addAction(.init(title: "Reset", style: .destructive, handler: { _ in
+					viewStore.send(.resetConfirmed)
+					viewStore.send(.alertNavigation(.dismiss))
+				}))
+				return alert
+			}
+		}
+	}
+
+	static func makeView(_ store: Store<State, Action>) -> UIViewController{
+		return CountrySortView(store: store)
+			.viewController.withModal(
+				store: store.scope(
+					state: \.alertNavigation,
+					action: Action.alertNavigation
+				),
+				viewProvider: ViewProvider(store: store)
+			)
 	}
 }
 
@@ -77,10 +141,15 @@ struct CountrySortView: View, Presentable {
 					})
 				)
 				.toolbar {
-					ToolbarItem(placement: .bottomBar) {
+					ToolbarItemGroup(placement: .bottomBar) {
 						Button("Show filter options") {
 							viewStore.send(.showFilter)
 						}
+						Spacer()
+						Button("Reset") {
+							viewStore.send(.resetTapped)
+						}
+						.disabled(viewStore.isResetDisabled)
 					}
 				}
 			}

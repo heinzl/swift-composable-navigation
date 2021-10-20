@@ -12,6 +12,7 @@ struct CountryDeepLink {
 	enum Action: Equatable {
 		case showCountry(Country.ID)
 		case showSorting
+		case showAlertOptions
 	}
 	
 	struct Environment {}
@@ -26,11 +27,20 @@ struct CountryDeepLinkView: View, Presentable {
 		WithViewStore(store) { viewStore in
 			NavigationView {
 				Form {
-					Button("Show Austria") {
+					Button {
 						viewStore.send(.showCountry("Austria"))
+					} label: {
+						Label("Show Austria", systemImage: "list.dash")
 					}
-					Button("Show sorting options") {
+					Button {
 						viewStore.send(.showSorting)
+					} label: {
+						Label("Show sorting options", systemImage: "arrow.up.arrow.down.circle")
+					}
+					Button {
+						viewStore.send(.showAlertOptions)
+					} label: {
+						Label("Show alert options", systemImage: "exclamationmark.bubble")
 					}
 				}
 				.navigationTitle("Deep link")

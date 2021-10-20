@@ -59,9 +59,9 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
 				environment: .init()
 			))
 		case .advanced:
-			return CountryTabBar.makeView(Store(
-				initialState: CountryTabBar.State(),
-				reducer: CountryTabBar.reducer,
+			return AdvancedTabBar.makeView(Store(
+				initialState: AdvancedTabBar.State(),
+				reducer: AdvancedTabBar.reducer,
 				environment: .init(countryProvider: .init())
 			))
 		case .uiTest(.swipeDownModalSheet):
