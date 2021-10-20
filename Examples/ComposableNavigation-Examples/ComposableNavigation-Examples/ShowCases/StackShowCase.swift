@@ -114,7 +114,7 @@ struct StackShowcase {
 	}
 	
 	static func makeView(_ store: Store<State, Action>) -> UIViewController{
-		StackNavigationController(
+		StackNavigationViewController(
 			store: store.scope(
 				state: \.stackNavigation,
 				action: StackShowcase.Action.stackNavigation

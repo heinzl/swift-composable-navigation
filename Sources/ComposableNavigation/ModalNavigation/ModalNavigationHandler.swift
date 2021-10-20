@@ -2,10 +2,11 @@ import UIKit
 import Combine
 import ComposableArchitecture
 
-open class ModalNavigationController<ViewProvider: ViewProviding>: UIViewController, UIAdaptivePresentationControllerDelegate {
+public class ModalNavigationHandler<ViewProvider: ViewProviding>: NSObject, UIAdaptivePresentationControllerDelegate {
 	public typealias Item = ViewProvider.Item
 	public typealias ModalItemNavigation = ModalNavigation<Item>
 	
+	internal weak var presentingViewController: UIViewController?
 	internal let store: Store<ModalItemNavigation.State, ModalItemNavigation.Action>
 	internal let viewStore: ViewStore<ModalItemNavigation.State, ModalItemNavigation.Action>
 	internal let viewProvider: ViewProvider
@@ -19,7 +20,6 @@ open class ModalNavigationController<ViewProvider: ViewProviding>: UIViewControl
 	}
 	
 	public init(
-		contentViewController: UIViewController,
 		store: Store<ModalItemNavigation.State, ModalItemNavigation.Action>,
 		viewProvider: ViewProvider
 	) {
@@ -27,33 +27,16 @@ open class ModalNavigationController<ViewProvider: ViewProviding>: UIViewControl
 		self.viewStore = ViewStore(store)
 		self.viewProvider = viewProvider
 		self.currentViewControllerItem = nil
-		
-		super.init(nibName: nil, bundle: nil)
-		
-		addContent(contentViewController)
+	}
+	
+	public func setup(with presentingViewController: UIViewController) {
+		self.presentingViewController = presentingViewController
 		
 		viewStore.publisher.styledItem
 			.sink { [weak self] in
 				self?.updateModalViewController(newStyledItem: $0)
 			}
 			.store(in: &cancellables)
-	}
-	
-	required public init?(coder aDecoder: NSCoder) {
-		fatalError("init(coder:) has not been implemented")
-	}
-	
-	private func addContent(_ viewController: UIViewController) {
-		addChild(viewController)
-		view.addSubview(viewController.view)
-		viewController.view.translatesAutoresizingMaskIntoConstraints = false
-		NSLayoutConstraint.activate([
-			view.topAnchor.constraint(equalTo: viewController.view.topAnchor),
-			view.leftAnchor.constraint(equalTo: viewController.view.leftAnchor),
-			view.rightAnchor.constraint(equalTo: viewController.view.rightAnchor),
-			view.bottomAnchor.constraint(equalTo: viewController.view.bottomAnchor),
-		])
-		didMove(toParent: viewController)
 	}
 	
 	private func updateModalViewController(newStyledItem: ModalItemNavigation.StyledItem?) {
@@ -95,7 +78,10 @@ open class ModalNavigationController<ViewProvider: ViewProviding>: UIViewControl
 		_ viewController: UIViewController,
 		_ styledItem: ModalItemNavigation.StyledItem
 	) {
-		present(viewController, animated: shouldAnimateModalChanges, completion: nil)
+		guard let presentingViewController = presentingViewController else {
+			return
+		}
+		presentingViewController.present(viewController, animated: shouldAnimateModalChanges, completion: nil)
 		
 		currentViewControllerItem = ViewControllerItem(
 			styledItem: styledItem,
@@ -106,12 +92,21 @@ open class ModalNavigationController<ViewProvider: ViewProviding>: UIViewControl
 	private func makeViewController(for styledItem: ModalItemNavigation.StyledItem) -> UIViewController {
 		let viewController = viewProvider.makeViewController(for: styledItem.item)
 		viewController.modalPresentationStyle = styledItem.style
-		viewController.presentationController?.delegate = self
+		if !(viewController is UIAlertController) {
+			viewController.presentationController?.delegate = self
+		}
 		return viewController
 	}
 	
 	private func dimissModal() {
-		dismiss(animated: shouldAnimateModalChanges, completion: nil)
+		guard let presentingViewController = presentingViewController else {
+			return
+		}
+		
+		// Prevent dismissal of unrelated view controller
+		if presentingViewController.presentedViewController == currentViewControllerItem?.viewController {
+			presentingViewController.dismiss(animated: shouldAnimateModalChanges, completion: nil)
+		}
 		currentViewControllerItem = nil
 	}
 	
@@ -121,21 +116,8 @@ open class ModalNavigationController<ViewProvider: ViewProviding>: UIViewControl
 	
 	// MARK: UIAdaptivePresentationControllerDelegate
 	
-	open func presentationControllerDidDismiss(_ presentationController: UIPresentationController) {
+	public func presentationControllerDidDismiss(_ presentationController: UIPresentationController) {
 		currentViewControllerItem = nil
 		viewStore.send(.dismiss)
-	}
-}
-
-public extension Presentable {
-	func withModal<ViewProvider: ViewProviding>(
-		store: Store<ModalNavigation<ViewProvider.Item>.State, ModalNavigation<ViewProvider.Item>.Action>,
-		viewProvider: ViewProvider
-	) -> ModalNavigationController<ViewProvider> {
-		ModalNavigationController(
-			contentViewController: viewController,
-			store: store,
-			viewProvider: viewProvider
-		)
 	}
 }

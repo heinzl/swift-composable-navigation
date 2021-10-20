@@ -64,7 +64,7 @@ struct ChangingTabs {
 	}
 	
 	static func makeView(_ store: Store<State, Action>) -> UIViewController{
-		TabNavigationController(
+		TabNavigationViewController(
 			store: store.scope(
 				state: \.tabNavigation,
 				action: ChangingTabs.Action.tabNavigation

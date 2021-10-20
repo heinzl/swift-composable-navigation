@@ -12,7 +12,7 @@ The concept is inspired by the coordinator pattern as it allows a clean separati
 ### Modal navigation
 
 `ModalNavigation` models state and actions of a commonly used modal view presentation.
-Views can be presented with a certain style and dismissed. The `ModalNavigationController` listens to state changes and presents the provided views accordingly. Any state changes are reflected by the controller using UIKit.
+Views can be presented with a certain style and dismissed. The `ModalNavigationViewController` listens to state changes and presents the provided views accordingly. Any state changes are reflected by the controller using UIKit.
 
 Setting the current navigation item to a different screen will result in dismissing the old screen and presenting the new screen. Even changes to only the presentation style are reflected accordingly.
 
@@ -61,7 +61,7 @@ struct Onboarding {
 ### Stack navigation
 
 `StackNavigation` models state and actions of a stack-based scheme for navigating hierarchical content.
-Views can be pushed on the stack or popped from the stack. Even mutations to the whole stack can be performed. The `StackNavigationController` listens to state changes and updates the view stack accordingly using UIKit.
+Views can be pushed on the stack or popped from the stack. Even mutations to the whole stack can be performed. The `StackNavigationViewController` listens to state changes and updates the view stack accordingly using UIKit.
 
 It also supports automatic state updates for popping items via the leading-edge swipe gesture or the long press back-button menu.
 
@@ -110,7 +110,7 @@ struct Register {
 ### Tab navigation
 
 `TabNavigation` models state and actions of a tab-based scheme for navigating multiple child views.
-The active navigation item can be changed by setting a new item. Even mutations to child item can be performed (e.g. changing the tab order). The `TabNavigationController` listens to state changes and updates the selected view accordingly.
+The active navigation item can be changed by setting a new item. Even mutations to child item can be performed (e.g. changing the tab order). The `TabNavigationViewController` listens to state changes and updates the selected view accordingly.
 
 Example:
 ```swift
@@ -159,7 +159,7 @@ struct Root {
 
 The `ViewProvider` creates a view according to the given navigation item. It implements `ViewProviding` which requires the type to create a `Presentable` (e.g. a SwiftUI View or a UIViewController) for a given navigation item.
 
-Navigation container views (like `StackNavigationController`) expect a `ViewProvider`. It is used to create new views on demand, for example when a new item is pushed on the navigation stack. Navigation container views create new views only when necessary. For example the `StackNavigationController` will reuse the already created view for `.b`  if the stack of navigation items changes like this: `[.a, .b, .c]` -> `[.x, .y, .b,]`
+Navigation container views (like `StackNavigationViewController`) expect a `ViewProvider`. It is used to create new viewsStackNavigationViewController` will reuse the already created view for `.b`  if the stack of navigation items changes like this: `[.a, .b, .c]` -> `[.x, .y, .b,]`
 
 ```swift
 struct ViewProvider: ViewProviding {
@@ -180,7 +180,7 @@ struct ViewProvider: ViewProviding {
 
 A navigation container view can be integrated like any other `UIViewController` in your app.
 
-This is an example of a `TabNavigationController` in a `SceneDelegate`:
+This is an example of a `TabNavigationViewController` in a `SceneDelegate`:
 ```swift
 class SceneDelegate: UIResponder, UIWindowSceneDelegate {
 	var window: UIWindow?
@@ -192,7 +192,7 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
 			return
 		}
 		
-		let controller = TabNavigationController(
+		let controller = TabNavigationViewController(
 			store: store.scope(
 				state: \.tabNavigation,
 				action: App.Action.tabNavigation

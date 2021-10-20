@@ -4,7 +4,7 @@ import ComposableArchitecture
 import OrderedCollections
 @testable import ComposableNavigation
 
-class StackNavigationControllerTests: XCTestCase {
+class StackNavigationViewControllerTests: XCTestCase {
 	
 	// MARK: Push
 	
@@ -172,20 +172,20 @@ private func whenActionIsSend(_ action: StackNavigation<Int>.Action, _ state: St
 }
 
 private func thenAssertItems(_ expectedItems: [Int], _ state: State) {
-	XCTAssertEqual(state.sut.viewStore.items, expectedItems)
-	XCTAssertEqual(Array(state.sut.currentViewControllerItems.keys), expectedItems)
+	XCTAssertEqual(state.sut.navigationHandler.viewStore.items, expectedItems)
+	XCTAssertEqual(Array(state.sut.navigationHandler.currentViewControllerItems.keys), expectedItems)
 }
 
 private func thenAssertViewControllerStack(_ state: State) {
-	XCTAssertEqual(state.sut.viewControllers, Array(state.sut.currentViewControllerItems.values))
+	XCTAssertEqual(state.sut.viewControllers, Array(state.sut.navigationHandler.currentViewControllerItems.values))
 }
 
 private func thenAssertCreatedViews(for items: [Int], _ state: State) {
-	XCTAssertEqual(state.sut.viewProvider.viewsCreatedFrom, items)
+	XCTAssertEqual(state.sut.navigationHandler.viewProvider.viewsCreatedFrom, items)
 }
 
 private class State {
-	let sut: StackNavigationController<ItemViewProvider>
+	let sut: StackNavigationViewController<ItemViewProvider>
 	let store: Store<StackNavigation<Int>.State, StackNavigation<Int>.Action>
 	let viewStore: ViewStore<StackNavigation<Int>.State, StackNavigation<Int>.Action>
 	
@@ -196,7 +196,7 @@ private class State {
 			environment: ()
 		)
 		self.viewStore = ViewStore(store)
-		self.sut = StackNavigationController(
+		self.sut = StackNavigationViewController(
 			store: store,
 			viewProvider: ItemViewProvider()
 		)

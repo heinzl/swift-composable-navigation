@@ -4,7 +4,7 @@ import ComposableArchitecture
 import OrderedCollections
 @testable import ComposableNavigation
 
-class ModalNavigationControllerTests: XCTestCase {
+class ModalNavigationViewControllerTests: XCTestCase {
 	func testPresentSheet() {
 		let state = State(styledItem: nil)
 		
@@ -83,21 +83,21 @@ private func whenActionIsSend(_ action: ModalNavigation<Int>.Action, _ state: St
 }
 
 private func thenAssertItem(_ expectedItem: ModalNavigation<Int>.StyledItem?, _ state: State) {
-	XCTAssertEqual(state.sut.viewStore.styledItem, expectedItem)
-	XCTAssertEqual(state.sut.currentViewControllerItem?.styledItem, expectedItem)
+	XCTAssertEqual(state.sut.navigationHandler.viewStore.styledItem, expectedItem)
+	XCTAssertEqual(state.sut.navigationHandler.currentViewControllerItem?.styledItem, expectedItem)
 }
 
 private func thenAssertPresentedViewController(style: UIModalPresentationStyle?, _ state: State) {
-	XCTAssertEqual(state.sut.presentedViewController, state.sut.currentViewControllerItem?.viewController)
+	XCTAssertEqual(state.sut.presentedViewController, state.sut.navigationHandler.currentViewControllerItem?.viewController)
 	XCTAssertEqual(state.sut.presentedViewController?.modalPresentationStyle, style)
 }
 
 private func thenAssertCreatedViews(for items: [Int], _ state: State) {
-	XCTAssertEqual(state.sut.viewProvider.viewsCreatedFrom, items)
+	XCTAssertEqual(state.sut.navigationHandler.viewProvider.viewsCreatedFrom, items)
 }
 
 private class State {
-	let sut: ModalNavigationController<ItemViewProvider>
+	let sut: ModalNavigationViewController<ItemViewProvider>
 	let store: Store<ModalNavigation<Int>.State, ModalNavigation<Int>.Action>
 	let viewStore: ViewStore<ModalNavigation<Int>.State, ModalNavigation<Int>.Action>
 	
@@ -111,7 +111,7 @@ private class State {
 			environment: ()
 		)
 		self.viewStore = ViewStore(store)
-		self.sut = ModalNavigationController(
+		self.sut = ModalNavigationViewController(
 			contentViewController: baseViewController,
 			store: store,
 			viewProvider: ItemViewProvider()

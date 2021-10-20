@@ -3,10 +3,11 @@ import Combine
 import OrderedCollections
 import ComposableArchitecture
 
-open class TabNavigationController<ViewProvider: ViewProviding>: UITabBarController, UITabBarControllerDelegate {
+public class TabNavigationHandler<ViewProvider: ViewProviding>: NSObject, UITabBarControllerDelegate {
 	public typealias Item = ViewProvider.Item
 	public typealias ItemTabs = TabNavigation<Item>
 	
+	internal weak var tabBarController: UITabBarController?
 	internal let store: Store<ItemTabs.State, ItemTabs.Action>
 	internal let viewStore: ViewStore<ItemTabs.State, ItemTabs.Action>
 	internal let viewProvider: ViewProvider
@@ -18,14 +19,17 @@ open class TabNavigationController<ViewProvider: ViewProviding>: UITabBarControl
 		store: Store<ItemTabs.State, ItemTabs.Action>,
 		viewProvider: ViewProvider
 	) {
+		
 		self.store = store
 		self.viewStore = ViewStore(store)
 		self.viewProvider = viewProvider
 		self.currentViewControllerItems = [:]
+	}
+	
+	public func setup(with tabBarController: UITabBarController) {
+		self.tabBarController = tabBarController
 		
-		super.init(nibName: nil, bundle: nil)
-		
-		self.delegate = self
+		tabBarController.delegate = self
 		
 		viewStore.publisher
 			.sink { [weak self] in
@@ -36,11 +40,10 @@ open class TabNavigationController<ViewProvider: ViewProviding>: UITabBarControl
 			.store(in: &cancellables)
 	}
 	
-	required public init?(coder aDecoder: NSCoder) {
-		fatalError("init(coder:) has not been implemented")
-	}
-	
 	private func updateViewControllers(newItems: [Item]) {
+		guard let tabBarController = tabBarController else {
+			return
+		}
 		let oldItems = Array(currentViewControllerItems.keys)
 		
 		guard oldItems != newItems else {
@@ -53,14 +56,14 @@ open class TabNavigationController<ViewProvider: ViewProviding>: UITabBarControl
 			viewProvider: viewProvider
 		)
 		
-		setViewControllers(
+		tabBarController.setViewControllers(
 			Array(currentViewControllerItems.values),
 			animated: shouldAnimateStackChanges
 		)
 	}
 	
 	private var shouldAnimateStackChanges: Bool {
-		if viewControllers?.isEmpty ?? true {
+		if tabBarController?.viewControllers?.isEmpty ?? true {
 			return false
 		} else {
 			return UIView.areAnimationsEnabled
@@ -68,17 +71,20 @@ open class TabNavigationController<ViewProvider: ViewProviding>: UITabBarControl
 	}
 	
 	private func updateSelectedItem(_ item: Item, newItems: [Item]) {
-		guard let index = newItems.firstIndex(of: item), selectedIndex != index else {
+		guard
+			let tabBarController = tabBarController,
+			let index = newItems.firstIndex(of: item),
+			tabBarController.selectedIndex != index
+		else {
 			return
 		}
-		selectedIndex = index
+		tabBarController.selectedIndex = index
 	}
 	
 	// MARK: UITabBarControllerDelegate
 	
-	open func tabBarController(_ tabBarController: UITabBarController, didSelect viewController: UIViewController) {
-		guard let index = currentViewControllerItems.values.firstIndex(of: viewController)
-		else {
+	public func tabBarController(_ tabBarController: UITabBarController, didSelect viewController: UIViewController) {
+		guard let index = currentViewControllerItems.values.firstIndex(of: viewController) else {
 			return
 		}
 		viewStore.send(.setActiveIndex(index))

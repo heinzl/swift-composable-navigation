@@ -4,7 +4,7 @@ import ComposableArchitecture
 import OrderedCollections
 @testable import ComposableNavigation
 
-class TabNavigationControllerTests: XCTestCase {
+class TabNavigationViewControllerTests: XCTestCase {
 	// MARK: Set tab items
 	
 	func testSetStackFromEmpty() {
@@ -145,16 +145,16 @@ private func whenActionIsSend(_ action: TabNavigation<Int>.Action, _ state: Stat
 }
 
 private func thenAssert(expectedItems: [Int], _ state: State) {
-	XCTAssertEqual(state.sut.viewStore.items, expectedItems)
-	XCTAssertEqual(Array(state.sut.currentViewControllerItems.keys), expectedItems)
+	XCTAssertEqual(state.sut.navigationHandler.viewStore.items, expectedItems)
+	XCTAssertEqual(Array(state.sut.navigationHandler.currentViewControllerItems.keys), expectedItems)
 }
 
 private func thenAssertViewControllerStack(_ state: State) {
-	XCTAssertEqual(state.sut.viewControllers, Array(state.sut.currentViewControllerItems.values))
+	XCTAssertEqual(state.sut.viewControllers, Array(state.sut.navigationHandler.currentViewControllerItems.values))
 }
 
 private func thenAssertCreatedViews(for items: [Int], _ state: State) {
-	XCTAssertEqual(state.sut.viewProvider.viewsCreatedFrom, items)
+	XCTAssertEqual(state.sut.navigationHandler.viewProvider.viewsCreatedFrom, items)
 }
 
 private func thenAssertSelectedIndex(_ index: Int, _ state: State) {
@@ -162,11 +162,11 @@ private func thenAssertSelectedIndex(_ index: Int, _ state: State) {
 }
 
 private func thenAssertActiveItem(_ item: Int, _ state: State) {
-	XCTAssertEqual(state.sut.viewStore.activeItem, item)
+	XCTAssertEqual(state.sut.navigationHandler.viewStore.activeItem, item)
 }
 
 private class State {
-	let sut: TabNavigationController<ItemViewProvider>
+	let sut: TabNavigationViewController<ItemViewProvider>
 	let store: Store<TabNavigation<Int>.State, TabNavigation<Int>.Action>
 	let viewStore: ViewStore<TabNavigation<Int>.State, TabNavigation<Int>.Action>
 	
@@ -180,7 +180,7 @@ private class State {
 			environment: ()
 		)
 		self.viewStore = ViewStore(store)
-		self.sut = TabNavigationController(
+		self.sut = TabNavigationViewController(
 			store: store,
 			viewProvider: ItemViewProvider()
 		)

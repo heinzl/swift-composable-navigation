@@ -101,7 +101,7 @@ struct CountryTabBar {
 					action: CountryTabBar.Action.listAndDetail
 				)
 				ViewStore(listAndDetailStore).send(.loadCountries)
-				let stackNavigationController = StackNavigationController(
+				let stackNavigationController = StackNavigationViewController(
 					store: listAndDetailStore.scope(
 						state: \.stackNavigation,
 						action: CountryListAndDetail.Action.stackNavigation
@@ -128,7 +128,7 @@ struct CountryTabBar {
 	}
 	
 	static func makeView(_ store: Store<State, Action>) -> UIViewController {
-		return TabNavigationController(
+		return TabNavigationViewController(
 			store: store.scope(
 				state: \.tabNavigation,
 				action: CountryTabBar.Action.tabNavigation

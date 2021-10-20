@@ -3,10 +3,11 @@ import Combine
 import ComposableArchitecture
 import OrderedCollections
 
-open class StackNavigationController<ViewProvider: ViewProviding>: UINavigationController, UINavigationControllerDelegate {
+public class StackNavigationHandler<ViewProvider: ViewProviding>: NSObject, UINavigationControllerDelegate {
 	public typealias Item = ViewProvider.Item
 	public typealias ItemStack = StackNavigation<Item>
 	
+	internal weak var navigationController: UINavigationController?
 	internal let store: Store<ItemStack.State, ItemStack.Action>
 	internal let viewStore: ViewStore<ItemStack.State, ItemStack.Action>
 	internal let viewProvider: ViewProvider
@@ -22,10 +23,11 @@ open class StackNavigationController<ViewProvider: ViewProviding>: UINavigationC
 		self.viewStore = ViewStore(store)
 		self.viewProvider = viewProvider
 		self.currentViewControllerItems = [:]
+	}
+	public func setup(with navigationController: UINavigationController) {
+		self.navigationController = navigationController
 		
-		super.init(nibName: nil, bundle: nil)
-		
-		self.delegate = self
+		navigationController.delegate = self
 		
 		viewStore.publisher.items
 			.sink { [weak self] in
@@ -34,13 +36,12 @@ open class StackNavigationController<ViewProvider: ViewProviding>: UINavigationC
 			.store(in: &cancellables)
 	}
 	
-	required public init?(coder aDecoder: NSCoder) {
-		fatalError("init(coder:) has not been implemented")
-	}
-	
 	private func updateViewControllerStack(newItems: [Item]) {
-		let oldItems = Array(currentViewControllerItems.keys)
+		guard let navigationController = navigationController else {
+			return
+		}
 		
+		let oldItems = Array(currentViewControllerItems.keys)
 		guard oldItems != newItems else {
 			return
 		}
@@ -51,14 +52,14 @@ open class StackNavigationController<ViewProvider: ViewProviding>: UINavigationC
 			viewProvider: viewProvider
 		)
 		
-		setViewControllers(
+		navigationController.setViewControllers(
 			Array(currentViewControllerItems.values),
 			animated: shouldAnimateStackChanges
 		)
 	}
 	
 	private var shouldAnimateStackChanges: Bool {
-		if viewControllers.isEmpty {
+		if navigationController?.viewControllers.isEmpty ?? true {
 			return false
 		} else {
 			return UIView.areAnimationsEnabled
@@ -67,7 +68,7 @@ open class StackNavigationController<ViewProvider: ViewProviding>: UINavigationC
 	
 	// MARK: UINavigationControllerDelegate
 
-	open func navigationController(
+	public func navigationController(
 		_ navigationController: UINavigationController,
 		didShow viewController: UIViewController,
 		animated: Bool

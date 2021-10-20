@@ -78,7 +78,7 @@ struct SwipeBackOnStackNavigation {
 	}
 	
 	static func makeView(_ store: Store<State, Action>) -> UIViewController{
-		StackNavigationController(
+		StackNavigationViewController(
 			store: store.scope(
 				state: \.stackNavigation,
 				action: SwipeBackOnStackNavigation.Action.stackNavigation
