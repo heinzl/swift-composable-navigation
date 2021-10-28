@@ -63,7 +63,6 @@ struct AlertPlayground {
 		let store: Store<State, Action>
 		
 		func makePresentable(for navigationItem: ModalScreen) -> Presentable {
-			let viewStore = ViewStore(store)
 			switch navigationItem {
 			case .resetAlert:
 				let alert = UIAlertController(
@@ -71,13 +70,19 @@ struct AlertPlayground {
 					message: "Reset counter?",
 					preferredStyle: .alert
 				)
-				alert.addAction(.init(title: "Cancel", style: .cancel, handler: { _ in
-					viewStore.send(.alertNavigation(.dismiss))
-				}))
-				alert.addAction(.init(title: "Reset", style: .destructive, handler: { _ in
-					viewStore.send(.alertNavigation(.dismiss))
-					viewStore.send(.resetCounter)
-				}))
+				alert.addAction(UIAlertAction(
+					title: "Cancel",
+					style: .cancel,
+					store: store,
+					toNavigationAction: Action.alertNavigation
+				))
+				alert.addAction(UIAlertAction(
+					title: "Reset",
+					style: .destructive,
+					action: .resetCounter,
+					store: store,
+					toNavigationAction: Action.alertNavigation
+				))
 				return alert
 			case .actionSheet:
 				let alert = UIAlertController(
@@ -85,22 +90,34 @@ struct AlertPlayground {
 					message: nil,
 					preferredStyle: .actionSheet
 				)
-				alert.addAction(.init(title: "Cancel", style: .cancel, handler: { _ in
-					viewStore.send(.alertNavigation(.dismiss))
-				}))
-				alert.addAction(.init(title: "Up", style: .default, handler: { _ in
-					viewStore.send(.alertNavigation(.dismiss))
-					viewStore.send(.counter(.up))
-				}))
-				alert.addAction(.init(title: "Down", style: .default, handler: { _ in
-					viewStore.send(.alertNavigation(.dismiss))
-					viewStore.send(.counter(.down))
-				}))
-				let resetAction = UIAlertAction(title: "Reset", style: .destructive, handler: { _ in
-					viewStore.send(.alertNavigation(.dismiss))
-					viewStore.send(.alertNavigation(.presentFullScreen(.resetAlert)))
-				})
-				resetAction.isEnabled = !viewStore.isResetDisabled
+				alert.addAction(UIAlertAction(
+					title: "Cancel",
+					style: .cancel,
+					store: store,
+					toNavigationAction: Action.alertNavigation
+				))
+				alert.addAction(UIAlertAction(
+					title: "Up",
+					style: .default,
+					action: .counter(.up),
+					store: store,
+					toNavigationAction: Action.alertNavigation
+				))
+				alert.addAction(UIAlertAction(
+					title: "Down",
+					style: .default,
+					action: .counter(.down),
+					store: store,
+					toNavigationAction: Action.alertNavigation
+				))
+				let resetAction = UIAlertAction(
+					title: "Reset",
+					style: .destructive,
+					action: .alertNavigation(.presentFullScreen(.resetAlert)),
+					store: store,
+					toNavigationAction: Action.alertNavigation
+				)
+				resetAction.isEnabled = !ViewStore(store).isResetDisabled
 				alert.addAction(resetAction)
 				return alert
 			}

@@ -93,6 +93,7 @@ public class ModalNavigationHandler<ViewProvider: ViewProviding>: NSObject, UIAd
 		let viewController = viewProvider.makeViewController(for: styledItem.item)
 		viewController.modalPresentationStyle = styledItem.style
 		if !(viewController is UIAlertController) {
+			// UIAlertController won't allow changes to the delegate (app crashes)
 			viewController.presentationController?.delegate = self
 		}
 		return viewController
@@ -119,5 +120,26 @@ public class ModalNavigationHandler<ViewProvider: ViewProviding>: NSObject, UIAd
 	public func presentationControllerDidDismiss(_ presentationController: UIPresentationController) {
 		currentViewControllerItem = nil
 		viewStore.send(.dismiss)
+	}
+}
+
+public extension UIAlertAction {
+	convenience init<State: Equatable, Action, Item: Hashable>(
+		title: String?,
+		style: UIAlertAction.Style,
+		action: Action? = nil,
+		store: Store<State, Action>,
+		toNavigationAction: @escaping (ModalNavigation<Item>.Action) -> Action
+	) {
+		self.init(title: title, style: style) { _ in
+			let statelessNavigationState = store.stateless.scope(
+				state: { _ in () },
+				action: toNavigationAction
+			)
+			ViewStore(statelessNavigationState).send(.dismiss)
+			if let action = action {
+				ViewStore(store).send(action)
+			}
+		}
 	}
 }
