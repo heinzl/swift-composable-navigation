@@ -49,25 +49,25 @@ struct ModalShowcase {
 		Counter.reducer
 			.pullback(
 				state: \.counterOne,
-				action: /ModalShowcase.Action.counterOne,
+				action: /Action.counterOne,
 				environment: { _ in .init() }
 			),
 		Counter.reducer
 			.pullback(
 				state: \.counterTwo,
-				action: /ModalShowcase.Action.counterTwo,
+				action: /Action.counterTwo,
 				environment: { _ in .init() }
 			),
 		Helper.reducer
 			.pullback(
 				state: \.helper,
-				action: /ModalShowcase.Action.helper,
+				action: /Action.helper,
 				environment: { _ in .init() }
 			),
 		ModalNavigation<Screen>.reducer()
 			.pullback(
 				state: \.modalNavigation,
-				action: /ModalShowcase.Action.modalNavigation,
+				action: /Action.modalNavigation,
 				environment: { _ in () }
 			),
 		privateReducer
@@ -105,16 +105,16 @@ struct ModalShowcase {
 		}
 	}
 
-	static func makeView(_ store: Store<State, Action>) -> UIViewController{
+	static func makeView(_ store: Store<State, Action>) -> UIViewController {
 		UIHostingController(
 			rootView: ModalShowcaseView(store: store)
 		)
 		.withModal(
 			store: store.scope(
 				state: \.modalNavigation,
-				action: ModalShowcase.Action.modalNavigation
+				action: Action.modalNavigation
 			),
-			viewProvider: ModalShowcase.ViewProvider(store: store)
+			viewProvider: ViewProvider(store: store)
 		)
 	}
 }

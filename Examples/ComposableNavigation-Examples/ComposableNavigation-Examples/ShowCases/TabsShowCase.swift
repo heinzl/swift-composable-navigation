@@ -141,13 +141,13 @@ struct TabsShowcase {
 		}
 	}
 	
-	static func makeView(_ store: Store<State, Action>) -> UIViewController{
+	static func makeView(_ store: Store<State, Action>) -> UIViewController {
 		TabNavigationViewController(
 			store: store.scope(
 				state: \.tabNavigation,
-				action: TabsShowcase.Action.tabNavigation
+				action: Action.tabNavigation
 			),
-			viewProvider: TabsShowcase.ViewProvider(store: store)
+			viewProvider: ViewProvider(store: store)
 		)
 	}
 }

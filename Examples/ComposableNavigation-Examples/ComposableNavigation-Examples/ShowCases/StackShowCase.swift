@@ -54,7 +54,7 @@ struct StackShowcase {
 		switch action {
 		case let .counter(id, .done):
 			let nextId = id + 1
-			if state.counters.indices.contains(nextId) {
+			if state.counters.ids.contains(nextId) {
 				return Effect(value: .stackNavigation(.pushItem(.counter(id: nextId))))
 			} else {
 				return Effect(value: .stackNavigation(.pushItem(.summary)))
@@ -70,19 +70,19 @@ struct StackShowcase {
 	static let reducer: Reducer<State, Action, Environment> = Reducer.combine([
 		Counter.reducer.forEach(
 			state: \.counters,
-			action: /StackShowcase.Action.counter(id:action:),
+			action: /Action.counter(id:action:),
 			environment: { _ in .init()}
 		),
 		Summary.reducer
 			.pullback(
 				state: \.summary,
-				action: /StackShowcase.Action.summary,
+				action: /Action.summary,
 				environment: { _ in .init() }
 			),
 		StackNavigation<Screen>.reducer()
 			.pullback(
 				state: \.stackNavigation,
-				action: /StackShowcase.Action.stackNavigation,
+				action: /Action.stackNavigation,
 				environment: { _ in () }
 			),
 		privateReducer
@@ -113,13 +113,13 @@ struct StackShowcase {
 		}
 	}
 	
-	static func makeView(_ store: Store<State, Action>) -> UIViewController{
+	static func makeView(_ store: Store<State, Action>) -> UIViewController {
 		StackNavigationViewController(
 			store: store.scope(
 				state: \.stackNavigation,
-				action: StackShowcase.Action.stackNavigation
+				action: Action.stackNavigation
 			),
-			viewProvider: StackShowcase.ViewProvider(store: store)
+			viewProvider: ViewProvider(store: store)
 		)
 	}
 }

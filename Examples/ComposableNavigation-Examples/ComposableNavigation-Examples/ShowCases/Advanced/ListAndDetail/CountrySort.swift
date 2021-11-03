@@ -98,7 +98,7 @@ struct CountrySort {
 		}
 	}
 
-	static func makeView(_ store: Store<State, Action>) -> UIViewController{
+	static func makeView(_ store: Store<State, Action>) -> UIViewController {
 		return CountrySortView(store: store)
 			.viewController.withModal(
 				store: store.scope(
