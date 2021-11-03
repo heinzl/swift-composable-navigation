@@ -1,6 +1,7 @@
 import UIKit
 import ComposableArchitecture
 
+/// A convenience UINavigationController implementation containing a `StackNavigationHandler`.
 public class StackNavigationViewController<ViewProvider: ViewProviding>: UINavigationController {
 	internal let navigationHandler: StackNavigationHandler<ViewProvider>
 	

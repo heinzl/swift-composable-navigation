@@ -3,6 +3,10 @@ import ComposableArchitecture
 import ComposableNavigation
 import SwiftUI
 
+/// This example showcases a stack of screens.
+/// - Three counter screens + summary screen at the end.
+/// - The StackNavigation state is a computed property
+/// - Navigation to counter screens from summary screen
 struct StackShowcase {
 	
 	// MARK: TCA

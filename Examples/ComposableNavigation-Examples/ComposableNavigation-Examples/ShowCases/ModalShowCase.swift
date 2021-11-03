@@ -3,6 +3,10 @@ import SwiftUI
 import ComposableNavigation
 import ComposableArchitecture
 
+/// This example showcases multiple modal screens.
+/// - Screens are presented using sheet and fullscreen style.
+/// - Screens are dismissed automatically when another screen is presented.
+/// - Modal sheet can be swiped down. Navigation state update automatically.
 struct ModalShowcase {
 	
 	// MARK: TCA
