@@ -70,57 +70,58 @@ struct AlertPlayground {
 					message: "Reset counter?",
 					preferredStyle: .alert
 				)
-				alert.addAction(UIAlertAction(
+				alert.addAction(makeAction(
 					title: "Cancel",
 					style: .cancel,
-					store: store,
-					toNavigationAction: Action.alertNavigation
+					action: nil
 				))
-				alert.addAction(UIAlertAction(
+				alert.addAction(makeAction(
 					title: "Reset",
 					style: .destructive,
-					action: .resetCounter,
-					store: store,
-					toNavigationAction: Action.alertNavigation
+					action: .resetCounter
 				))
 				return alert
+				
 			case .actionSheet:
 				let alert = UIAlertController(
 					title: "Choose from following options:",
 					message: nil,
 					preferredStyle: .actionSheet
 				)
-				alert.addAction(UIAlertAction(
+				alert.addAction(makeAction(
 					title: "Cancel",
 					style: .cancel,
-					store: store,
-					toNavigationAction: Action.alertNavigation
+					action: nil
 				))
-				alert.addAction(UIAlertAction(
+				alert.addAction(makeAction(
 					title: "Up",
 					style: .default,
-					action: .counter(.up),
-					store: store,
-					toNavigationAction: Action.alertNavigation
+					action: .counter(.up)
 				))
-				alert.addAction(UIAlertAction(
+				alert.addAction(makeAction(
 					title: "Down",
 					style: .default,
-					action: .counter(.down),
-					store: store,
-					toNavigationAction: Action.alertNavigation
+					action: .counter(.down)
 				))
-				let resetAction = UIAlertAction(
+				let resetAction = makeAction(
 					title: "Reset",
 					style: .destructive,
-					action: .alertNavigation(.presentFullScreen(.resetAlert)),
-					store: store,
-					toNavigationAction: Action.alertNavigation
+					action: .alertNavigation(.presentFullScreen(.resetAlert))
 				)
 				resetAction.isEnabled = !ViewStore(store).isResetDisabled
 				alert.addAction(resetAction)
 				return alert
 			}
+		}
+		
+		private func makeAction(title: String, style: UIAlertAction.Style, action: Action?) -> UIAlertAction {
+			UIAlertAction(
+				title: title,
+				style: style,
+				action: action,
+				store: store,
+				toNavigationAction: Action.alertNavigation
+			)
 		}
 	}
 }
