@@ -28,6 +28,8 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
 		case modal
 		case stack
 		case tabs
+		case alert
+		case existingView
 		case advanced
 		case uiTest(UITest)
 		
@@ -58,30 +60,46 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
 				reducer: TabsShowcase.reducer,
 				environment: .init()
 			))
+		case .alert:
+			return AlertShowcase.makeView(Store(
+				initialState: .init(),
+				reducer: AlertShowcase.reducer,
+				environment: .init()
+			))
+		case .existingView:
+			return ExistingViewShowCase.makeView(Store(
+				initialState: .init(),
+				reducer: ExistingViewShowCase.reducer,
+				environment: .init()
+			))
 		case .advanced:
-			return AdvancedTabBar.makeView(Store(
+			return AdvancedShowcase.makeView(Store(
 				initialState: AdvancedTabBar.State(),
 				reducer: AdvancedTabBar.reducer,
 				environment: .init(countryProvider: .init())
 			))
-		case .uiTest(.swipeDownModalSheet):
-			return SwipeDownModalSheet.makeView(Store(
-				initialState: .init(),
-				reducer: SwipeDownModalSheet.reducer,
-				environment: .init()
-			))
-		case .uiTest(.swipeBackOnStackNavigation):
-			return SwipeBackOnStackNavigation.makeView( Store(
-				initialState: .init(),
-				reducer: SwipeBackOnStackNavigation.reducer,
-				environment: .init()
-			))
-		case .uiTest(.changingTabs):
-			return ChangingTabs.makeView(Store(
-				initialState: .init(),
-				reducer: ChangingTabs.reducer,
-				environment: .init()
-			))
+		
+		case .uiTest(let uiTestCase):
+			switch uiTestCase {
+			case .swipeDownModalSheet:
+				return SwipeDownModalSheet.makeView(Store(
+					initialState: .init(),
+					reducer: SwipeDownModalSheet.reducer,
+					environment: .init()
+				))
+			case .swipeBackOnStackNavigation:
+				return SwipeBackOnStackNavigation.makeView( Store(
+					initialState: .init(),
+					reducer: SwipeBackOnStackNavigation.reducer,
+					environment: .init()
+				))
+			case .changingTabs:
+				return ChangingTabs.makeView(Store(
+					initialState: .init(),
+					reducer: ChangingTabs.reducer,
+					environment: .init()
+				))
+			}
 		}
 	}
 	
