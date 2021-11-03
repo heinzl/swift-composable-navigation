@@ -8,6 +8,7 @@
 
 /* Begin PBXBuildFile section */
 		D82C1DF4273292410011E037 /* AlertShowCase.swift in Sources */ = {isa = PBXBuildFile; fileRef = D82C1DF3273292410011E037 /* AlertShowCase.swift */; };
+		D82C1DF62732B0F60011E037 /* ExistingViewShowCase.swift in Sources */ = {isa = PBXBuildFile; fileRef = D82C1DF52732B0F60011E037 /* ExistingViewShowCase.swift */; };
 		D82C1DF82732CC4F0011E037 /* AdvancedShowcase.swift in Sources */ = {isa = PBXBuildFile; fileRef = D82C1DF72732CC4F0011E037 /* AdvancedShowcase.swift */; };
 		D8365D69266244CE005EA884 /* ModalShowcase.swift in Sources */ = {isa = PBXBuildFile; fileRef = D8365D68266244CE005EA884 /* ModalShowcase.swift */; };
 		D8365D6B26625CDD005EA884 /* Counter.swift in Sources */ = {isa = PBXBuildFile; fileRef = D8365D6A26625CDD005EA884 /* Counter.swift */; };
@@ -48,6 +49,7 @@
 
 /* Begin PBXFileReference section */
 		D82C1DF3273292410011E037 /* AlertShowCase.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AlertShowCase.swift; sourceTree = "<group>"; };
+		D82C1DF52732B0F60011E037 /* ExistingViewShowCase.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExistingViewShowCase.swift; sourceTree = "<group>"; };
 		D82C1DF72732CC4F0011E037 /* AdvancedShowcase.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AdvancedShowcase.swift; sourceTree = "<group>"; };
 		D8365D68266244CE005EA884 /* ModalShowcase.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ModalShowcase.swift; sourceTree = "<group>"; };
 		D8365D6A26625CDD005EA884 /* Counter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Counter.swift; sourceTree = "<group>"; };
@@ -106,6 +108,7 @@
 				D8365D7026626F13005EA884 /* StackShowcase.swift */,
 				D8365D75266394B4005EA884 /* TabsShowcase.swift */,
 				D82C1DF3273292410011E037 /* AlertShowCase.swift */,
+				D82C1DF52732B0F60011E037 /* ExistingViewShowCase.swift */,
 				D852774E266A2D2300BFCC44 /* Advanced */,
 				D852774D266A297E00BFCC44 /* Helper */,
 				D8365D792663D8B4005EA884 /* TestCases */,
@@ -364,6 +367,7 @@
 				D8527764266BA39E00BFCC44 /* CountrySort.swift in Sources */,
 				D852774C2667D00300BFCC44 /* ChangingTabs.swift in Sources */,
 				D8365D76266394B4005EA884 /* TabsShowcase.swift in Sources */,
+				D82C1DF62732B0F60011E037 /* ExistingViewShowCase.swift in Sources */,
 				D852776A266BB4C600BFCC44 /* CountryDeepLink.swift in Sources */,
 				D8ED183427204EBA00E93021 /* AdvancedTabBar.swift in Sources */,
 				D8527762266A886E00BFCC44 /* ContinentFilter.swift in Sources */,
