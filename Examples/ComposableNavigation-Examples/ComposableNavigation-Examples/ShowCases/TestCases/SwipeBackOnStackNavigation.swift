@@ -2,6 +2,7 @@ import SwiftUI
 import ComposableNavigation
 import ComposableArchitecture
 
+/// This setup is used for a UI test
 struct SwipeBackOnStackNavigation {
 	
 	// MARK: TCA
@@ -77,7 +78,7 @@ struct SwipeBackOnStackNavigation {
 		}
 	}
 	
-	static func makeView(_ store: Store<State, Action>) -> UIViewController{
+	static func makeView(_ store: Store<State, Action>) -> UIViewController {
 		StackNavigationViewController(
 			store: store.scope(
 				state: \.stackNavigation,

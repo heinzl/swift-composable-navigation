@@ -2,6 +2,7 @@ import SwiftUI
 import ComposableNavigation
 import ComposableArchitecture
 
+/// This setup is used for a UI test
 struct SwipeDownModalSheet {
 	
 	// MARK: TCA
@@ -74,7 +75,7 @@ struct SwipeDownModalSheet {
 		}
 	}
 	
-	static func makeView(_ store: Store<State, Action>) -> UIViewController{
+	static func makeView(_ store: Store<State, Action>) -> UIViewController {
 		UIHostingController(
 			rootView: SwipeDownModalSheet.RootView(store: store)
 		)
