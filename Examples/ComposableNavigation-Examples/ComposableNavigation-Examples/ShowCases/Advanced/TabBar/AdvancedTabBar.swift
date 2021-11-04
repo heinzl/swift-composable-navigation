@@ -41,7 +41,7 @@ struct AdvancedTabBar {
 			return .concatenate([
 				.init(value: .tabNavigation(.setActiveItem(.listAndDetail))),
 				.init(value: .listAndDetail(.stackNavigation(.setItems([.list])))),
-				.init(value: .listAndDetail(.modalNavigation(.presentSheet(.sort))))
+				.init(value: .listAndDetail(.modalNavigation(.set(.init(item: .sort, style: .pageSheet)))))
 			])
 		case .deepLink(.showCountry(let countryId)):
 			return .concatenate([
@@ -51,7 +51,7 @@ struct AdvancedTabBar {
 		case .deepLink(.showAlertOptions):
 			return .concatenate([
 				.init(value: .tabNavigation(.setActiveItem(.alertPlayground))),
-				.init(value: .alertPlayground(.alertNavigation(.presentFullScreen(.actionSheet))))
+				.init(value: .alertPlayground(.alertNavigation(.set(.init(item: .actionSheet, style: .fullScreen)))))
 			])
 		default:
 			break
@@ -98,7 +98,7 @@ struct AdvancedTabBar {
 				let viewController = CountryDeepLinkView(
 					store: store.scope(
 						state: \.deepLink,
-						action: AdvancedTabBar.Action.deepLink
+						action: Action.deepLink
 					)
 				).viewController
 				viewController.tabBarItem = UITabBarItem(
@@ -111,7 +111,7 @@ struct AdvancedTabBar {
 			case .listAndDetail:
 				let listAndDetailStore = store.scope(
 					state: \.listAndDetail,
-					action: AdvancedTabBar.Action.listAndDetail
+					action: Action.listAndDetail
 				)
 				ViewStore(listAndDetailStore).send(.loadCountries)
 				let stackNavigationController = StackNavigationViewController(
@@ -140,7 +140,7 @@ struct AdvancedTabBar {
 			case .alertPlayground:
 				let alertPlaygroundStore = store.scope(
 					state: \.alertPlayground,
-					action: AdvancedTabBar.Action.alertPlayground
+					action: Action.alertPlayground
 				)
 				let viewController = AlertPlaygroundView(store: alertPlaygroundStore).viewController
 					.withModal(
@@ -164,9 +164,9 @@ struct AdvancedTabBar {
 		return TabNavigationViewController(
 			store: store.scope(
 				state: \.tabNavigation,
-				action: AdvancedTabBar.Action.tabNavigation
+				action: Action.tabNavigation
 			),
-			viewProvider: AdvancedTabBar.ViewProvider(store: store)
+			viewProvider: ViewProvider(store: store)
 		)
 	}
 }

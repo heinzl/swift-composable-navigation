@@ -2,6 +2,10 @@ import Foundation
 import ComposableArchitecture
 import OrderedCollections
 
+/// `TabNavigation` models state and actions of a tab-based scheme for navigating multiple child views.
+///
+/// The active navigation item can be changed by setting a new item. Mutations to the items array
+/// are reflected as well (e.g. changing the tab order).
 public struct TabNavigation<Item: Equatable> {
 	public struct State: Equatable {
 		public var items: [Item]

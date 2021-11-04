@@ -75,25 +75,30 @@ struct CountrySort {
 		func makePresentable(for navigationItem: ModalScreen) -> Presentable {
 			switch navigationItem {
 			case .resetAlert:
-				let viewStore = ViewStore(store)
 				let alert = UIAlertController(
 					title: "Confirmation",
 					message: "Reset sort settings?",
 					preferredStyle: .alert
 				)
-				alert.addAction(.init(title: "Cancel", style: .cancel, handler: { _ in
-					viewStore.send(.alertNavigation(.dismiss))
-				}))
-				alert.addAction(.init(title: "Reset", style: .destructive, handler: { _ in
-					viewStore.send(.resetConfirmed)
-					viewStore.send(.alertNavigation(.dismiss))
-				}))
+				alert.addAction(UIAlertAction(
+					title: "Cancel",
+					style: .cancel,
+					store: store,
+					toNavigationAction: Action.alertNavigation
+				))
+				alert.addAction(UIAlertAction(
+					title: "Reset",
+					style: .destructive,
+					action: .resetConfirmed,
+					store: store,
+					toNavigationAction: Action.alertNavigation
+				))
 				return alert
 			}
 		}
 	}
 
-	static func makeView(_ store: Store<State, Action>) -> UIViewController{
+	static func makeView(_ store: Store<State, Action>) -> UIViewController {
 		return CountrySortView(store: store)
 			.viewController.withModal(
 				store: store.scope(

@@ -3,44 +3,44 @@ import Combine
 import ComposableArchitecture
 import OrderedCollections
 
+/// The `StackNavigationHandler` listens to state changes and updates the UINavigationController accordingly.
+///
+/// It also supports automatic state updates for popping items via the leading-edge swipe gesture or the long press back-button menu.
 public class StackNavigationHandler<ViewProvider: ViewProviding>: NSObject, UINavigationControllerDelegate {
 	public typealias Item = ViewProvider.Item
 	public typealias ItemStack = StackNavigation<Item>
 	
-	internal weak var navigationController: UINavigationController?
-	internal let store: Store<ItemStack.State, ItemStack.Action>
 	internal let viewStore: ViewStore<ItemStack.State, ItemStack.Action>
 	internal let viewProvider: ViewProvider
 	internal var currentViewControllerItems: OrderedDictionary<Item, UIViewController>
 	
-	private var cancellables = Set<AnyCancellable>()
+	private var cancellable: AnyCancellable?
 	
 	public init(
 		store: Store<ItemStack.State, ItemStack.Action>,
 		viewProvider: ViewProvider
 	) {
-		self.store = store
 		self.viewStore = ViewStore(store)
 		self.viewProvider = viewProvider
 		self.currentViewControllerItems = [:]
 	}
+	
 	public func setup(with navigationController: UINavigationController) {
-		self.navigationController = navigationController
-		
 		navigationController.delegate = self
 		
-		viewStore.publisher.items
+		cancellable = viewStore.publisher.items
 			.sink { [weak self] in
-				self?.updateViewControllerStack(newItems: $0)
+				self?.updateViewControllerStack(
+					newItems: $0,
+					for: navigationController
+				)
 			}
-			.store(in: &cancellables)
 	}
 	
-	private func updateViewControllerStack(newItems: [Item]) {
-		guard let navigationController = navigationController else {
-			return
-		}
-		
+	private func updateViewControllerStack(
+		newItems: [Item],
+		for navigationController: UINavigationController
+	) {
 		let oldItems = Array(currentViewControllerItems.keys)
 		guard oldItems != newItems else {
 			return
@@ -54,12 +54,12 @@ public class StackNavigationHandler<ViewProvider: ViewProviding>: NSObject, UINa
 		
 		navigationController.setViewControllers(
 			Array(currentViewControllerItems.values),
-			animated: shouldAnimateStackChanges
+			animated: shouldAnimateStackChanges(for: navigationController)
 		)
 	}
 	
-	private var shouldAnimateStackChanges: Bool {
-		if navigationController?.viewControllers.isEmpty ?? true {
+	private func shouldAnimateStackChanges(for navigationController: UINavigationController) -> Bool {
+		if navigationController.viewControllers.isEmpty {
 			return false
 		} else {
 			return UIView.areAnimationsEnabled

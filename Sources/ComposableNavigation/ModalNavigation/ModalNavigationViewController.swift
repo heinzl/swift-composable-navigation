@@ -1,6 +1,9 @@
 import UIKit
 import ComposableArchitecture
 
+/// A convenience container view controller intended to decouple the content and modal presented views.
+/// This way the content view can be reused in multiple contexts without
+/// tying the content view's implementation and the navigation logic together.
 public class ModalNavigationViewController<ViewProvider: ViewProviding>: UIViewController {
 	internal let navigationHandler: ModalNavigationHandler<ViewProvider>
 	

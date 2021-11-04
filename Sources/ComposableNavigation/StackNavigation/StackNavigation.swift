@@ -1,6 +1,8 @@
 import ComposableArchitecture
 import OrderedCollections
 
+/// `StackNavigation` models state and actions of a stack-based scheme for navigating hierarchical content.
+/// Views can be pushed on the stack or popped from the stack. Even mutations to the whole stack can be performed.
 public struct StackNavigation<Item: Equatable> {
 	public struct State: Equatable {
 		public var items: [Item]

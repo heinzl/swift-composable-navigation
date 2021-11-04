@@ -1,6 +1,7 @@
 import UIKit
 import ComposableArchitecture
 
+/// A convenience UITabBarController implementation containing a `TabNavigationHandler`.
 public class TabNavigationViewController<ViewProvider: ViewProviding>: UITabBarController {
 	internal let navigationHandler: TabNavigationHandler<ViewProvider>
 	

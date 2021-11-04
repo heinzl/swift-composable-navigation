@@ -3,6 +3,10 @@ import ComposableArchitecture
 import ComposableNavigation
 import SwiftUI
 
+/// This example showcases tab navigation with three tabs.
+/// - Two counter screens and a helper screen.
+/// - You can navigate to another tab.
+/// - You can switch the tab order tab.
 struct TabsShowcase {
 	
 	// MARK: TCA
@@ -141,13 +145,13 @@ struct TabsShowcase {
 		}
 	}
 	
-	static func makeView(_ store: Store<State, Action>) -> UIViewController{
+	static func makeView(_ store: Store<State, Action>) -> UIViewController {
 		TabNavigationViewController(
 			store: store.scope(
 				state: \.tabNavigation,
-				action: TabsShowcase.Action.tabNavigation
+				action: Action.tabNavigation
 			),
-			viewProvider: TabsShowcase.ViewProvider(store: store)
+			viewProvider: ViewProvider(store: store)
 		)
 	}
 }

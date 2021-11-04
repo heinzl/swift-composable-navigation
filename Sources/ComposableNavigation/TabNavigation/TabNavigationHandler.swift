@@ -3,47 +3,44 @@ import Combine
 import OrderedCollections
 import ComposableArchitecture
 
+/// The `TabNavigationHandler` listens to state changes and updates the selected view or tab order accordingly.
+///
+/// Additionally, it acts as the `UITabBarControllerDelegate` and automatically updates the state
+/// when the active tab is changed by the user.
 public class TabNavigationHandler<ViewProvider: ViewProviding>: NSObject, UITabBarControllerDelegate {
 	public typealias Item = ViewProvider.Item
 	public typealias ItemTabs = TabNavigation<Item>
 	
-	internal weak var tabBarController: UITabBarController?
-	internal let store: Store<ItemTabs.State, ItemTabs.Action>
 	internal let viewStore: ViewStore<ItemTabs.State, ItemTabs.Action>
 	internal let viewProvider: ViewProvider
 	internal var currentViewControllerItems: OrderedDictionary<Item, UIViewController>
 	
-	private var cancellables = Set<AnyCancellable>()
+	private var cancellable: AnyCancellable?
 	
 	public init(
 		store: Store<ItemTabs.State, ItemTabs.Action>,
 		viewProvider: ViewProvider
 	) {
-		
-		self.store = store
 		self.viewStore = ViewStore(store)
 		self.viewProvider = viewProvider
 		self.currentViewControllerItems = [:]
 	}
 	
 	public func setup(with tabBarController: UITabBarController) {
-		self.tabBarController = tabBarController
-		
 		tabBarController.delegate = self
 		
-		viewStore.publisher
+		cancellable = viewStore.publisher
 			.sink { [weak self] in
 				guard let self = self else { return }
-				self.updateViewControllers(newItems: $0.items)
-				self.updateSelectedItem($0.activeItem, newItems: $0.items)
+				self.updateViewControllers(newItems: $0.items, for: tabBarController)
+				self.updateSelectedItem($0.activeItem, newItems: $0.items, for: tabBarController)
 			}
-			.store(in: &cancellables)
 	}
 	
-	private func updateViewControllers(newItems: [Item]) {
-		guard let tabBarController = tabBarController else {
-			return
-		}
+	private func updateViewControllers(
+		newItems: [Item],
+		for tabBarController: UITabBarController
+	) {
 		let oldItems = Array(currentViewControllerItems.keys)
 		
 		guard oldItems != newItems else {
@@ -58,21 +55,24 @@ public class TabNavigationHandler<ViewProvider: ViewProviding>: NSObject, UITabB
 		
 		tabBarController.setViewControllers(
 			Array(currentViewControllerItems.values),
-			animated: shouldAnimateStackChanges
+			animated: shouldAnimateStackChanges(for: tabBarController)
 		)
 	}
 	
-	private var shouldAnimateStackChanges: Bool {
-		if tabBarController?.viewControllers?.isEmpty ?? true {
+	private func shouldAnimateStackChanges(for tabBarController: UITabBarController) -> Bool {
+		if tabBarController.viewControllers?.isEmpty ?? true {
 			return false
 		} else {
 			return UIView.areAnimationsEnabled
 		}
 	}
 	
-	private func updateSelectedItem(_ item: Item, newItems: [Item]) {
+	private func updateSelectedItem(
+		_ item: Item,
+		newItems: [Item],
+		for tabBarController: UITabBarController
+	) {
 		guard
-			let tabBarController = tabBarController,
 			let index = newItems.firstIndex(of: item),
 			tabBarController.selectedIndex != index
 		else {

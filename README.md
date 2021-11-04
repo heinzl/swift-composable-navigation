@@ -12,7 +12,7 @@ The concept is inspired by the coordinator pattern as it allows a clean separati
 ### Modal navigation
 
 `ModalNavigation` models state and actions of a commonly used modal view presentation.
-Views can be presented with a certain style and dismissed. The `ModalNavigationViewController` listens to state changes and presents the provided views accordingly. Any state changes are reflected by the controller using UIKit.
+Views can be presented with a certain style and dismissed. The `ModalNavigationHandler` listens to state changes and presents the provided views accordingly. Any state changes are reflected by the handler using UIKit.
 
 Setting the current navigation item to a different screen will result in dismissing the old screen and presenting the new screen. Even changes to only the presentation style are reflected accordingly.
 
@@ -61,7 +61,7 @@ struct Onboarding {
 ### Stack navigation
 
 `StackNavigation` models state and actions of a stack-based scheme for navigating hierarchical content.
-Views can be pushed on the stack or popped from the stack. Even mutations to the whole stack can be performed. The `StackNavigationViewController` listens to state changes and updates the view stack accordingly using UIKit.
+Views can be pushed on the stack or popped from the stack. Even mutations to the whole stack can be performed. The `StackNavigationHandler` listens to state changes and updates the view stack accordingly using UIKit.
 
 It also supports automatic state updates for popping items via the leading-edge swipe gesture or the long press back-button menu.
 
@@ -110,7 +110,7 @@ struct Register {
 ### Tab navigation
 
 `TabNavigation` models state and actions of a tab-based scheme for navigating multiple child views.
-The active navigation item can be changed by setting a new item. Even mutations to child item can be performed (e.g. changing the tab order). The `TabNavigationViewController` listens to state changes and updates the selected view accordingly.
+The active navigation item can be changed by setting a new item. Even mutations to items array can be performed (e.g. changing the tab order). The `TabNavigationHandler` listens to state changes and updates the selected view or tab order accordingly.
 
 Example:
 ```swift
@@ -207,6 +207,32 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
 	}
 
     ...
+}
+```
+
+You can use the corresponding "handlers" instead e.g. (`ModalNavigationHandler`) if you already have a custom view controller implementation.
+Make sure to call `navigationHandler.setup(with: viewController)` similar to this:
+
+```swift
+class ExistingViewController: UIViewController {
+	let viewStore: ViewStore<ExistingViewShowCase.State, ExistingViewShowCase.Action>
+	var cancellables: Set<AnyCancellable> = []
+	let navigationHandler: ModalNavigationHandler<ExistingViewShowCase.ViewProvider>
+	
+	init(store: Store<ExistingViewShowCase.State, ExistingViewShowCase.Action>) {
+		self.viewStore = ViewStore(store)
+		self.navigationHandler = ModalNavigationHandler(
+			store: store.scope(
+				state: \.modalNavigation,
+				action: ExistingViewShowCase.Action.modalNavigation
+			), viewProvider: ExistingViewShowCase.ViewProvider(store: store)
+		)
+		super.init(nibName: nil, bundle: nil)
+		
+		self.navigationHandler.setup(with: self)
+	}
+	
+	...
 }
 ```
 
