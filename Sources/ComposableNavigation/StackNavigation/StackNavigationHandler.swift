@@ -14,7 +14,7 @@ public class StackNavigationHandler<ViewProvider: ViewProviding>: NSObject, UINa
 	internal let viewProvider: ViewProvider
 	internal var currentViewControllerItems: OrderedDictionary<Item, UIViewController>
 	
-	private var cancellables = Set<AnyCancellable>()
+	private var cancellable: AnyCancellable?
 	
 	public init(
 		store: Store<ItemStack.State, ItemStack.Action>,
@@ -28,14 +28,13 @@ public class StackNavigationHandler<ViewProvider: ViewProviding>: NSObject, UINa
 	public func setup(with navigationController: UINavigationController) {
 		navigationController.delegate = self
 		
-		viewStore.publisher.items
+		cancellable = viewStore.publisher.items
 			.sink { [weak self] in
 				self?.updateViewControllerStack(
 					newItems: $0,
 					for: navigationController
 				)
 			}
-			.store(in: &cancellables)
 	}
 	
 	private func updateViewControllerStack(

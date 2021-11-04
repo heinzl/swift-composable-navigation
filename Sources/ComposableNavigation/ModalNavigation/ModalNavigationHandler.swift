@@ -14,7 +14,7 @@ public class ModalNavigationHandler<ViewProvider: ViewProviding>: NSObject, UIAd
 	internal let viewProvider: ViewProvider
 	internal var currentViewControllerItem: ViewControllerItem?
 	
-	private var cancellables = Set<AnyCancellable>()
+	private var cancellable: AnyCancellable?
 	
 	internal struct ViewControllerItem {
 		let styledItem: ModalItemNavigation.StyledItem
@@ -31,14 +31,13 @@ public class ModalNavigationHandler<ViewProvider: ViewProviding>: NSObject, UIAd
 	}
 	
 	public func setup(with presentingViewController: UIViewController) {
-		viewStore.publisher.styledItem
+		cancellable = viewStore.publisher.styledItem
 			.sink { [weak self] in
 				self?.updateModalViewController(
 					newStyledItem: $0,
 					presentingViewController: presentingViewController
 				)
 			}
-			.store(in: &cancellables)
 	}
 	
 	private func updateModalViewController(

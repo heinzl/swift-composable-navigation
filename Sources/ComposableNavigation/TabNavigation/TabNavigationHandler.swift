@@ -15,7 +15,7 @@ public class TabNavigationHandler<ViewProvider: ViewProviding>: NSObject, UITabB
 	internal let viewProvider: ViewProvider
 	internal var currentViewControllerItems: OrderedDictionary<Item, UIViewController>
 	
-	private var cancellables = Set<AnyCancellable>()
+	private var cancellable: AnyCancellable?
 	
 	public init(
 		store: Store<ItemTabs.State, ItemTabs.Action>,
@@ -29,13 +29,12 @@ public class TabNavigationHandler<ViewProvider: ViewProviding>: NSObject, UITabB
 	public func setup(with tabBarController: UITabBarController) {
 		tabBarController.delegate = self
 		
-		viewStore.publisher
+		cancellable = viewStore.publisher
 			.sink { [weak self] in
 				guard let self = self else { return }
 				self.updateViewControllers(newItems: $0.items, for: tabBarController)
 				self.updateSelectedItem($0.activeItem, newItems: $0.items, for: tabBarController)
 			}
-			.store(in: &cancellables)
 	}
 	
 	private func updateViewControllers(
