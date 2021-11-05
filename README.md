@@ -159,7 +159,7 @@ struct Root {
 
 The `ViewProvider` creates a view according to the given navigation item. It implements `ViewProviding` which requires the type to create a `Presentable` (e.g. a SwiftUI View or a UIViewController) for a given navigation item.
 
-Navigation container views (like `StackNavigationViewController`) expect a `ViewProvider`. It is used to create new viewsStackNavigationViewController` will reuse the already created view for `.b`  if the stack of navigation items changes like this: `[.a, .b, .c]` -> `[.x, .y, .b,]`
+Navigation handler (like `StackNavigationHandler`) expect a `ViewProvider`. It is used to create new views. The navigation handler will reuse the already created view for `.b` if the stack of navigation items changes like this: `[.a, .b, .c]` -> `[.x, .y, .b,]`
 
 ```swift
 struct ViewProvider: ViewProviding {
