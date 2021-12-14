@@ -25,6 +25,26 @@ class ModalNavigationViewControllerTests: XCTestCase {
 		thenAssertCreatedViews(for: [1], state)
 	}
 	
+	func testSetStyledItem() {
+		let state = State(styledItem: nil)
+		
+		whenActionIsSend(.set(.init(item: 2, style: .pageSheet)), state)
+		
+		thenAssertItem(.init(item: 2, style: .pageSheet), state)
+		thenAssertPresentedViewController(style: .pageSheet, state)
+		thenAssertCreatedViews(for: [2], state)
+	}
+	
+	func testSetStyledItemToNil() {
+		let state = State(styledItem: .init(item: 2, style: .pageSheet))
+		
+		whenActionIsSend(.set(nil), state)
+		
+		thenAssertItem(nil, state)
+		thenAssertPresentedViewController(style: nil, state)
+		thenAssertCreatedViews(for: [2], state)
+	}
+	
 	func testDismiss() {
 		let state = State(styledItem: .init(item: 1, style: .pageSheet))
 		

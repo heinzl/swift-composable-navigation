@@ -92,6 +92,36 @@ class StackNavigationViewControllerTests: XCTestCase {
 		thenAssertCreatedViews(for: [1, 2, 3, 4], state)
 	}
 	
+	func testPopMultipleItems() {
+		let state = State(items: [1, 2, 3, 4])
+		
+		whenActionIsSend(.popItems(count: 2), state)
+		
+		thenAssertItems([1, 2], state)
+		thenAssertViewControllerStack(state)
+		thenAssertCreatedViews(for: [1, 2, 3, 4], state)
+	}
+	
+	func testPopAllItems() {
+		let state = State(items: [1, 2, 3, 4])
+		
+		whenActionIsSend(.popItems(count: 4), state)
+		
+		thenAssertItems([], state)
+		thenAssertViewControllerStack(state)
+		thenAssertCreatedViews(for: [1, 2, 3, 4], state)
+	}
+	
+	func testPopToManyItems() {
+		let state = State(items: [1, 2, 3, 4])
+		
+		whenActionIsSend(.popItems(count: 999), state)
+		
+		thenAssertItems([1, 2, 3, 4], state)
+		thenAssertViewControllerStack(state)
+		thenAssertCreatedViews(for: [1, 2, 3, 4], state)
+	}
+	
 	// MARK: Set stack
 	
 	func testSetStackFromEmpty() {
@@ -163,6 +193,18 @@ class StackNavigationViewControllerTests: XCTestCase {
 		thenAssertViewControllerStack(state)
 		thenAssertCreatedViews(for: [1, 2, 3, 4], state)
 	}
+	
+	func testTopItem() {
+		let state = State(items: [])
+		whenActionIsSend(.setItems([1, 2]), state)
+		thenAssertTopItem(2, state)
+	}
+	
+	func testTopItemEmpty() {
+		let state = State(items: [])
+		whenActionIsSend(.setItems([]), state)
+		thenAssertTopItem(nil, state)
+	}
 }
 
 private func whenActionIsSend(_ action: StackNavigation<Int>.Action, _ state: State) {
@@ -182,6 +224,10 @@ private func thenAssertViewControllerStack(_ state: State) {
 
 private func thenAssertCreatedViews(for items: [Int], _ state: State) {
 	XCTAssertEqual(state.sut.navigationHandler.viewProvider.viewsCreatedFrom, items)
+}
+
+private func thenAssertTopItem(_ item: Int?, _ state: State) {
+	XCTAssertEqual(state.viewStore.state.topItem, item)
 }
 
 private class State {
