@@ -31,30 +31,32 @@ public class ModalNavigationHandler<ViewProvider: ViewProviding>: NSObject, UIAd
 	}
 	
 	public func setup(with presentingViewController: UIViewController) {
-		cancellable = viewStore.publisher.styledItem
+		cancellable = viewStore.publisher
 			.sink { [weak self] in
 				self?.updateModalViewController(
-					newStyledItem: $0,
+					newState: $0,
 					presentingViewController: presentingViewController
 				)
 			}
 	}
 	
 	private func updateModalViewController(
-		newStyledItem: ModalItemNavigation.StyledItem?,
+		newState: ModalItemNavigation.State,
 		presentingViewController: UIViewController
 	) {
+		let newStyledItem = newState.styledItem
 		let oldStyledItem = currentViewControllerItem?.styledItem
 		guard oldStyledItem != newStyledItem else {
 			return
 		}
+		let animated = shouldAnimateChanges(state: newState)
 		switch (oldStyledItem, newStyledItem) {
 		case (.some, .none):
 			// Dismiss old
-			dimissModal(from: presentingViewController)
+			dismissModal(from: presentingViewController, animated: animated)
 		case (.none, .some(let newStyledItem)):
 			// Present new
-			presentModal(newStyledItem, on: presentingViewController)
+			presentModal(newStyledItem, on: presentingViewController, animated: animated)
 		case (.some(let oldStyledItem), .some(let newStyledItem)):
 			// Dismiss old, present new
 			let viewController: UIViewController
@@ -66,8 +68,8 @@ public class ModalNavigationHandler<ViewProvider: ViewProviding>: NSObject, UIAd
 			} else {
 				viewController = makeViewController(for: newStyledItem)
 			}
-			dimissModal(from: presentingViewController)
-			presentModal(viewController, newStyledItem, on: presentingViewController)
+			dismissModal(from: presentingViewController, animated: animated)
+			presentModal(viewController, newStyledItem, on: presentingViewController, animated: animated)
 		default:
 			break
 		}
@@ -75,18 +77,20 @@ public class ModalNavigationHandler<ViewProvider: ViewProviding>: NSObject, UIAd
 	
 	private func presentModal(
 		_ newStyledItem: ModalItemNavigation.StyledItem,
-		on presentingViewController: UIViewController
+		on presentingViewController: UIViewController,
+		animated: Bool
 	) {
 		let viewController = makeViewController(for: newStyledItem)
-		presentModal(viewController, newStyledItem, on: presentingViewController)
+		presentModal(viewController, newStyledItem, on: presentingViewController, animated: animated)
 	}
 	
 	private func presentModal(
 		_ viewController: UIViewController,
 		_ styledItem: ModalItemNavigation.StyledItem,
-		on presentingViewController: UIViewController
+		on presentingViewController: UIViewController,
+		animated: Bool
 	) {
-		presentingViewController.present(viewController, animated: shouldAnimateModalChanges, completion: nil)
+		presentingViewController.present(viewController, animated: animated, completion: nil)
 		
 		currentViewControllerItem = ViewControllerItem(
 			styledItem: styledItem,
@@ -104,23 +108,30 @@ public class ModalNavigationHandler<ViewProvider: ViewProviding>: NSObject, UIAd
 		return viewController
 	}
 	
-	private func dimissModal(from presentingViewController: UIViewController) {
+	private func dismissModal(
+		from presentingViewController: UIViewController,
+		animated: Bool
+	) {
 		// Prevent dismissal of unrelated view controller
 		if presentingViewController.presentedViewController == currentViewControllerItem?.viewController {
-			presentingViewController.dismiss(animated: shouldAnimateModalChanges, completion: nil)
+			presentingViewController.dismiss(animated: animated, completion: nil)
 		}
 		currentViewControllerItem = nil
 	}
 	
-	private var shouldAnimateModalChanges: Bool {
-		UIView.areAnimationsEnabled
+	private func shouldAnimateChanges(state: ModalItemNavigation.State) -> Bool {
+		if !UIView.areAnimationsEnabled {
+			return false
+		} else {
+			return state.areAnimationsEnabled
+		}
 	}
 	
 	// MARK: UIAdaptivePresentationControllerDelegate
 	
 	public func presentationControllerDidDismiss(_ presentationController: UIPresentationController) {
 		currentViewControllerItem = nil
-		viewStore.send(.dismiss)
+		viewStore.send(.dismiss())
 	}
 }
 
@@ -143,7 +154,7 @@ public extension UIAlertAction {
 				state: { _ in () },
 				action: toNavigationAction
 			)
-			ViewStore(statelessNavigationState).send(.dismiss)
+			ViewStore(statelessNavigationState).send(.dismiss())
 			if let action = action {
 				ViewStore(store).send(action)
 			}

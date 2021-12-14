@@ -28,7 +28,7 @@ class ModalNavigationViewControllerTests: XCTestCase {
 	func testDismiss() {
 		let state = State(styledItem: .init(item: 1, style: .pageSheet))
 		
-		whenActionIsSend(.dismiss, state)
+		whenActionIsSend(.dismiss(), state)
 		
 		thenAssertItem(nil, state)
 		thenAssertPresentedViewController(style: nil, state)
@@ -39,7 +39,7 @@ class ModalNavigationViewControllerTests: XCTestCase {
 		let state = State(styledItem: nil)
 		
 		whenActionIsSend(.presentFullScreen(1), state)
-		whenActionIsSend(.dismiss, state)
+		whenActionIsSend(.dismiss(), state)
 		
 		thenAssertItem(nil, state)
 		thenAssertCreatedViews(for: [1], state)

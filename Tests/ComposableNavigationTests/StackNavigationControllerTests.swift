@@ -54,7 +54,7 @@ class StackNavigationViewControllerTests: XCTestCase {
 	func testPopFromEmptyStack() {
 		let state = State(items: [])
 		
-		whenActionIsSend(.popItem, state)
+		whenActionIsSend(.popItem(), state)
 		
 		thenAssertItems([], state)
 		thenAssertViewControllerStack(state)
@@ -64,7 +64,7 @@ class StackNavigationViewControllerTests: XCTestCase {
 	func testPopFromStack() {
 		let state = State(items: [1, 2])
 		
-		whenActionIsSend(.popItem, state)
+		whenActionIsSend(.popItem(), state)
 		
 		thenAssertItems([1], state)
 		thenAssertViewControllerStack(state)
@@ -74,8 +74,8 @@ class StackNavigationViewControllerTests: XCTestCase {
 	func testConsecutivePopsFromStack() {
 		let state = State(items: [1, 2, 3])
 		
-		whenActionIsSend(.popItem, state)
-		whenActionIsSend(.popItem, state)
+		whenActionIsSend(.popItem(), state)
+		whenActionIsSend(.popItem(), state)
 		
 		thenAssertItems([1], state)
 		thenAssertViewControllerStack(state)
@@ -85,7 +85,7 @@ class StackNavigationViewControllerTests: XCTestCase {
 	func testPopToRoot() {
 		let state = State(items: [1, 2, 3, 4])
 		
-		whenActionIsSend(.popToRoot, state)
+		whenActionIsSend(.popToRoot(), state)
 		
 		thenAssertItems([1], state)
 		thenAssertViewControllerStack(state)

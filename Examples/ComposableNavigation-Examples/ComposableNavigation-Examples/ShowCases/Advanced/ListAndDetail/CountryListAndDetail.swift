@@ -120,7 +120,7 @@ struct CountryListAndDetail {
 			return Effect(value: .modalNavigation(.presentSheet(.sort)))
 		case .continentFilter(.done),
 			 .countrySort(.done):
-			return Effect(value: .modalNavigation(.dismiss))
+			return Effect(value: .modalNavigation(.dismiss()))
 		default:
 			break
 		}

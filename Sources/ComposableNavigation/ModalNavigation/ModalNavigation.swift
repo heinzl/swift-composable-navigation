@@ -6,33 +6,43 @@ import ComposableArchitecture
 public struct ModalNavigation<Item: Equatable> {
 	public struct State: Equatable {
 		public var styledItem: StyledItem?
+		public var areAnimationsEnabled: Bool
 		
-		public init(styledItem: StyledItem? = nil) {
+		public init(
+			styledItem: StyledItem? = nil,
+			areAnimationsEnabled: Bool = true
+		) {
 			self.styledItem = styledItem
+			self.areAnimationsEnabled = areAnimationsEnabled
 		}
 	}
 	
 	public enum Action: Equatable {
-		case set(StyledItem?)
-		case dismiss
-		case presentFullScreen(Item)
-		case presentSheet(Item)
+		case set(StyledItem?, animated: Bool = true)
+		case dismiss(animated: Bool = true)
+		case presentFullScreen(Item, animated: Bool = true)
+		case presentSheet(Item, animated: Bool = true)
 	}
 	
 	public static func reducer() -> Reducer<State, Action, Void> {
 		Reducer { state, action, _ in
 			switch action {
-			case .set(let styledItem):
-				state.styledItem = styledItem
-			case .dismiss:
-				state.styledItem = nil
-			case .presentFullScreen(let item):
-				return .init(value: .set(StyledItem(item: item, style: .fullScreen)))
-			case .presentSheet(let item):
-				return .init(value: .set(StyledItem(item: item, style: .pageSheet)))
+			case let .set(styledItem, animated):
+				setStyledItem(styledItem, on: &state, animated: animated)
+			case let .dismiss(animated):
+				setStyledItem(nil, on: &state, animated: animated)
+			case let .presentFullScreen(item, animated):
+				setStyledItem(StyledItem(item: item, style: .fullScreen), on: &state, animated: animated)
+			case let .presentSheet(item, animated):
+				setStyledItem(StyledItem(item: item, style: .pageSheet), on: &state, animated: animated)
 			}
 			return .none
 		}
+	}
+	
+	private static func setStyledItem(_ item: StyledItem?, on state: inout State, animated: Bool) {
+		state.styledItem = item
+		state.areAnimationsEnabled = animated
 	}
 	
 	public struct StyledItem: Equatable {
