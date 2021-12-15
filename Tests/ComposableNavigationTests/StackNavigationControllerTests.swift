@@ -11,7 +11,7 @@ class StackNavigationViewControllerTests: XCTestCase {
 	func testPushOnEmptyStack() {
 		let state = State(items: [])
 		
-		whenActionIsSend(.pushItem(1), state)
+		whenActionIsSent(.pushItem(1), state)
 		
 		thenAssertItems([1], state)
 		thenAssertViewControllerStack(state)
@@ -21,7 +21,7 @@ class StackNavigationViewControllerTests: XCTestCase {
 	func testPushOnStack() {
 		let state = State(items: [1, 2])
 		
-		whenActionIsSend(.pushItem(3), state)
+		whenActionIsSent(.pushItem(3), state)
 		
 		thenAssertItems([1, 2, 3], state)
 		thenAssertViewControllerStack(state)
@@ -31,8 +31,8 @@ class StackNavigationViewControllerTests: XCTestCase {
 	func testConsecutivePushsOnStack() {
 		let state = State(items: [1])
 		
-		whenActionIsSend(.pushItem(2), state)
-		whenActionIsSend(.pushItem(3), state)
+		whenActionIsSent(.pushItem(2), state)
+		whenActionIsSent(.pushItem(3), state)
 		
 		thenAssertItems([1, 2, 3], state)
 		thenAssertViewControllerStack(state)
@@ -42,7 +42,7 @@ class StackNavigationViewControllerTests: XCTestCase {
 	func testPushMultipleItemsOnStack() {
 		let state = State(items: [1, 2])
 		
-		whenActionIsSend(.pushItems([3, 4]), state)
+		whenActionIsSent(.pushItems([3, 4]), state)
 		
 		thenAssertItems([1, 2, 3, 4], state)
 		thenAssertViewControllerStack(state)
@@ -54,7 +54,7 @@ class StackNavigationViewControllerTests: XCTestCase {
 	func testPopFromEmptyStack() {
 		let state = State(items: [])
 		
-		whenActionIsSend(.popItem(), state)
+		whenActionIsSent(.popItem(), state)
 		
 		thenAssertItems([], state)
 		thenAssertViewControllerStack(state)
@@ -64,7 +64,7 @@ class StackNavigationViewControllerTests: XCTestCase {
 	func testPopFromStack() {
 		let state = State(items: [1, 2])
 		
-		whenActionIsSend(.popItem(), state)
+		whenActionIsSent(.popItem(), state)
 		
 		thenAssertItems([1], state)
 		thenAssertViewControllerStack(state)
@@ -74,8 +74,8 @@ class StackNavigationViewControllerTests: XCTestCase {
 	func testConsecutivePopsFromStack() {
 		let state = State(items: [1, 2, 3])
 		
-		whenActionIsSend(.popItem(), state)
-		whenActionIsSend(.popItem(), state)
+		whenActionIsSent(.popItem(), state)
+		whenActionIsSent(.popItem(), state)
 		
 		thenAssertItems([1], state)
 		thenAssertViewControllerStack(state)
@@ -85,7 +85,7 @@ class StackNavigationViewControllerTests: XCTestCase {
 	func testPopToRoot() {
 		let state = State(items: [1, 2, 3, 4])
 		
-		whenActionIsSend(.popToRoot(), state)
+		whenActionIsSent(.popToRoot(), state)
 		
 		thenAssertItems([1], state)
 		thenAssertViewControllerStack(state)
@@ -95,7 +95,7 @@ class StackNavigationViewControllerTests: XCTestCase {
 	func testPopMultipleItems() {
 		let state = State(items: [1, 2, 3, 4])
 		
-		whenActionIsSend(.popItems(count: 2), state)
+		whenActionIsSent(.popItems(count: 2), state)
 		
 		thenAssertItems([1, 2], state)
 		thenAssertViewControllerStack(state)
@@ -105,7 +105,7 @@ class StackNavigationViewControllerTests: XCTestCase {
 	func testPopAllItems() {
 		let state = State(items: [1, 2, 3, 4])
 		
-		whenActionIsSend(.popItems(count: 4), state)
+		whenActionIsSent(.popItems(count: 4), state)
 		
 		thenAssertItems([], state)
 		thenAssertViewControllerStack(state)
@@ -115,7 +115,7 @@ class StackNavigationViewControllerTests: XCTestCase {
 	func testPopToManyItems() {
 		let state = State(items: [1, 2, 3, 4])
 		
-		whenActionIsSend(.popItems(count: 999), state)
+		whenActionIsSent(.popItems(count: 999), state)
 		
 		thenAssertItems([1, 2, 3, 4], state)
 		thenAssertViewControllerStack(state)
@@ -127,7 +127,7 @@ class StackNavigationViewControllerTests: XCTestCase {
 	func testSetStackFromEmpty() {
 		let state = State(items: [])
 		
-		whenActionIsSend(.setItems([1, 2]), state)
+		whenActionIsSent(.setItems([1, 2]), state)
 		
 		thenAssertItems([1, 2], state)
 		thenAssertViewControllerStack(state)
@@ -137,7 +137,7 @@ class StackNavigationViewControllerTests: XCTestCase {
 	func testSetStackToEmpty() {
 		let state = State(items: [1, 2])
 		
-		whenActionIsSend(.setItems([]), state)
+		whenActionIsSent(.setItems([]), state)
 		
 		thenAssertItems([], state)
 		thenAssertViewControllerStack(state)
@@ -147,7 +147,7 @@ class StackNavigationViewControllerTests: XCTestCase {
 	func testSetStackAddItemsOnTop() {
 		let state = State(items: [1])
 		
-		whenActionIsSend(.setItems([1, 2]), state)
+		whenActionIsSent(.setItems([1, 2]), state)
 		
 		thenAssertItems([1, 2], state)
 		thenAssertViewControllerStack(state)
@@ -157,7 +157,7 @@ class StackNavigationViewControllerTests: XCTestCase {
 	func testSetStackRemoveItemsFromTop() {
 		let state = State(items: [1, 2])
 		
-		whenActionIsSend(.setItems([1]), state)
+		whenActionIsSent(.setItems([1]), state)
 		
 		thenAssertItems([1], state)
 		thenAssertViewControllerStack(state)
@@ -167,7 +167,7 @@ class StackNavigationViewControllerTests: XCTestCase {
 	func testSetStackSwitchItems() {
 		let state = State(items: [1, 2])
 		
-		whenActionIsSend(.setItems([2, 1]), state)
+		whenActionIsSent(.setItems([2, 1]), state)
 		
 		thenAssertItems([2, 1], state)
 		thenAssertViewControllerStack(state)
@@ -177,7 +177,7 @@ class StackNavigationViewControllerTests: XCTestCase {
 	func testSetStackSwitchAndAddItems() {
 		let state = State(items: [1, 2])
 		
-		whenActionIsSend(.setItems([3, 2, 4, 1]), state)
+		whenActionIsSent(.setItems([3, 2, 4, 1]), state)
 		
 		thenAssertItems([3, 2, 4, 1], state)
 		thenAssertViewControllerStack(state)
@@ -187,7 +187,7 @@ class StackNavigationViewControllerTests: XCTestCase {
 	func testSetStackSwitchAndRemoveItems() {
 		let state = State(items: [1, 2, 3, 4])
 		
-		whenActionIsSend(.setItems([3, 1]), state)
+		whenActionIsSent(.setItems([3, 1]), state)
 		
 		thenAssertItems([3, 1], state)
 		thenAssertViewControllerStack(state)
@@ -196,18 +196,18 @@ class StackNavigationViewControllerTests: XCTestCase {
 	
 	func testTopItem() {
 		let state = State(items: [])
-		whenActionIsSend(.setItems([1, 2]), state)
+		whenActionIsSent(.setItems([1, 2]), state)
 		thenAssertTopItem(2, state)
 	}
 	
 	func testTopItemEmpty() {
 		let state = State(items: [])
-		whenActionIsSend(.setItems([]), state)
+		whenActionIsSent(.setItems([]), state)
 		thenAssertTopItem(nil, state)
 	}
 }
 
-private func whenActionIsSend(_ action: StackNavigation<Int>.Action, _ state: State) {
+private func whenActionIsSent(_ action: StackNavigation<Int>.Action, _ state: State) {
 	UIView.performWithoutAnimation {
 		state.viewStore.send(action)
 	}

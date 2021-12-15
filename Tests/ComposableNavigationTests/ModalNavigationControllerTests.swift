@@ -8,7 +8,7 @@ class ModalNavigationViewControllerTests: XCTestCase {
 	func testPresentSheet() {
 		let state = State(styledItem: nil)
 		
-		whenActionIsSend(.presentSheet(1), state)
+		whenActionIsSent(.presentSheet(1), state)
 		
 		thenAssertItem(.init(item: 1, style: .pageSheet), state)
 		thenAssertPresentedViewController(style: .pageSheet, state)
@@ -18,7 +18,7 @@ class ModalNavigationViewControllerTests: XCTestCase {
 	func testPresentFullScreen() {
 		let state = State(styledItem: nil)
 		
-		whenActionIsSend(.presentFullScreen(1), state)
+		whenActionIsSent(.presentFullScreen(1), state)
 		
 		thenAssertItem(.init(item: 1, style: .fullScreen), state)
 		thenAssertPresentedViewController(style: .fullScreen, state)
@@ -28,7 +28,7 @@ class ModalNavigationViewControllerTests: XCTestCase {
 	func testSetStyledItem() {
 		let state = State(styledItem: nil)
 		
-		whenActionIsSend(.set(.init(item: 2, style: .pageSheet)), state)
+		whenActionIsSent(.set(.init(item: 2, style: .pageSheet)), state)
 		
 		thenAssertItem(.init(item: 2, style: .pageSheet), state)
 		thenAssertPresentedViewController(style: .pageSheet, state)
@@ -38,7 +38,7 @@ class ModalNavigationViewControllerTests: XCTestCase {
 	func testSetStyledItemToNil() {
 		let state = State(styledItem: .init(item: 2, style: .pageSheet))
 		
-		whenActionIsSend(.set(nil), state)
+		whenActionIsSent(.set(nil), state)
 		
 		thenAssertItem(nil, state)
 		thenAssertPresentedViewController(style: nil, state)
@@ -48,7 +48,7 @@ class ModalNavigationViewControllerTests: XCTestCase {
 	func testDismiss() {
 		let state = State(styledItem: .init(item: 1, style: .pageSheet))
 		
-		whenActionIsSend(.dismiss(), state)
+		whenActionIsSent(.dismiss(), state)
 		
 		thenAssertItem(nil, state)
 		thenAssertPresentedViewController(style: nil, state)
@@ -58,8 +58,8 @@ class ModalNavigationViewControllerTests: XCTestCase {
 	func testDismissAfterPresent() {
 		let state = State(styledItem: nil)
 		
-		whenActionIsSend(.presentFullScreen(1), state)
-		whenActionIsSend(.dismiss(), state)
+		whenActionIsSent(.presentFullScreen(1), state)
+		whenActionIsSent(.dismiss(), state)
 		
 		thenAssertItem(nil, state)
 		thenAssertCreatedViews(for: [1], state)
@@ -68,7 +68,7 @@ class ModalNavigationViewControllerTests: XCTestCase {
 	func testPresentDifferentItemButSameStyle() {
 		let state = State(styledItem: .init(item: 1, style: .fullScreen))
 		
-		whenActionIsSend(.presentFullScreen(2), state)
+		whenActionIsSent(.presentFullScreen(2), state)
 		
 		thenAssertItem(.init(item: 2, style: .fullScreen), state)
 		thenAssertPresentedViewController(style: .fullScreen, state)
@@ -78,7 +78,7 @@ class ModalNavigationViewControllerTests: XCTestCase {
 	func testPresentDifferentItemAndDifferentStyle() {
 		let state = State(styledItem: .init(item: 1, style: .fullScreen))
 		
-		whenActionIsSend(.presentSheet(2), state)
+		whenActionIsSent(.presentSheet(2), state)
 		
 		thenAssertItem(.init(item: 2, style: .pageSheet), state)
 		thenAssertPresentedViewController(style: .pageSheet, state)
@@ -88,7 +88,7 @@ class ModalNavigationViewControllerTests: XCTestCase {
 	func testPresentSameItemButDifferentStyle() {
 		let state = State(styledItem: .init(item: 1, style: .fullScreen))
 		
-		whenActionIsSend(.presentSheet(1), state)
+		whenActionIsSent(.presentSheet(1), state)
 		
 		thenAssertItem(.init(item: 1, style: .pageSheet), state)
 		thenAssertPresentedViewController(style: .pageSheet, state)
@@ -96,7 +96,7 @@ class ModalNavigationViewControllerTests: XCTestCase {
 	}
 }
 
-private func whenActionIsSend(_ action: ModalNavigation<Int>.Action, _ state: State) {
+private func whenActionIsSent(_ action: ModalNavigation<Int>.Action, _ state: State) {
 	UIView.performWithoutAnimation {
 		state.viewStore.send(action)
 	}
