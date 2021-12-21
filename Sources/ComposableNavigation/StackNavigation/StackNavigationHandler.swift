@@ -29,8 +29,9 @@ public class StackNavigationHandler<ViewProvider: ViewProviding>: NSObject, UINa
 		navigationController.delegate = self
 		
 		cancellable = viewStore.publisher
-			.sink { [weak self] in
-				self?.updateViewControllerStack(
+			.sink { [weak self, weak navigationController] in
+				guard let self = self, let navigationController = navigationController else { return }
+				self.updateViewControllerStack(
 					newState: $0,
 					for: navigationController
 				)

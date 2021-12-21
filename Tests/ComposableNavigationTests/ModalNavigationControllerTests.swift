@@ -94,6 +94,13 @@ class ModalNavigationViewControllerTests: XCTestCase {
 		thenAssertPresentedViewController(style: .pageSheet, state)
 		thenAssertCreatedViews(for: [1], state)
 	}
+	
+	func testMemoryLeak() {
+		var state: State! = State(styledItem: nil)
+		assertNil(state.sut) {
+			state = nil
+		}
+	}
 }
 
 private func whenActionIsSent(_ action: ModalNavigation<Int>.Action, _ state: State) {

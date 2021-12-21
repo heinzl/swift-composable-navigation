@@ -205,6 +205,13 @@ class StackNavigationViewControllerTests: XCTestCase {
 		whenActionIsSent(.setItems([]), state)
 		thenAssertTopItem(nil, state)
 	}
+	
+	func testMemoryLeak() {
+		var state: State! = State(items: [])
+		assertNil(state.sut) {
+			state = nil
+		}
+	}
 }
 
 private func whenActionIsSent(_ action: StackNavigation<Int>.Action, _ state: State) {

@@ -136,6 +136,13 @@ class TabNavigationViewControllerTests: XCTestCase {
 		thenAssertSelectedIndex(0, state)
 		thenAssertActiveItem(1, state)
 	}
+	
+	func testMemoryLeak() {
+		var state: State! = State(items: [1], activeItem: 1)
+		assertNil(state.sut) {
+			state = nil
+		}
+	}
 }
 
 private func whenActionIsSent(_ action: TabNavigation<Int>.Action, _ state: State) {

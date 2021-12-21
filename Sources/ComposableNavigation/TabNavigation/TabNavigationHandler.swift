@@ -30,8 +30,8 @@ public class TabNavigationHandler<ViewProvider: ViewProviding>: NSObject, UITabB
 		tabBarController.delegate = self
 		
 		cancellable = viewStore.publisher
-			.sink { [weak self] in
-				guard let self = self else { return }
+			.sink { [weak self, weak tabBarController] in
+				guard let self = self, let tabBarController = tabBarController else { return }
 				self.updateViewControllers(newState: $0, for: tabBarController)
 				self.updateSelectedItem($0.activeItem, newItems: $0.items, for: tabBarController)
 			}

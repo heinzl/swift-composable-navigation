@@ -32,8 +32,9 @@ public class ModalNavigationHandler<ViewProvider: ViewProviding>: NSObject, UIAd
 	
 	public func setup(with presentingViewController: UIViewController) {
 		cancellable = viewStore.publisher
-			.sink { [weak self] in
-				self?.updateModalViewController(
+			.sink { [weak self, weak presentingViewController] in
+				guard let self = self, let presentingViewController = presentingViewController else { return }
+				self.updateModalViewController(
 					newState: $0,
 					presentingViewController: presentingViewController
 				)
