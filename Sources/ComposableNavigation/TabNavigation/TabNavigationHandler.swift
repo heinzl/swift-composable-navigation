@@ -30,17 +30,18 @@ public class TabNavigationHandler<ViewProvider: ViewProviding>: NSObject, UITabB
 		tabBarController.delegate = self
 		
 		cancellable = viewStore.publisher
-			.sink { [weak self] in
-				guard let self = self else { return }
-				self.updateViewControllers(newItems: $0.items, for: tabBarController)
+			.sink { [weak self, weak tabBarController] in
+				guard let self = self, let tabBarController = tabBarController else { return }
+				self.updateViewControllers(newState: $0, for: tabBarController)
 				self.updateSelectedItem($0.activeItem, newItems: $0.items, for: tabBarController)
 			}
 	}
 	
 	private func updateViewControllers(
-		newItems: [Item],
+		newState: ItemTabs.State,
 		for tabBarController: UITabBarController
 	) {
+		let newItems = newState.items
 		let oldItems = Array(currentViewControllerItems.keys)
 		
 		guard oldItems != newItems else {
@@ -55,15 +56,20 @@ public class TabNavigationHandler<ViewProvider: ViewProviding>: NSObject, UITabB
 		
 		tabBarController.setViewControllers(
 			Array(currentViewControllerItems.values),
-			animated: shouldAnimateStackChanges(for: tabBarController)
+			animated: shouldAnimateStackChanges(for: tabBarController, state: newState)
 		)
 	}
 	
-	private func shouldAnimateStackChanges(for tabBarController: UITabBarController) -> Bool {
+	private func shouldAnimateStackChanges(
+		for tabBarController: UITabBarController,
+		state: ItemTabs.State
+	) -> Bool {
 		if tabBarController.viewControllers?.isEmpty ?? true {
 			return false
+		} else if !UIView.areAnimationsEnabled {
+			return false
 		} else {
-			return UIView.areAnimationsEnabled
+			return state.areAnimationsEnabled
 		}
 	}
 	

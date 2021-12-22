@@ -10,39 +10,54 @@ public struct TabNavigation<Item: Equatable> {
 	public struct State: Equatable {
 		public var items: [Item]
 		public var activeItem: Item
+		public var areAnimationsEnabled: Bool
 		
-		public init(items: [Item], activeItem: Item) {
+		public init(
+			items: [Item],
+			activeItem: Item,
+			areAnimationsEnabled: Bool = true
+		) {
 			self.items = items
 			self.activeItem = activeItem
+			self.areAnimationsEnabled = areAnimationsEnabled
 		}
 	}
 	
 	public enum Action: Equatable {
 		case setActiveItem(Item)
 		case setActiveIndex(Int)
-		case setItems([Item])
+		case setItems([Item], animated: Bool = true)
 	}
 	
 	public static func reducer() -> Reducer<State, Action, Void> {
 		Reducer { state, action, _ in
 			switch action {
 			case .setActiveItem(let newActiveItem):
-				guard state.items.contains(newActiveItem) else {
-					return .none
-				}
-				state.activeItem = newActiveItem
+				setActiveItem(newActiveItem, on: &state)
 			case .setActiveIndex(let newIndex):
-				guard state.items.indices.contains(newIndex) else {
-					return .none
-				}
-				return .init(value: .setActiveItem(state.items[newIndex]))
-			case .setItems(let newItems):
+				setActiveIndex(newIndex, on: &state)
+			case let .setItems(newItems, animated):
 				state.items = newItems
+				state.areAnimationsEnabled = animated
 				if !newItems.contains(state.activeItem) {
-					return .init(value: .setActiveIndex(0))
+					setActiveIndex(0, on: &state)
 				}
 			}
 			return .none
 		}
+	}
+	
+	private static func setActiveIndex(_ index: Int, on state: inout State) {
+		guard state.items.indices.contains(index) else {
+			return
+		}
+		state.activeItem = state.items[index]
+	}
+	
+	private static func setActiveItem(_ item: Item, on state: inout State) {
+		guard state.items.contains(item) else {
+			return
+		}
+		state.activeItem = item
 	}
 }

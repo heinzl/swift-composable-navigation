@@ -10,7 +10,7 @@ class TabNavigationViewControllerTests: XCTestCase {
 	func testSetStackFromEmpty() {
 		let state = State(items: [])
 		
-		whenActionIsSend(.setItems([1, 2]), state)
+		whenActionIsSent(.setItems([1, 2]), state)
 		
 		thenAssert(expectedItems: [1, 2], state)
 		thenAssertViewControllerStack(state)
@@ -20,7 +20,7 @@ class TabNavigationViewControllerTests: XCTestCase {
 	func testSetStackToEmpty() {
 		let state = State(items: [1, 2])
 		
-		whenActionIsSend(.setItems([]), state)
+		whenActionIsSent(.setItems([]), state)
 		
 		thenAssert(expectedItems: [], state)
 		thenAssertViewControllerStack(state)
@@ -30,7 +30,7 @@ class TabNavigationViewControllerTests: XCTestCase {
 	func testSetStackAddItemsOnTop() {
 		let state = State(items: [1])
 		
-		whenActionIsSend(.setItems([1, 2]), state)
+		whenActionIsSent(.setItems([1, 2]), state)
 		
 		thenAssert(expectedItems: [1, 2], state)
 		thenAssertViewControllerStack(state)
@@ -40,7 +40,7 @@ class TabNavigationViewControllerTests: XCTestCase {
 	func testSetStackRemoveItemsFromTop() {
 		let state = State(items: [1, 2])
 		
-		whenActionIsSend(.setItems([1]), state)
+		whenActionIsSent(.setItems([1]), state)
 		
 		thenAssert(expectedItems: [1], state)
 		thenAssertViewControllerStack(state)
@@ -50,7 +50,7 @@ class TabNavigationViewControllerTests: XCTestCase {
 	func testSetStackSwitchItems() {
 		let state = State(items: [1, 2])
 		
-		whenActionIsSend(.setItems([2, 1]), state)
+		whenActionIsSent(.setItems([2, 1]), state)
 		
 		thenAssert(expectedItems: [2, 1], state)
 		thenAssertViewControllerStack(state)
@@ -60,7 +60,7 @@ class TabNavigationViewControllerTests: XCTestCase {
 	func testSetStackSwitchAndAddItems() {
 		let state = State(items: [1, 2])
 		
-		whenActionIsSend(.setItems([3, 2, 4, 1]), state)
+		whenActionIsSent(.setItems([3, 2, 4, 1]), state)
 		
 		thenAssert(expectedItems: [3, 2, 4, 1], state)
 		thenAssertViewControllerStack(state)
@@ -70,7 +70,7 @@ class TabNavigationViewControllerTests: XCTestCase {
 	func testSetStackSwitchAndRemoveItems() {
 		let state = State(items: [1, 2, 3, 4])
 		
-		whenActionIsSend(.setItems([3, 1]), state)
+		whenActionIsSent(.setItems([3, 1]), state)
 		
 		thenAssert(expectedItems: [3, 1], state)
 		thenAssertViewControllerStack(state)
@@ -82,7 +82,7 @@ class TabNavigationViewControllerTests: XCTestCase {
 	func testChangeActiveItem() {
 		let state = State(items: [1, 2], activeItem: 1)
 		
-		whenActionIsSend(.setActiveItem(2), state)
+		whenActionIsSent(.setActiveItem(2), state)
 		
 		thenAssertSelectedIndex(1, state)
 		thenAssertActiveItem(2, state)
@@ -91,7 +91,7 @@ class TabNavigationViewControllerTests: XCTestCase {
 	func testChangeActiveIndex() {
 		let state = State(items: [1, 2], activeItem: 1)
 		
-		whenActionIsSend(.setActiveIndex(1), state)
+		whenActionIsSent(.setActiveIndex(1), state)
 		
 		thenAssertSelectedIndex(1, state)
 		thenAssertActiveItem(2, state)
@@ -100,7 +100,7 @@ class TabNavigationViewControllerTests: XCTestCase {
 	func testChangeActiveItemOutOfBounds() {
 		let state = State(items: [1, 2], activeItem: 1)
 		
-		whenActionIsSend(.setActiveItem(99), state)
+		whenActionIsSent(.setActiveItem(99), state)
 		
 		thenAssertSelectedIndex(0, state)
 		thenAssertActiveItem(1, state)
@@ -109,7 +109,7 @@ class TabNavigationViewControllerTests: XCTestCase {
 	func testChangeActiveIndexOutOfBounds() {
 		let state = State(items: [1, 2], activeItem: 1)
 		
-		whenActionIsSend(.setActiveIndex(99), state)
+		whenActionIsSent(.setActiveIndex(99), state)
 		
 		thenAssertSelectedIndex(0, state)
 		thenAssertActiveItem(1, state)
@@ -120,7 +120,7 @@ class TabNavigationViewControllerTests: XCTestCase {
 		thenAssertSelectedIndex(0, state)
 		thenAssertActiveItem(1, state)
 		
-		whenActionIsSend(.setItems([2, 1]), state)
+		whenActionIsSent(.setItems([2, 1]), state)
 		
 		thenAssertSelectedIndex(1, state)
 		thenAssertActiveItem(1, state)
@@ -131,14 +131,21 @@ class TabNavigationViewControllerTests: XCTestCase {
 		thenAssertSelectedIndex(2, state)
 		thenAssertActiveItem(3, state)
 		
-		whenActionIsSend(.setItems([1, 2]), state)
+		whenActionIsSent(.setItems([1, 2]), state)
 		
 		thenAssertSelectedIndex(0, state)
 		thenAssertActiveItem(1, state)
 	}
+	
+	func testMemoryLeak() {
+		var state: State! = State(items: [1], activeItem: 1)
+		assertNil(state.sut) {
+			state = nil
+		}
+	}
 }
 
-private func whenActionIsSend(_ action: TabNavigation<Int>.Action, _ state: State) {
+private func whenActionIsSent(_ action: TabNavigation<Int>.Action, _ state: State) {
 	UIView.performWithoutAnimation {
 		state.viewStore.send(action)
 	}

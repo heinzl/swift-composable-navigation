@@ -28,19 +28,21 @@ public class StackNavigationHandler<ViewProvider: ViewProviding>: NSObject, UINa
 	public func setup(with navigationController: UINavigationController) {
 		navigationController.delegate = self
 		
-		cancellable = viewStore.publisher.items
-			.sink { [weak self] in
-				self?.updateViewControllerStack(
-					newItems: $0,
+		cancellable = viewStore.publisher
+			.sink { [weak self, weak navigationController] in
+				guard let self = self, let navigationController = navigationController else { return }
+				self.updateViewControllerStack(
+					newState: $0,
 					for: navigationController
 				)
 			}
 	}
 	
 	private func updateViewControllerStack(
-		newItems: [Item],
+		newState: ItemStack.State,
 		for navigationController: UINavigationController
 	) {
+		let newItems = newState.items
 		let oldItems = Array(currentViewControllerItems.keys)
 		guard oldItems != newItems else {
 			return
@@ -54,15 +56,20 @@ public class StackNavigationHandler<ViewProvider: ViewProviding>: NSObject, UINa
 		
 		navigationController.setViewControllers(
 			Array(currentViewControllerItems.values),
-			animated: shouldAnimateStackChanges(for: navigationController)
+			animated: shouldAnimateStackChanges(for: navigationController, state: newState)
 		)
 	}
 	
-	private func shouldAnimateStackChanges(for navigationController: UINavigationController) -> Bool {
+	private func shouldAnimateStackChanges(
+		for navigationController: UINavigationController,
+		state: ItemStack.State
+	) -> Bool {
 		if navigationController.viewControllers.isEmpty {
 			return false
+		} else if !UIView.areAnimationsEnabled {
+			return false
 		} else {
-			return UIView.areAnimationsEnabled
+			return state.areAnimationsEnabled
 		}
 	}
 	

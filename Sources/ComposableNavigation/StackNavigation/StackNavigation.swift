@@ -6,9 +6,14 @@ import OrderedCollections
 public struct StackNavigation<Item: Equatable> {
 	public struct State: Equatable {
 		public var items: [Item]
+		public var areAnimationsEnabled: Bool
 		
-		public init(items: [Item]) {
+		public init(
+			items: [Item],
+			areAnimationsEnabled: Bool = true
+		) {
 			self.items = items
+			self.areAnimationsEnabled = areAnimationsEnabled
 		}
 		
 		public var topItem: Item? {
@@ -17,34 +22,44 @@ public struct StackNavigation<Item: Equatable> {
 	}
 	
 	public enum Action: Equatable {
-		case pushItem(Item)
-		case pushItems([Item])
-		case popItem
-		case popItems(count: Int)
-		case popToRoot
-		case setItems([Item])
+		case pushItem(Item, animated: Bool = true)
+		case pushItems([Item], animated: Bool = true)
+		case popItem(animated: Bool = true)
+		case popItems(count: Int, animated: Bool = true)
+		case popToRoot(animated: Bool = true)
+		case setItems([Item], animated: Bool = true)
 	}
 	
 	public static func reducer() -> Reducer<State, Action, Void> {
 		Reducer { state, action, _ in
 			switch action {
-			case .pushItem(let item):
-				return Effect(value: .pushItems([item]))
-			case .pushItems(let items):
-				state.items.append(contentsOf: items)
-			case .popItem:
-				return Effect(value: .popItems(count: 1))
-			case .popItems(let count):
-				guard state.items.count >= count else {
-					return .none
-				}
-				state.items.removeLast(count)
-			case .popToRoot:
-				return Effect(value: .popItems(count: state.items.count - 1))
-			case .setItems(let items):
-				state.items = items
+			case let .pushItem(item, animated):
+				setItems(state.items + [item], on: &state, animated: animated)
+			case let .pushItems(items, animated):
+				setItems(state.items + items, on: &state, animated: animated)
+			case let .popItem(animated):
+				popItems(count: 1, on: &state, animated: animated)
+			case let .popItems(count, animated):
+				popItems(count: count, on: &state, animated: animated)
+			case let .popToRoot(animated):
+				popItems(count: state.items.count - 1, on: &state, animated: animated)
+			case let .setItems(items, animated):
+				setItems(items, on: &state, animated: animated)
 			}
 			return .none
 		}
+	}
+	
+	private static func setItems(_ items: [Item], on state: inout State, animated: Bool) {
+		state.items = items
+		state.areAnimationsEnabled = animated
+	}
+	
+	private static func popItems(count: Int, on state: inout State, animated: Bool) {
+		guard state.items.count >= count else {
+			return
+		}
+		state.items.removeLast(count)
+		state.areAnimationsEnabled = animated
 	}
 }

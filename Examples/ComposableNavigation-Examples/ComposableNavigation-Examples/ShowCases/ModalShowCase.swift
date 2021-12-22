@@ -38,7 +38,7 @@ struct ModalShowcase {
 	private static let privateReducer = Reducer<State, Action, Environment> { state, action, environment in
 		switch action {
 		case .counterOne(.done), .counterTwo(.done):
-			return Effect(value: .modalNavigation(.dismiss))
+			return Effect(value: .modalNavigation(.dismiss()))
 		case .helper(.showCounterOne):
 			return Effect(value: .modalNavigation(.presentSheet(.counterOne)))
 		case .helper(.showCounterTwo):
