@@ -1,0 +1,193 @@
+import Foundation
+import ComposableNavigation
+import ComposableArchitecture
+import SwiftUI
+
+/// This example showcases how to model multiple optional states.
+/// This can be necessary if you want to present modal screens without
+/// keeping the modal state after dismissing it.
+///
+/// This example also highlights what happens if you don't scope a sub-state,
+/// but rather create a new state every time. When running the example you will
+/// see that the modal screen Counter 1 does not properly update because the
+/// state is newly create when scoping the store.
+struct MultipleOptionalModalStatesShowCase {
+	// MARK: TCA
+	
+	enum Screen: Hashable {
+		case counterOne
+		case counterTwo
+	}
+	
+	enum ModalState: Equatable {
+		case counterOne(Counter.State)
+		case counterTwo(Counter.State)
+	}
+	
+	struct State: Equatable {
+		var modalState: ModalState?
+		var selectedCount: Int?
+		
+		var selectedCountText: String {
+			guard let selectedCount = selectedCount else {
+				return "None"
+			}
+			return "\(selectedCount)"
+		}
+		
+		var counterOne: Counter.State? {
+			get {
+				(/ModalState.counterOne).extract(from: modalState)
+			}
+			set {
+				modalState = newValue.map { .counterOne($0) }
+			}
+		}
+		
+		var counterTwo: Counter.State? {
+			get {
+				(/ModalState.counterTwo).extract(from: modalState)
+			}
+			set {
+				modalState = newValue.map { .counterTwo($0) }
+			}
+		}
+		
+		var modalNavigation: ModalNavigation<Screen>.State {
+			get {
+				let item: ModalNavigation<Screen>.StyledItem?
+				switch modalState {
+				case .counterOne:
+					item = .init(item: .counterOne, style: .formSheet)
+				case .counterTwo:
+					item = .init(item: .counterTwo, style: .formSheet)
+				case .none:
+					item = nil
+				}
+				return .init(styledItem: item)
+			}
+			set {
+				let modalState: ModalState?
+				switch newValue.styledItem?.item {
+				case .counterOne:
+					modalState = .counterOne(.init(id: 1))
+				case .counterTwo:
+					modalState = .counterTwo(.init(id: 2))
+				case .none:
+					modalState = nil
+				}
+				self.modalState = modalState
+			}
+		}
+	}
+	
+	enum Action: Equatable {
+		case counterOne(Counter.Action)
+		case counterTwo(Counter.Action)
+		case modalNavigation(ModalNavigation<Screen>.Action)
+
+		case showCounterOne
+		case showCounterTwo
+	}
+	
+	struct Environment {}
+	
+	private static let privateReducer = Reducer<State, Action, Environment> { state, action, environment in
+		switch action {
+		case .showCounterOne:
+			return Effect(value: .modalNavigation(.presentSheet(.counterOne)))
+		case .showCounterTwo:
+			return Effect(value: .modalNavigation(.presentSheet(.counterTwo)))
+		case .counterOne(.done):
+			state.selectedCount = state.counterOne?.count
+			return Effect(value: .modalNavigation(.dismiss()))
+		case .counterTwo(.done):
+			state.selectedCount = state.counterTwo?.count
+			return Effect(value: .modalNavigation(.dismiss()))
+		default:
+			break
+		}
+		return .none
+	}
+	
+	static let reducer: Reducer<State, Action, Environment> = Reducer.combine([
+		Counter.reducer
+			.optional()
+			.pullback(
+				state: \.counterOne,
+				action: /Action.counterOne,
+				environment: { _ in .init() }
+			),
+		Counter.reducer
+			.optional()
+			.pullback(
+				state: \.counterTwo,
+				action: /Action.counterTwo,
+				environment: { _ in .init() }
+			),
+		ModalNavigation<Screen>.reducer()
+			.pullback(
+				state: \.modalNavigation,
+				action: /Action.modalNavigation,
+				environment: { _ in () }
+			),
+		privateReducer
+	])
+	
+	struct ViewProvider: ViewProviding {
+		let store: Store<State, Action>
+		
+		func makePresentable(for navigationItem: Screen) -> Presentable {
+			switch navigationItem {
+			case .counterOne:
+				return store.scope(
+					state: { _ in
+						// DON'T DO THIS, see file description
+						Counter.State(id: 1)
+					},
+					action: Action.counterOne
+				).compactMap(CounterView.init(store:)) ?? UIViewController()
+			case .counterTwo:
+				return store.scope(
+					state: \.counterTwo,
+					action: Action.counterTwo
+				).compactMap(CounterView.init(store:)) ?? UIViewController()
+			}
+		}
+	}
+
+	static func makeView(_ store: Store<State, Action>) -> UIViewController {
+		UIHostingController(
+			rootView: MultipleOptionalModalStatesShowCaseView(store: store)
+		)
+		.withModal(
+			store: store.scope(
+				state: \.modalNavigation,
+				action: Action.modalNavigation
+			),
+			viewProvider: ViewProvider(store: store)
+		)
+	}
+}
+
+
+struct MultipleOptionalModalStatesShowCaseView: View, Presentable {
+	let store: Store<MultipleOptionalModalStatesShowCase.State, MultipleOptionalModalStatesShowCase.Action>
+	
+	var body: some View {
+		WithViewStore(store) { viewStore in
+			VStack {
+				HStack {
+					Button("Counter 1") {
+						viewStore.send(.showCounterOne)
+					}
+					Button("Counter 2") {
+						viewStore.send(.showCounterTwo)
+					}
+				}
+				.padding()
+				Text("Selected count: \(viewStore.selectedCountText)")
+			}
+		}
+	}
+}
