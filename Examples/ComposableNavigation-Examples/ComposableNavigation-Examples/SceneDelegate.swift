@@ -12,7 +12,7 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
 		}
 		
 		// 👉 Choose showcase 👈
-		let showcase: Showcase = .multipleOptionalModalStates
+		let showcase: Showcase = .advanced
 		
 		let window = UIWindow(windowScene: windowScene)
 		window.rootViewController = makeRootViewController(

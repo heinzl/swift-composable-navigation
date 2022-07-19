@@ -6,11 +6,6 @@ import SwiftUI
 /// This example showcases how to model multiple optional states.
 /// This can be necessary if you want to present modal screens without
 /// keeping the modal state after dismissing it.
-///
-/// This example also highlights what happens if you don't scope a sub-state,
-/// but rather create a new state every time. When running the example you will
-/// see that the modal screen Counter 1 does not properly update because the
-/// state is newly create when scoping the store.
 struct MultipleOptionalModalStatesShowCase {
 	// MARK: TCA
 	
@@ -36,21 +31,13 @@ struct MultipleOptionalModalStatesShowCase {
 		}
 		
 		var counterOne: Counter.State? {
-			get {
-				(/ModalState.counterOne).extract(from: modalState)
-			}
-			set {
-				modalState = newValue.map { .counterOne($0) }
-			}
+			get { (/ModalState.counterOne).extract(from: modalState) }
+			set { modalState = newValue.map { .counterOne($0) } }
 		}
 		
 		var counterTwo: Counter.State? {
-			get {
-				(/ModalState.counterTwo).extract(from: modalState)
-			}
-			set {
-				modalState = newValue.map { .counterTwo($0) }
-			}
+			get { (/ModalState.counterTwo).extract(from: modalState) }
+			set { modalState = newValue.map { .counterTwo($0) } }
 		}
 		
 		var modalNavigation: ModalNavigation<Screen>.State {
@@ -141,10 +128,7 @@ struct MultipleOptionalModalStatesShowCase {
 			switch navigationItem {
 			case .counterOne:
 				return store.scope(
-					state: { _ in
-						// DON'T DO THIS, see file description
-						Counter.State(id: 1)
-					},
+					state: \.counterOne,
 					action: Action.counterOne
 				).compactMap(CounterView.init(store:)) ?? UIViewController()
 			case .counterTwo:
