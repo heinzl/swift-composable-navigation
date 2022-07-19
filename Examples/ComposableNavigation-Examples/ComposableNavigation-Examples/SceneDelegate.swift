@@ -31,6 +31,7 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
 		case alert
 		case existingView
 		case advanced
+		case multipleOptionalModalStates
 		case uiTest(UITest)
 		
 		enum UITest: String {
@@ -70,6 +71,12 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
 			return ExistingViewShowCase.makeView(Store(
 				initialState: .init(),
 				reducer: ExistingViewShowCase.reducer,
+				environment: .init()
+			))
+		case .multipleOptionalModalStates:
+			return MultipleOptionalModalStatesShowCase.makeView(Store(
+				initialState: .init(),
+				reducer: MultipleOptionalModalStatesShowCase.reducer,
 				environment: .init()
 			))
 		case .advanced:
