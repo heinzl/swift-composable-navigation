@@ -215,17 +215,17 @@ Make sure to call `navigationHandler.setup(with: viewController)` similar to thi
 
 ```swift
 class ExistingViewController: UIViewController {
-	let viewStore: ViewStore<ExistingViewShowCase.State, ExistingViewShowCase.Action>
+	let viewStore: ViewStore<ExistingViewShowcase.State, ExistingViewShowcase.Action>
 	var cancellables: Set<AnyCancellable> = []
-	let navigationHandler: ModalNavigationHandler<ExistingViewShowCase.ViewProvider>
+	let navigationHandler: ModalNavigationHandler<ExistingViewShowcase.ViewProvider>
 	
-	init(store: Store<ExistingViewShowCase.State, ExistingViewShowCase.Action>) {
+	init(store: Store<ExistingViewShowcase.State, ExistingViewShowcase.Action>) {
 		self.viewStore = ViewStore(store)
 		self.navigationHandler = ModalNavigationHandler(
 			store: store.scope(
 				state: \.modalNavigation,
-				action: ExistingViewShowCase.Action.modalNavigation
-			), viewProvider: ExistingViewShowCase.ViewProvider(store: store)
+				action: ExistingViewShowcase.Action.modalNavigation
+			), viewProvider: ExistingViewShowcase.ViewProvider(store: store)
 		)
 		super.init(nibName: nil, bundle: nil)
 		

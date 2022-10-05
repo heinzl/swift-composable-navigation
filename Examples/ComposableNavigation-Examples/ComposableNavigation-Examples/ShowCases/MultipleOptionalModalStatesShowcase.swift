@@ -6,7 +6,7 @@ import SwiftUI
 /// This example showcases how to model multiple optional states.
 /// This can be necessary if you want to present modal screens without
 /// keeping the modal state after dismissing it.
-struct MultipleOptionalModalStatesShowCase {
+struct MultipleOptionalModalStatesShowcase {
 	// MARK: TCA
 	
 	enum Screen: Hashable {
@@ -142,7 +142,7 @@ struct MultipleOptionalModalStatesShowCase {
 
 	static func makeView(_ store: Store<State, Action>) -> UIViewController {
 		UIHostingController(
-			rootView: MultipleOptionalModalStatesShowCaseView(store: store)
+			rootView: MultipleOptionalModalStatesShowcaseView(store: store)
 		)
 		.withModal(
 			store: store.scope(
@@ -155,8 +155,8 @@ struct MultipleOptionalModalStatesShowCase {
 }
 
 
-struct MultipleOptionalModalStatesShowCaseView: View, Presentable {
-	let store: Store<MultipleOptionalModalStatesShowCase.State, MultipleOptionalModalStatesShowCase.Action>
+struct MultipleOptionalModalStatesShowcaseView: View, Presentable {
+	let store: Store<MultipleOptionalModalStatesShowcase.State, MultipleOptionalModalStatesShowcase.Action>
 	
 	var body: some View {
 		WithViewStore(store) { viewStore in
