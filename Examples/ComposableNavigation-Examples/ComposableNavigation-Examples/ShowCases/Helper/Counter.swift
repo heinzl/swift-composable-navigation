@@ -35,7 +35,7 @@ struct CounterView: View, Presentable {
 	let store: Store<Counter.State, Counter.Action>
 	
 	var body: some View {
-		WithViewStore(store) { viewStore in
+		WithViewStore(store, observe: { $0 }) { viewStore in
 			VStack {
 				HStack {
 					Button(action: {

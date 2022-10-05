@@ -36,7 +36,7 @@ struct SwipeDownModalSheet {
 		let store: Store<State, Action>
 		
 		var body: some View {
-			WithViewStore(store) { viewStore in
+			WithViewStore(store, observe: { $0 }) { viewStore in
 				VStack(spacing: 20) {
 					Button("Present") {
 						viewStore.send(.modalNavigation(.presentSheet(.sheet)))
@@ -53,7 +53,7 @@ struct SwipeDownModalSheet {
 		let store: Store<State, Action>
 		
 		var body: some View {
-			WithViewStore(store) { viewStore in
+			WithViewStore(store, observe: { $0 }) { viewStore in
 				Text(modalText(state: viewStore.modalNavigation))
 					.accessibilityIdentifier("modalStateSheet")
 			}

@@ -59,9 +59,9 @@ struct StackShowcase {
 		case let .counter(id, .done):
 			let nextId = id + 1
 			if state.counters.ids.contains(nextId) {
-				return Effect(value: .stackNavigation(.pushItem(.counter(id: nextId))))
+				return .task { .stackNavigation(.pushItem(.counter(id: nextId))) }
 			} else {
-				return Effect(value: .stackNavigation(.pushItem(.summary)))
+				return .task { .stackNavigation(.pushItem(.summary)) }
 			}
 		case .summary(.goTo(let id)):
 			state.currentScreen = .counter(id: id)
@@ -149,9 +149,9 @@ extension StackShowcase {
 		let store: Store<Summary.State, Summary.Action>
 		
 		var body: some View {
-			WithViewStore(store) { viewStore in
+			WithViewStore(store, observe: \.counters) { viewStore in
 				List {
-					ForEach(viewStore.counters) { counter in
+					ForEach(viewStore.state) { counter in
 						HStack {
 							VStack(alignment: .leading) {
 								Text("ID: \(counter.id)").font(.caption)

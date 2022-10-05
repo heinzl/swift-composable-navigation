@@ -40,7 +40,7 @@ struct ChangingTabs {
 		let store: Store<State, Action>
 		
 		var body: some View {
-			WithViewStore(store) { viewStore in
+			WithViewStore(store, observe: { $0 }) { viewStore in
 				Text(viewStore.tabNavigation.activeItem.rawValue)
 					.accessibilityIdentifier("tabsState")
 			}

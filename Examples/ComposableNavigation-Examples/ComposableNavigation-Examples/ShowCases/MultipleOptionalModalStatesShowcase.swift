@@ -82,15 +82,15 @@ struct MultipleOptionalModalStatesShowcase {
 	private static let privateReducer = Reducer<State, Action, Environment> { state, action, environment in
 		switch action {
 		case .showCounterOne:
-			return Effect(value: .modalNavigation(.presentSheet(.counterOne)))
+			return .task { .modalNavigation(.presentSheet(.counterOne)) }
 		case .showCounterTwo:
-			return Effect(value: .modalNavigation(.presentSheet(.counterTwo)))
+			return .task { .modalNavigation(.presentSheet(.counterTwo)) }
 		case .counterOne(.done):
 			state.selectedCount = state.counterOne?.count
-			return Effect(value: .modalNavigation(.dismiss()))
+			return .task { .modalNavigation(.dismiss()) }
 		case .counterTwo(.done):
 			state.selectedCount = state.counterTwo?.count
-			return Effect(value: .modalNavigation(.dismiss()))
+			return .task { .modalNavigation(.dismiss()) }
 		default:
 			break
 		}
@@ -159,7 +159,7 @@ struct MultipleOptionalModalStatesShowcaseView: View, Presentable {
 	let store: Store<MultipleOptionalModalStatesShowcase.State, MultipleOptionalModalStatesShowcase.Action>
 	
 	var body: some View {
-		WithViewStore(store) { viewStore in
+		WithViewStore(store, observe: { $0 }) { viewStore in
 			VStack {
 				HStack {
 					Button("Counter 1") {

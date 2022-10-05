@@ -39,9 +39,9 @@ struct Onboarding {
     private static let privateReducer = Reducer<State, Action, Environment> { state, action, environment in
         switch action {
         case .loginButtonPressed:
-            return Effect(value: .modalNavigation(.presentFullScreen(.login)))
+            return .task { .modalNavigation(.presentFullScreen(.login)) }
         case .anotherAction:
-            return Effect(value: .modalNavigation(.dismiss))
+            return .task { .modalNavigation(.dismiss) }
         }
         return .none
     }
@@ -87,9 +87,9 @@ struct Register {
     private static let privateReducer = Reducer<State, Action, Environment> { state, action, environment in
         switch action {
         case .emailEntered:
-            return Effect(value: .stackNavigation(.pushItem(.firstName)))
+            return .task { .stackNavigation(.pushItem(.firstName)) }
         case .firstNameEntered:
-            return Effect(value: .stackNavigation(.pushItem(.lastName)))
+            return .task { .stackNavigation(.pushItem(.lastName)) }
         ...
         }
         return .none
@@ -137,7 +137,7 @@ struct Root {
     private static let privateReducer = Reducer<State, Action, Environment> { state, action, environment in
         switch action {
         case .goToSettings:
-            return Effect(value: .tabNavigation(.setActiveItem(.settings)))
+            return .task { .tabNavigation(.setActiveItem(.settings)) }
         ...
         }
         return .none

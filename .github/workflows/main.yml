@@ -10,7 +10,7 @@ on:
 
 jobs:
   test:
-    runs-on: macos-10.15
+    runs-on: macos-12
     steps:
       - uses: actions/checkout@v2
       - name: Run tests
@@ -28,7 +28,7 @@ jobs:
               -derivedDataPath DerivedData \
               -clonedSourcePackagesDirPath ClonedSourcePackages \
               -enableCodeCoverage YES \
-              -destination 'platform=iOS Simulator,name=iPhone 11' \
+              -destination 'platform=iOS Simulator,name=iPhone 14' \
               | xcpretty --report junit --output test_report.xml
       - name: Extract code coverage
         run: |

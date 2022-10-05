@@ -38,21 +38,28 @@ struct AdvancedTabBar {
 	private static let privateReducer = Reducer<State, Action, Environment> { state, action, environment in
 		switch action {
 		case .deepLink(.showSorting):
-			return .concatenate([
-				.init(value: .tabNavigation(.setActiveItem(.listAndDetail))),
-				.init(value: .listAndDetail(.stackNavigation(.setItems([.list])))),
-				.init(value: .listAndDetail(.modalNavigation(.set(.init(item: .sort, style: .pageSheet)))))
-			])
+			return .run { send in
+				await send(.tabNavigation(.setActiveItem(.listAndDetail)))
+				await send(.listAndDetail(.stackNavigation(.setItems([.list]))))
+				await send(.listAndDetail(.modalNavigation(.set(.init(item: .sort, style: .pageSheet)))))
+			}
+		case .deepLink(.showSortingReset):
+			return .run { send in
+				await send(.tabNavigation(.setActiveItem(.listAndDetail)))
+				await send(.listAndDetail(.stackNavigation(.setItems([.list]))))
+				await send(.listAndDetail(.modalNavigation(.set(.init(item: .sort, style: .pageSheet)))))
+				await send(.listAndDetail(.countrySort(.alertNavigation(.set(.init(item: .resetAlert, style: .fullScreen))))))
+			}
 		case .deepLink(.showCountry(let countryId)):
-			return .concatenate([
-				.init(value: .tabNavigation(.setActiveItem(.listAndDetail))),
-				.init(value: .listAndDetail(.stackNavigation(.setItems([.list, .detail(id: countryId)]))))
-			])
+			return .run { send in
+				await send(.tabNavigation(.setActiveItem(.listAndDetail)))
+				await send(.listAndDetail(.stackNavigation(.setItems([.list, .detail(id: countryId)]))))
+			}
 		case .deepLink(.showAlertOptions):
-			return .concatenate([
-				.init(value: .tabNavigation(.setActiveItem(.alertPlayground))),
-				.init(value: .alertPlayground(.alertNavigation(.set(.init(item: .actionSheet, style: .fullScreen)))))
-			])
+			return .run { send in
+				await send(.tabNavigation(.setActiveItem(.alertPlayground)))
+				await send(.alertPlayground(.alertNavigation(.set(.init(item: .actionSheet, style: .fullScreen)))))
+			}
 		default:
 			break
 		}

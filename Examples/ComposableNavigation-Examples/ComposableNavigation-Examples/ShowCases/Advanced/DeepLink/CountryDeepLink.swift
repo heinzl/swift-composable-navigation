@@ -12,6 +12,7 @@ struct CountryDeepLink {
 	enum Action: Equatable {
 		case showCountry(Country.ID)
 		case showSorting
+		case showSortingReset
 		case showAlertOptions
 	}
 	
@@ -24,27 +25,30 @@ struct CountryDeepLinkView: View, Presentable {
 	let store: Store<CountryDeepLink.State, CountryDeepLink.Action>
 	
 	var body: some View {
-		WithViewStore(store) { viewStore in
-			NavigationView {
-				Form {
-					Button {
-						viewStore.send(.showCountry("Austria"))
-					} label: {
-						Label("Show Austria", systemImage: "list.dash")
-					}
-					Button {
-						viewStore.send(.showSorting)
-					} label: {
-						Label("Show sorting options", systemImage: "arrow.up.arrow.down.circle")
-					}
-					Button {
-						viewStore.send(.showAlertOptions)
-					} label: {
-						Label("Show alert options", systemImage: "exclamationmark.bubble")
-					}
+		NavigationView {
+			Form {
+				Button {
+					ViewStore(store).send(.showCountry("Austria"))
+				} label: {
+					Label("Show Austria", systemImage: "list.dash")
 				}
-				.navigationTitle("Deep link")
+				Button {
+					ViewStore(store).send(.showSorting)
+				} label: {
+					Label("Show sorting options", systemImage: "arrow.up.arrow.down.circle")
+				}
+				Button {
+					ViewStore(store).send(.showSortingReset)
+				} label: {
+					Label("Show sorting options reset", systemImage: "arrow.up.arrow.down.circle")
+				}
+				Button {
+					ViewStore(store).send(.showAlertOptions)
+				} label: {
+					Label("Show alert options", systemImage: "exclamationmark.bubble")
+				}
 			}
+			.navigationTitle("Deep link")
 		}
 	}
 }

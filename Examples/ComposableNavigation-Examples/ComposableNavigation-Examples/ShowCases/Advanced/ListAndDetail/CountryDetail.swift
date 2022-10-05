@@ -19,11 +19,11 @@ struct CountryDetailView: View, Presentable {
 	let store: Store<CountryDetail.State, CountryDetail.Action>
 	
 	var body: some View {
-		WithViewStore(store) { viewStore in
+		WithViewStore(store, observe: \.country) { viewStore in
 			List {
-				Cell(label: "Name", value: viewStore.country.name)
-				Cell(label: "Capital", value: viewStore.country.capital)
-				Cell(label: "Continent", value: viewStore.country.continent)
+				Cell(label: "Name", value: viewStore.name)
+				Cell(label: "Capital", value: viewStore.capital)
+				Cell(label: "Continent", value: viewStore.continent)
 			}
 			.listStyle(InsetGroupedListStyle())
 		}

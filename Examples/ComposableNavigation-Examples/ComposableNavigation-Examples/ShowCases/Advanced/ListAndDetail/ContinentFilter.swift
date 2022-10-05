@@ -13,6 +13,7 @@ struct ContinentFilter {
 		case selectContinent(String?)
 		case done
 		case showSorting
+		case resetDefaults
 	}
 	
 	struct Environment {}
@@ -32,7 +33,7 @@ struct ContinentFilterView: View, Presentable {
 	let store: Store<ContinentFilter.State, ContinentFilter.Action>
 	
 	var body: some View {
-		WithViewStore(store) { viewStore in
+		WithViewStore(store, observe: { $0 }) { viewStore in
 			NavigationView {
 				List {
 					Cell(
@@ -54,14 +55,23 @@ struct ContinentFilterView: View, Presentable {
 				}
 				.listStyle(InsetGroupedListStyle())
 				.navigationTitle("Select continent")
-				.navigationBarItems(
-					trailing: Button(action: {
-						viewStore.send(.done)
-					}, label: {
-						Text("Close")
-					})
-				)
 				.toolbar {
+					ToolbarItem(placement: .navigationBarLeading) {
+						Button(action: {
+							viewStore.send(.resetDefaults)
+						}, label: {
+							Text("Reset")
+								.foregroundColor(.red)
+								.bold()
+						})
+					}
+					ToolbarItem(placement: .navigationBarTrailing) {
+						Button(action: {
+							viewStore.send(.done)
+						}, label: {
+							Text("Close")
+						})
+					}
 					ToolbarItem(placement: .bottomBar) {
 						Button("Show sorting options") {
 							viewStore.send(.showSorting)

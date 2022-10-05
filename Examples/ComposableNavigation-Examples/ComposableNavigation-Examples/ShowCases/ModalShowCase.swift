@@ -38,11 +38,11 @@ struct ModalShowcase {
 	private static let privateReducer = Reducer<State, Action, Environment> { state, action, environment in
 		switch action {
 		case .counterOne(.done), .counterTwo(.done):
-			return Effect(value: .modalNavigation(.dismiss()))
+			return .task { .modalNavigation(.dismiss()) }
 		case .helper(.showCounterOne):
-			return Effect(value: .modalNavigation(.presentSheet(.counterOne)))
+			return .task { .modalNavigation(.presentSheet(.counterOne)) }
 		case .helper(.showCounterTwo):
-			return Effect(value: .modalNavigation(.presentFullScreen(.counterTwo)))
+			return .task { .modalNavigation(.presentFullScreen(.counterTwo)) }
 		default:
 			break
 		}
@@ -85,19 +85,25 @@ struct ModalShowcase {
 		func makePresentable(for navigationItem: Screen) -> Presentable {
 			switch navigationItem {
 			case .counterOne:
-				return CounterView(
+				let view = CounterView(
 					store: store.scope(
 						state: \.counterOne,
 						action: Action.counterOne
 					)
 				)
+				let host = UIHostingController(rootView: view)
+				host.view.backgroundColor = UIColor.red
+				return host
 			case .counterTwo:
-				return CounterView(
+				let view = CounterView(
 					store: store.scope(
 						state: \.counterTwo,
 						action: Action.counterTwo
 					)
 				)
+				let host = UIHostingController(rootView: view)
+				host.view.backgroundColor = UIColor.green
+				return host
 			case .helper:
 				return HelperView(
 					store: store.scope(
@@ -127,18 +133,16 @@ struct ModalShowcaseView: View {
 	let store: Store<ModalShowcase.State, ModalShowcase.Action>
 	
 	var body: some View {
-		WithViewStore(store) { viewStore in
-			VStack(spacing: 20) {
-				Button("Show counter 1 (sheet)") {
-					viewStore.send(.modalNavigation(.presentSheet(.counterOne)))
-				}
-				Button("Show counter 2 (fullscreen)") {
-					viewStore.send(.modalNavigation(.presentFullScreen(.counterTwo)))
-				}
-				
-				Button("Show helper screen") {
-					viewStore.send(.modalNavigation(.presentSheet(.helper)))
-				}
+		VStack(spacing: 20) {
+			Button("Show counter 1 (red)\nusing sheet style") {
+				ViewStore(store).send(.modalNavigation(.presentSheet(.counterOne)))
+			}
+			Button("Show counter 2 (green)\nusing fullscreen style") {
+				ViewStore(store).send(.modalNavigation(.presentFullScreen(.counterTwo)))
+			}
+			
+			Button("Show helper screen") {
+				ViewStore(store).send(.modalNavigation(.presentSheet(.helper)))
 			}
 		}
 	}
@@ -164,14 +168,12 @@ extension ModalShowcase {
 		let store: Store<Helper.State, Helper.Action>
 		
 		var body: some View {
-			WithViewStore(store) { viewStore in
-				VStack(spacing: 20) {
-					Button("Dismiss and show counter 1 (sheet)") {
-						viewStore.send(.showCounterOne)
-					}
-					Button("Dismiss and how counter 2 (fullscreen)") {
-						viewStore.send(.showCounterTwo)
-					}
+			VStack(spacing: 20) {
+				Button("Dismiss and show counter 1 (red)\nusing sheet style") {
+					ViewStore(store).send(.showCounterOne)
+				}
+				Button("Dismiss and show counter 2 (green)\nusing fullscreen style") {
+					ViewStore(store).send(.showCounterTwo)
 				}
 			}
 		}
