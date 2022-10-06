@@ -68,15 +68,15 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
 				environment: .init()
 			))
 		case .existingView:
-			return ExistingViewShowCase.makeView(Store(
+			return ExistingViewShowcase.makeView(Store(
 				initialState: .init(),
-				reducer: ExistingViewShowCase.reducer,
+				reducer: ExistingViewShowcase.reducer,
 				environment: .init()
 			))
 		case .multipleOptionalModalStates:
-			return MultipleOptionalModalStatesShowCase.makeView(Store(
+			return MultipleOptionalModalStatesShowcase.makeView(Store(
 				initialState: .init(),
-				reducer: MultipleOptionalModalStatesShowCase.reducer,
+				reducer: MultipleOptionalModalStatesShowcase.reducer,
 				environment: .init()
 			))
 		case .advanced:

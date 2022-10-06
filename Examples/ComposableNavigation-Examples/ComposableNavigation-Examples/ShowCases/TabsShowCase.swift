@@ -43,9 +43,9 @@ struct TabsShowcase {
 		case .helper(.switchTabs):
 			var newOrder = state.tabNavigation.items
 			newOrder.swapAt(0, newOrder.count-1)
-			return Effect(value: .tabNavigation(.setItems(newOrder)))
+			return .task { [newOrder] in .tabNavigation(.setItems(newOrder)) }
 		case .helper(.showTab(let index)):
-			return Effect(value: .tabNavigation(.setActiveIndex(index)))
+			return .task { .tabNavigation(.setActiveIndex(index)) }
 		default:
 			break
 		}
@@ -176,14 +176,12 @@ extension TabsShowcase {
 		let store: Store<Helper.State, Helper.Action>
 		
 		var body: some View {
-			WithViewStore(store) { viewStore in
-				VStack(spacing: 20) {
-					Button("Switch tabs") {
-						viewStore.send(.switchTabs)
-					}
-					Button("Show second tab") {
-						viewStore.send(.showTab(1))
-					}
+			VStack(spacing: 20) {
+				Button("Switch tabs") {
+					ViewStore(store).send(.switchTabs)
+				}
+				Button("Show second tab") {
+					ViewStore(store).send(.showTab(1))
 				}
 			}
 		}

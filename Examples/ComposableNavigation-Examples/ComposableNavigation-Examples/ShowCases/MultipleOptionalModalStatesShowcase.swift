@@ -6,7 +6,7 @@ import SwiftUI
 /// This example showcases how to model multiple optional states.
 /// This can be necessary if you want to present modal screens without
 /// keeping the modal state after dismissing it.
-struct MultipleOptionalModalStatesShowCase {
+struct MultipleOptionalModalStatesShowcase {
 	// MARK: TCA
 	
 	enum Screen: Hashable {
@@ -82,15 +82,15 @@ struct MultipleOptionalModalStatesShowCase {
 	private static let privateReducer = Reducer<State, Action, Environment> { state, action, environment in
 		switch action {
 		case .showCounterOne:
-			return Effect(value: .modalNavigation(.presentSheet(.counterOne)))
+			return .task { .modalNavigation(.presentSheet(.counterOne)) }
 		case .showCounterTwo:
-			return Effect(value: .modalNavigation(.presentSheet(.counterTwo)))
+			return .task { .modalNavigation(.presentSheet(.counterTwo)) }
 		case .counterOne(.done):
 			state.selectedCount = state.counterOne?.count
-			return Effect(value: .modalNavigation(.dismiss()))
+			return .task { .modalNavigation(.dismiss()) }
 		case .counterTwo(.done):
 			state.selectedCount = state.counterTwo?.count
-			return Effect(value: .modalNavigation(.dismiss()))
+			return .task { .modalNavigation(.dismiss()) }
 		default:
 			break
 		}
@@ -142,7 +142,7 @@ struct MultipleOptionalModalStatesShowCase {
 
 	static func makeView(_ store: Store<State, Action>) -> UIViewController {
 		UIHostingController(
-			rootView: MultipleOptionalModalStatesShowCaseView(store: store)
+			rootView: MultipleOptionalModalStatesShowcaseView(store: store)
 		)
 		.withModal(
 			store: store.scope(
@@ -155,11 +155,11 @@ struct MultipleOptionalModalStatesShowCase {
 }
 
 
-struct MultipleOptionalModalStatesShowCaseView: View, Presentable {
-	let store: Store<MultipleOptionalModalStatesShowCase.State, MultipleOptionalModalStatesShowCase.Action>
+struct MultipleOptionalModalStatesShowcaseView: View, Presentable {
+	let store: Store<MultipleOptionalModalStatesShowcase.State, MultipleOptionalModalStatesShowcase.Action>
 	
 	var body: some View {
-		WithViewStore(store) { viewStore in
+		WithViewStore(store, observe: { $0 }) { viewStore in
 			VStack {
 				HStack {
 					Button("Counter 1") {

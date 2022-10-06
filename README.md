@@ -39,9 +39,9 @@ struct Onboarding {
     private static let privateReducer = Reducer<State, Action, Environment> { state, action, environment in
         switch action {
         case .loginButtonPressed:
-            return Effect(value: .modalNavigation(.presentFullScreen(.login)))
+            return .task { .modalNavigation(.presentFullScreen(.login)) }
         case .anotherAction:
-            return Effect(value: .modalNavigation(.dismiss))
+            return .task { .modalNavigation(.dismiss) }
         }
         return .none
     }
@@ -87,9 +87,9 @@ struct Register {
     private static let privateReducer = Reducer<State, Action, Environment> { state, action, environment in
         switch action {
         case .emailEntered:
-            return Effect(value: .stackNavigation(.pushItem(.firstName)))
+            return .task { .stackNavigation(.pushItem(.firstName)) }
         case .firstNameEntered:
-            return Effect(value: .stackNavigation(.pushItem(.lastName)))
+            return .task { .stackNavigation(.pushItem(.lastName)) }
         ...
         }
         return .none
@@ -137,7 +137,7 @@ struct Root {
     private static let privateReducer = Reducer<State, Action, Environment> { state, action, environment in
         switch action {
         case .goToSettings:
-            return Effect(value: .tabNavigation(.setActiveItem(.settings)))
+            return .task { .tabNavigation(.setActiveItem(.settings)) }
         ...
         }
         return .none
@@ -215,17 +215,17 @@ Make sure to call `navigationHandler.setup(with: viewController)` similar to thi
 
 ```swift
 class ExistingViewController: UIViewController {
-	let viewStore: ViewStore<ExistingViewShowCase.State, ExistingViewShowCase.Action>
+	let viewStore: ViewStore<ExistingViewShowcase.State, ExistingViewShowcase.Action>
 	var cancellables: Set<AnyCancellable> = []
-	let navigationHandler: ModalNavigationHandler<ExistingViewShowCase.ViewProvider>
+	let navigationHandler: ModalNavigationHandler<ExistingViewShowcase.ViewProvider>
 	
-	init(store: Store<ExistingViewShowCase.State, ExistingViewShowCase.Action>) {
+	init(store: Store<ExistingViewShowcase.State, ExistingViewShowcase.Action>) {
 		self.viewStore = ViewStore(store)
 		self.navigationHandler = ModalNavigationHandler(
 			store: store.scope(
 				state: \.modalNavigation,
-				action: ExistingViewShowCase.Action.modalNavigation
-			), viewProvider: ExistingViewShowCase.ViewProvider(store: store)
+				action: ExistingViewShowcase.Action.modalNavigation
+			), viewProvider: ExistingViewShowcase.ViewProvider(store: store)
 		)
 		super.init(nibName: nil, bundle: nil)
 		

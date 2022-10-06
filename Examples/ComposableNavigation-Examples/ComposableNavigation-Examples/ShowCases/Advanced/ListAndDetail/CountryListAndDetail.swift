@@ -111,16 +111,16 @@ struct CountryListAndDetail {
 			state.countries = countries
 			state.continentFilter.continents = Set(countries.map(\.continent)).sorted()
 		case .list(.selectCountry(let id)):
-			return Effect(value: .stackNavigation(.pushItem(.detail(id: id))))
+			return .task { .stackNavigation(.pushItem(.detail(id: id))) }
 		case .list(.selectFilter),
 			 .countrySort(.showFilter):
-			return Effect(value: .modalNavigation(.presentSheet(.filter)))
+			return .task { .modalNavigation(.presentSheet(.filter)) }
 		case .list(.selectSorting),
 			 .continentFilter(.showSorting):
-			return Effect(value: .modalNavigation(.presentSheet(.sort)))
+			return .task { .modalNavigation(.presentSheet(.sort)) }
 		case .continentFilter(.done),
 			 .countrySort(.done):
-			return Effect(value: .modalNavigation(.dismiss()))
+			return .task { .modalNavigation(.dismiss()) }
 		default:
 			break
 		}

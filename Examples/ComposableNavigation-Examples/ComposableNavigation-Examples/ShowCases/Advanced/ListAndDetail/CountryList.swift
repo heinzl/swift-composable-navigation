@@ -23,9 +23,9 @@ struct CountryListView: View, Presentable {
 	let store: Store<CountryList.State, CountryList.Action>
 	
 	var body: some View {
-		WithViewStore(store) { viewStore in
+		WithViewStore(store, observe: \.countries) { viewStore in
 			List {
-				ForEach(viewStore.countries) { country in
+				ForEach(viewStore.state) { country in
 					Button(
 						action: {
 							viewStore.send(.selectCountry(id: country.id))
@@ -48,24 +48,28 @@ struct CountryListView: View, Presentable {
 				}
 			}
 			.navigationTitle("Countries")
-			.navigationBarItems(
-				leading: Button(
-					action: {
-						viewStore.send(.selectSorting)
-					},
-					label: {
-						Image(systemName: "arrow.up.arrow.down.circle").imageScale(.large)
-					}
-				),
-				trailing: Button(
-					action: {
-						viewStore.send(.selectFilter)
-					},
-					label: {
-						Image(systemName: "line.horizontal.3.decrease.circle").imageScale(.large)
-					}
-				)
-			)
+			.toolbar {
+				ToolbarItem(placement: .navigationBarLeading) {
+					Button(
+						action: {
+							viewStore.send(.selectSorting)
+						},
+						label: {
+							Image(systemName: "arrow.up.arrow.down.circle").imageScale(.large)
+						}
+					)
+				}
+				ToolbarItem(placement: .navigationBarTrailing) {
+					Button(
+						action: {
+							viewStore.send(.selectFilter)
+						},
+						label: {
+							Image(systemName: "line.horizontal.3.decrease.circle").imageScale(.large)
+						}
+					)
+				}
+			}
 		}
 	}
 }

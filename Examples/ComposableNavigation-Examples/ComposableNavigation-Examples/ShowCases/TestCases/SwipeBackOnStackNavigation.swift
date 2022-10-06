@@ -37,7 +37,7 @@ struct SwipeBackOnStackNavigation {
 		let store: Store<State, Action>
 		
 		var body: some View {
-			WithViewStore(store) { viewStore in
+			WithViewStore(store, observe: { $0 }) { viewStore in
 				VStack(spacing: 20) {
 					Button("Push") {
 						viewStore.send(.stackNavigation(.pushItem(.pushed)))
@@ -54,7 +54,7 @@ struct SwipeBackOnStackNavigation {
 		let store: Store<State, Action>
 		
 		var body: some View {
-			WithViewStore(store) { viewStore in
+			WithViewStore(store, observe: { $0 }) { viewStore in
 				Text(modalText(state: viewStore.stackNavigation))
 					.accessibilityIdentifier("stackStatePushed")
 			}

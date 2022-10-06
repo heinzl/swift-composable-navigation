@@ -130,7 +130,7 @@ struct AlertPlaygroundView: View, Presentable {
 	let store: Store<AlertPlayground.State, AlertPlayground.Action>
 
 	var body: some View {
-		WithViewStore(store) { viewStore in
+		WithViewStore(store, observe: { $0 }) { viewStore in
 			VStack {
 				Text("Count: \(viewStore.counter.count)")
 					.font(.largeTitle)

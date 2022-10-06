@@ -107,13 +107,13 @@ struct AlertShowcaseView: View {
 	let store: Store<AlertShowcase.State, AlertShowcase.Action>
 	
 	var body: some View {
-		WithViewStore(store) { viewStore in
+		WithViewStore(store, observe: \.isResetButtonDisabled) { viewStore in
 			VStack(spacing: 20) {
 				CounterView(store: store.scope(state: \.counter, action: AlertShowcase.Action.counter))
 				Button("Reset counter to 0") {
 					viewStore.send(.modalNavigation(.presentFullScreen(.resetAlert)))
 				}
-				.disabled(viewStore.isResetButtonDisabled)
+				.disabled(viewStore.state)
 			}
 		}
 	}

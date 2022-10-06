@@ -47,7 +47,7 @@ struct CountrySort {
 		case .selectSortOrder(let sortOrder):
 			state.sortOrder = sortOrder
 		case .resetTapped:
-			return Effect(value: .alertNavigation(.presentFullScreen(.resetAlert)))
+			return .task { .alertNavigation(.presentFullScreen(.resetAlert)) }
 		case .resetConfirmed:
 			state.sortKey = .country
 			state.sortOrder = .ascending
@@ -114,7 +114,7 @@ struct CountrySortView: View, Presentable {
 	let store: Store<CountrySort.State, CountrySort.Action>
 	
 	var body: some View {
-		WithViewStore(store) { viewStore in
+		WithViewStore(store, observe: { $0 }) { viewStore in
 			NavigationView {
 				Form {
 					Section {
@@ -138,23 +138,27 @@ struct CountrySortView: View, Presentable {
 				}
 				.listStyle(InsetGroupedListStyle())
 				.navigationTitle("Select sort order")
-				.navigationBarItems(
-					trailing: Button(action: {
-						viewStore.send(.done)
-					}, label: {
-						Text("Close")
-					})
-				)
 				.toolbar {
 					ToolbarItemGroup(placement: .bottomBar) {
 						Button("Show filter options") {
 							viewStore.send(.showFilter)
 						}
 						Spacer()
-						Button("Reset") {
+						Button(action: {
 							viewStore.send(.resetTapped)
-						}
+						}, label: {
+							Text("Reset")
+								.foregroundColor(.red)
+								.bold()
+						})
 						.disabled(viewStore.isResetDisabled)
+					}
+					ToolbarItem(placement: .navigationBarTrailing) {
+						Button(action: {
+							viewStore.send(.done)
+						}, label: {
+							Text("Close")
+						})
 					}
 				}
 			}
