@@ -3,7 +3,7 @@ import SwiftUI
 import ComposableNavigation
 import ComposableArchitecture
 
-struct AdvancedTabBar {
+struct AdvancedTabBar: ReducerProtocol {
 	
 	// MARK: TCA
 	
@@ -31,68 +31,56 @@ struct AdvancedTabBar {
 		case tabNavigation(TabNavigation<Screen>.Action)
 	}
 	
-	struct Environment {
-		let countryProvider: CountryProvider
-	}
+	let countryProvider: CountryProvider
 	
-	private static let privateReducer = Reducer<State, Action, Environment> { state, action, environment in
-		switch action {
-		case .deepLink(.showSorting):
-			return .run { send in
-				await send(.tabNavigation(.setActiveItem(.listAndDetail)))
-				await send(.listAndDetail(.stackNavigation(.setItems([.list]))))
-				await send(.listAndDetail(.modalNavigation(.set(.init(item: .sort, style: .pageSheet)))))
+	private var privateReducer: Reduce<State, Action> {
+		.init { state, action in
+			switch action {
+			case .deepLink(.showSorting):
+				return .run { send in
+					await send(.tabNavigation(.setActiveItem(.listAndDetail)))
+					await send(.listAndDetail(.stackNavigation(.setItems([.list]))))
+					await send(.listAndDetail(.modalNavigation(.set(.init(item: .sort, style: .pageSheet)))))
+				}
+			case .deepLink(.showSortingReset):
+				return .run { send in
+					await send(.tabNavigation(.setActiveItem(.listAndDetail)))
+					await send(.listAndDetail(.stackNavigation(.setItems([.list]))))
+					await send(.listAndDetail(.modalNavigation(.set(.init(item: .sort, style: .pageSheet)))))
+					await send(.listAndDetail(.countrySort(.alertNavigation(.set(.init(item: .resetAlert, style: .fullScreen))))))
+				}
+			case .deepLink(.showCountry(let countryId)):
+				return .run { send in
+					await send(.tabNavigation(.setActiveItem(.listAndDetail)))
+					await send(.listAndDetail(.stackNavigation(.setItems([.list, .detail(id: countryId)]))))
+				}
+			case .deepLink(.showAlertOptions):
+				return .run { send in
+					await send(.tabNavigation(.setActiveItem(.alertPlayground)))
+					await send(.alertPlayground(.alertNavigation(.set(.init(item: .actionSheet, style: .fullScreen)))))
+				}
+			default:
+				break
 			}
-		case .deepLink(.showSortingReset):
-			return .run { send in
-				await send(.tabNavigation(.setActiveItem(.listAndDetail)))
-				await send(.listAndDetail(.stackNavigation(.setItems([.list]))))
-				await send(.listAndDetail(.modalNavigation(.set(.init(item: .sort, style: .pageSheet)))))
-				await send(.listAndDetail(.countrySort(.alertNavigation(.set(.init(item: .resetAlert, style: .fullScreen))))))
-			}
-		case .deepLink(.showCountry(let countryId)):
-			return .run { send in
-				await send(.tabNavigation(.setActiveItem(.listAndDetail)))
-				await send(.listAndDetail(.stackNavigation(.setItems([.list, .detail(id: countryId)]))))
-			}
-		case .deepLink(.showAlertOptions):
-			return .run { send in
-				await send(.tabNavigation(.setActiveItem(.alertPlayground)))
-				await send(.alertPlayground(.alertNavigation(.set(.init(item: .actionSheet, style: .fullScreen)))))
-			}
-		default:
-			break
+			return .none
 		}
-		return .none
 	}
 	
-	static let reducer: Reducer<State, Action, Environment> = Reducer.combine([
-		CountryDeepLink.reducer
-			.pullback(
-				state: \.deepLink,
-				action: /Action.deepLink,
-				environment: { _ in .init() }
-			),
-		CountryListAndDetail.reducer
-			.pullback(
-				state: \.listAndDetail,
-				action: /Action.listAndDetail,
-				environment: { .init(countryProvider: $0.countryProvider) }
-			),
-		AlertPlayground.reducer
-			.pullback(
-				state: \.alertPlayground,
-				action: /Action.alertPlayground,
-				environment: { _ in .init() }
-			),
-		TabNavigation<Screen>.reducer()
-			.pullback(
-				state: \.tabNavigation,
-				action: /Action.tabNavigation,
-				environment: { _ in () }
-			),
+	var body: some ReducerProtocol<State, Action> {
+		Scope(state: \.deepLink, action: /Action.deepLink) {
+			CountryDeepLink()
+		}
+		Scope(state: \.listAndDetail, action: /Action.listAndDetail) {
+			CountryListAndDetail(countryProvider: countryProvider)
+		}
+		Scope(state: \.alertPlayground, action: /Action.alertPlayground) {
+			AlertPlayground()
+		}
+		Scope(state: \.tabNavigation, action: /Action.tabNavigation) {
+			TabNavigation<Screen>()
+		}
 		privateReducer
-	])
+	}
 	
 	// MARK: View creation
 	

@@ -2,7 +2,7 @@ import UIKit
 import ComposableNavigation
 import ComposableArchitecture
 
-struct CountryListAndDetail {
+struct CountryListAndDetail: ReducerProtocol {
 	
 	// MARK: TCA
 	
@@ -100,73 +100,54 @@ struct CountryListAndDetail {
 		case modalNavigation(ModalNavigation<ModalScreen>.Action)
 	}
 	
-	struct Environment {
-		let countryProvider: CountryProvider
-	}
+	let countryProvider: CountryProvider
 	
-	private static let privateReducer = Reducer<State, Action, Environment> { state, action, environment in
-		switch action {
-		case .loadCountries:
-			let countries = environment.countryProvider.getCountryList()
-			state.countries = countries
-			state.continentFilter.continents = Set(countries.map(\.continent)).sorted()
-		case .list(.selectCountry(let id)):
-			return .task { .stackNavigation(.pushItem(.detail(id: id))) }
-		case .list(.selectFilter),
-			 .countrySort(.showFilter):
-			return .task { .modalNavigation(.presentSheet(.filter)) }
-		case .list(.selectSorting),
-			 .continentFilter(.showSorting):
-			return .task { .modalNavigation(.presentSheet(.sort)) }
-		case .continentFilter(.done),
-			 .countrySort(.done):
-			return .task { .modalNavigation(.dismiss()) }
-		default:
-			break
+	private var privateReducer: Reduce<State, Action> {
+		.init { state, action in
+			switch action {
+			case .loadCountries:
+				let countries = self.countryProvider.getCountryList()
+				state.countries = countries
+				state.continentFilter.continents = Set(countries.map(\.continent)).sorted()
+			case .list(.selectCountry(let id)):
+				return .task { .stackNavigation(.pushItem(.detail(id: id))) }
+			case .list(.selectFilter),
+				 .countrySort(.showFilter):
+				return .task { .modalNavigation(.presentSheet(.filter)) }
+			case .list(.selectSorting),
+				 .continentFilter(.showSorting):
+				return .task { .modalNavigation(.presentSheet(.sort)) }
+			case .continentFilter(.done),
+				 .countrySort(.done):
+				return .task { .modalNavigation(.dismiss()) }
+			default:
+				break
+			}
+			return .none
 		}
-		return .none
 	}
 	
-	static let reducer: Reducer<State, Action, Environment> = Reducer.combine([
-		CountryDetail.reducer
-			.optional()
-			.pullback(
-				state: \.detail,
-				action: /Action.detail,
-				environment: { _ in .init() }
-			),
-		CountryList.reducer
-			.pullback(
-				state: \.list,
-				action: /Action.list,
-				environment: { _ in .init() }
-			),
-		ContinentFilter.reducer
-			.pullback(
-				state: \.continentFilter,
-				action: /Action.continentFilter,
-				environment: { _ in .init() }
-			),
-		CountrySort.reducer
-			.pullback(
-				state: \.countrySort,
-				action: /Action.countrySort,
-				environment: { _ in .init() }
-			),
-		StackNavigation<StackScreen>.reducer()
-			.pullback(
-				state: \.stackNavigation,
-				action: /Action.stackNavigation,
-				environment: { _ in () }
-			),
-		ModalNavigation<ModalScreen>.reducer()
-			.pullback(
-				state: \.modalNavigation,
-				action: /Action.modalNavigation,
-				environment: { _ in () }
-			),
+	var body: some ReducerProtocol<State, Action> {
+		Scope(state: \.continentFilter, action: /Action.continentFilter) {
+			ContinentFilter()
+		}
+		Scope(state: \.countrySort, action: /Action.countrySort) {
+			CountrySort()
+		}
+		Scope(state: \.list, action: /Action.list) {
+			CountryList()
+		}
+		Scope(state: \.stackNavigation, action: /Action.stackNavigation) {
+			StackNavigation<StackScreen>()
+		}
+		Scope(state: \.modalNavigation, action: /Action.modalNavigation) {
+			ModalNavigation<ModalScreen>()
+		}
 		privateReducer
-	])
+			.ifLet(\.detail, action: /Action.detail) {
+				CountryDetail()
+			}
+	}
 	
 	// MARK: View creation
 	

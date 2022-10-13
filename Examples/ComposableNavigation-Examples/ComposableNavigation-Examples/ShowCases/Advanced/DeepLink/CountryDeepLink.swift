@@ -3,7 +3,7 @@ import SwiftUI
 import ComposableNavigation
 import ComposableArchitecture
 
-struct CountryDeepLink {
+struct CountryDeepLink: ReducerProtocol {
 	
 	// MARK: TCA
 	
@@ -16,9 +16,9 @@ struct CountryDeepLink {
 		case showAlertOptions
 	}
 	
-	struct Environment {}
-	
-	static let reducer: Reducer<State, Action, Environment> = .empty
+	func reduce(into state: inout State, action: Action) -> Effect<Action, Never> {
+		.none
+	}
 }
 
 struct CountryDeepLinkView: View, Presentable {

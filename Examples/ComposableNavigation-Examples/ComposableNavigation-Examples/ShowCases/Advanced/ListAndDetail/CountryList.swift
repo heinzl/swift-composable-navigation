@@ -3,7 +3,7 @@ import SwiftUI
 import ComposableNavigation
 import ComposableArchitecture
 
-struct CountryList {
+struct CountryList: ReducerProtocol {
 	struct State: Equatable {
 		let countries: [Country]
 	}
@@ -13,10 +13,10 @@ struct CountryList {
 		case selectFilter
 		case selectSorting
 	}
-
-	struct Environment {}
 	
-	static let reducer: Reducer<State, Action, Environment> = .empty
+	func reduce(into state: inout State, action: Action) -> Effect<Action, Never> {
+		.none
+	}
 }
 
 struct CountryListView: View, Presentable {

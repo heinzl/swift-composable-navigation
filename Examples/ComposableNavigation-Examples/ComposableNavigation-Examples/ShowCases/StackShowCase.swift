@@ -7,7 +7,7 @@ import SwiftUI
 /// - Three counter screens + summary screen at the end.
 /// - The StackNavigation state is a computed property
 /// - Navigation to counter screens from summary screen
-struct StackShowcase {
+struct StackShowcase: ReducerProtocol {
 	
 	// MARK: TCA
 	
@@ -52,9 +52,7 @@ struct StackShowcase {
 		case stackNavigation(StackNavigation<Screen>.Action)
 	}
 	
-	struct Environment {}
-	
-	private static let privateReducer = Reducer<State, Action, Environment> { state, action, environment in
+	private func privateReducer(state: inout State, action: Action) -> Effect<Action, Never> {
 		switch action {
 		case let .counter(id, .done):
 			let nextId = id + 1
@@ -71,26 +69,18 @@ struct StackShowcase {
 		return .none
 	}
 	
-	static let reducer: Reducer<State, Action, Environment> = Reducer.combine([
-		Counter.reducer.forEach(
-			state: \.counters,
-			action: /Action.counter(id:action:),
-			environment: { _ in .init()}
-		),
-		Summary.reducer
-			.pullback(
-				state: \.summary,
-				action: /Action.summary,
-				environment: { _ in .init() }
-			),
-		StackNavigation<Screen>.reducer()
-			.pullback(
-				state: \.stackNavigation,
-				action: /Action.stackNavigation,
-				environment: { _ in () }
-			),
-		privateReducer
-	])
+	var body: some ReducerProtocol<State, Action> {
+		Scope(state: \.summary, action: /Action.summary) {
+			Summary()
+		}
+		Scope(state: \.stackNavigation, action: /Action.stackNavigation) {
+			StackNavigation<Screen>()
+		}
+		Reduce(privateReducer(state:action:))
+			.forEach(\.counters, action: /Action.counter(id:action:)) {
+				Counter()
+			}
+	}
 	
 	// MARK: View creation
 	
@@ -131,7 +121,7 @@ struct StackShowcase {
 // MARK: Helper
 
 extension StackShowcase {
-	struct Summary {
+	struct Summary: ReducerProtocol {
 		struct State: Equatable {
 			let counters: IdentifiedArrayOf<Counter.State>
 		}
@@ -140,9 +130,9 @@ extension StackShowcase {
 			case goTo(id: Counter.State.ID)
 		}
 		
-		struct Environment {}
-		
-		static let reducer: Reducer<State, Action, Environment> = Reducer.empty
+		func reduce(into state: inout State, action: Action) -> Effect<Action, Never> {
+			.none
+		}
 	}
 
 	struct SummaryView: View, Presentable {

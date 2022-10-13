@@ -46,44 +46,37 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
 		case .modal:
 			return ModalShowcase.makeView(Store(
 				initialState: .init(),
-				reducer: ModalShowcase.reducer,
-				environment: .init()
+				reducer: ModalShowcase()
 			))
 		case .stack:
 			return StackShowcase.makeView(Store(
 				initialState: .init(),
-				reducer: StackShowcase.reducer,
-				environment: .init()
+				reducer: StackShowcase()
 			))
 		case .tabs:
 			return TabsShowcase.makeView(Store(
 				initialState: .init(),
-				reducer: TabsShowcase.reducer,
-				environment: .init()
+				reducer: TabsShowcase()
 			))
 		case .alert:
 			return AlertShowcase.makeView(Store(
 				initialState: .init(),
-				reducer: AlertShowcase.reducer,
-				environment: .init()
+				reducer: AlertShowcase()
 			))
 		case .existingView:
 			return ExistingViewShowcase.makeView(Store(
 				initialState: .init(),
-				reducer: ExistingViewShowcase.reducer,
-				environment: .init()
+				reducer: ExistingViewShowcase()
 			))
 		case .multipleOptionalModalStates:
 			return MultipleOptionalModalStatesShowcase.makeView(Store(
 				initialState: .init(),
-				reducer: MultipleOptionalModalStatesShowcase.reducer,
-				environment: .init()
+				reducer: MultipleOptionalModalStatesShowcase()
 			))
 		case .advanced:
 			return AdvancedShowcase.makeView(Store(
 				initialState: AdvancedTabBar.State(),
-				reducer: AdvancedTabBar.reducer,
-				environment: .init(countryProvider: .init())
+				reducer: AdvancedTabBar(countryProvider: .init())
 			))
 		
 		case .uiTest(let uiTestCase):
@@ -91,20 +84,17 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
 			case .swipeDownModalSheet:
 				return SwipeDownModalSheet.makeView(Store(
 					initialState: .init(),
-					reducer: SwipeDownModalSheet.reducer,
-					environment: .init()
+					reducer: SwipeDownModalSheet()
 				))
 			case .swipeBackOnStackNavigation:
-				return SwipeBackOnStackNavigation.makeView( Store(
+				return SwipeBackOnStackNavigation.makeView(Store(
 					initialState: .init(),
-					reducer: SwipeBackOnStackNavigation.reducer,
-					environment: .init()
+					reducer: SwipeBackOnStackNavigation()
 				))
 			case .changingTabs:
 				return ChangingTabs.makeView(Store(
 					initialState: .init(),
-					reducer: ChangingTabs.reducer,
-					environment: .init()
+					reducer: ChangingTabs()
 				))
 			}
 		}

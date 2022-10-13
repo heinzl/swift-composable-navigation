@@ -7,7 +7,7 @@ import ComposableArchitecture
 /// - Screens are presented using sheet and fullscreen style.
 /// - Screens are dismissed automatically when another screen is presented.
 /// - Modal sheet can be swiped down. Navigation state update automatically.
-struct ModalShowcase {
+struct ModalShowcase: ReducerProtocol {
 	
 	// MARK: TCA
 	
@@ -35,7 +35,7 @@ struct ModalShowcase {
 	
 	struct Environment {}
 	
-	private static let privateReducer = Reducer<State, Action, Environment> { state, action, environment in
+	private func privateReducer(state: inout State, action: Action) -> Effect<Action, Never> {
 		switch action {
 		case .counterOne(.done), .counterTwo(.done):
 			return .task { .modalNavigation(.dismiss()) }
@@ -49,33 +49,21 @@ struct ModalShowcase {
 		return .none
 	}
 	
-	static let reducer: Reducer<State, Action, Environment> = Reducer.combine([
-		Counter.reducer
-			.pullback(
-				state: \.counterOne,
-				action: /Action.counterOne,
-				environment: { _ in .init() }
-			),
-		Counter.reducer
-			.pullback(
-				state: \.counterTwo,
-				action: /Action.counterTwo,
-				environment: { _ in .init() }
-			),
-		Helper.reducer
-			.pullback(
-				state: \.helper,
-				action: /Action.helper,
-				environment: { _ in .init() }
-			),
-		ModalNavigation<Screen>.reducer()
-			.pullback(
-				state: \.modalNavigation,
-				action: /Action.modalNavigation,
-				environment: { _ in () }
-			),
-		privateReducer
-	])
+	var body: some ReducerProtocol<State, Action> {
+		Scope(state: \.counterOne, action: /Action.counterOne) {
+			Counter()
+		}
+		Scope(state: \.counterTwo, action: /Action.counterTwo) {
+			Counter()
+		}
+		Scope(state: \.helper, action: /Action.helper) {
+			Helper()
+		}
+		Scope(state: \.modalNavigation, action: /Action.modalNavigation) {
+			ModalNavigation<Screen>()
+		}
+		Reduce(privateReducer(state:action:))
+	}
 	
 	// MARK: View creation
 	
@@ -151,7 +139,7 @@ struct ModalShowcaseView: View {
 // MARK: Helper
 
 extension ModalShowcase {
-	struct Helper {
+	struct Helper: ReducerProtocol {
 		struct State: Equatable {}
 		
 		enum Action: Equatable {
@@ -159,9 +147,9 @@ extension ModalShowcase {
 			case showCounterTwo
 		}
 		
-		struct Environment {}
-		
-		static let reducer: Reducer<State, Action, Environment> = Reducer.empty
+		func reduce(into state: inout State, action: Action) -> Effect<Action, Never> {
+			.none
+		}
 	}
 	
 	struct HelperView: View, Presentable {

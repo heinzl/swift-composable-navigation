@@ -3,16 +3,16 @@ import SwiftUI
 import ComposableNavigation
 import ComposableArchitecture
 
-struct CountryDetail {
+struct CountryDetail: ReducerProtocol {
 	struct State: Equatable {
 		let country: Country
 	}
 
 	enum Action: Equatable {}
 
-	struct Environment {}
-	
-	static let reducer: Reducer<State, Action, Environment> = .empty
+	func reduce(into state: inout State, action: Action) -> Effect<Action, Never> {
+		.none
+	}
 }
 
 struct CountryDetailView: View, Presentable {
