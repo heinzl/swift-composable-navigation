@@ -245,8 +245,7 @@ private class State {
 	init(items: [Int] = []) {
 		self.store = Store(
 			initialState: StackNavigation<Int>.State(items: items),
-			reducer: StackNavigation<Int>.reducer(),
-			environment: ()
+			reducer: StackNavigation<Int>()
 		)
 		self.viewStore = ViewStore(store)
 		self.sut = StackNavigationViewController(

@@ -134,8 +134,7 @@ private class State {
 	init(styledItem: ModalNavigation<Int>.StyledItem?) {
 		self.store = Store(
 			initialState: ModalNavigation<Int>.State(styledItem: styledItem),
-			reducer: ModalNavigation<Int>.reducer(),
-			environment: ()
+			reducer: ModalNavigation<Int>()
 		)
 		self.viewStore = ViewStore(store)
 		self.sut = ModalNavigationViewController(

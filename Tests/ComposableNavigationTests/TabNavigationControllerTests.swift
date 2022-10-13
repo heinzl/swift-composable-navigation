@@ -183,8 +183,7 @@ private class State {
 				items: items,
 				activeItem: activeItem ?? items.first ?? -1
 			),
-			reducer: TabNavigation<Int>.reducer(),
-			environment: ()
+			reducer: TabNavigation<Int>()
 		)
 		self.viewStore = ViewStore(store)
 		self.sut = TabNavigationViewController(

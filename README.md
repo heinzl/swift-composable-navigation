@@ -20,7 +20,7 @@ It also supports automatic state updates for pull-to-dismiss for views presented
 
 This example shows how a modal-navigation could be implemented using an enum:
 ```swift
-struct Onboarding {
+struct Onboarding: ReducerProtocol {
     enum Screen {
         case login
         case register
@@ -35,26 +35,21 @@ struct Onboarding {
         case modalNavigation(ModalNavigation<Screen>.Action)
         ...
     }
-
-    private static let privateReducer = Reducer<State, Action, Environment> { state, action, environment in
-        switch action {
-        case .loginButtonPressed:
-            return .task { .modalNavigation(.presentFullScreen(.login)) }
-        case .anotherAction:
-            return .task { .modalNavigation(.dismiss) }
-        }
-        return .none
-    }
-
-    static let reducer: Reducer<State, Action, Environment> = Reducer.combine([
-        ModalNavigation<Screen>.reducer()
-            .pullback(
-                state: \.modalNavigation,
-                action: /Action.modalNavigation,
-                environment: { _ in () }
-            ),
-        privateReducer
-    ])
+    
+	var body: some ReducerProtocol<State, Action> {
+		Scope(state: \.modalNavigation, action: /Action.modalNavigation) {
+			ModalNavigation<Screen>()
+		}
+		Reduce { state, action in
+			switch action {
+			case .loginButtonPressed:
+				return .task { .modalNavigation(.presentFullScreen(.login)) }
+			case .anotherAction:
+				return .task { .modalNavigation(.dismiss) }
+			}
+			return .none
+		}
+	}
 }
 ```
 
@@ -67,7 +62,7 @@ It also supports automatic state updates for popping items via the leading-edge 
 
 This example shows how a series of text inputs could be implemented:
 ```swift
-struct Register {
+struct Register: ReducerProtocol {
     enum Screen {
         case email
         case firstName
@@ -83,27 +78,22 @@ struct Register {
         case stackNavigation(StackNavigation<Screen>.Action)
         ...
     }
-
-    private static let privateReducer = Reducer<State, Action, Environment> { state, action, environment in
-        switch action {
-        case .emailEntered:
-            return .task { .stackNavigation(.pushItem(.firstName)) }
-        case .firstNameEntered:
-            return .task { .stackNavigation(.pushItem(.lastName)) }
-        ...
-        }
-        return .none
-    }
-
-    static let reducer: Reducer<State, Action, Environment> = Reducer.combine([
-        StackNavigation<Screen>.reducer()
-            .pullback(
-                state: \.stackNavigation,
-                action: /Action.stackNavigation,
-                environment: { _ in () }
-            ),
-        privateReducer
-    ])
+    
+	var body: some ReducerProtocol<State, Action> {
+		Scope(state: \.stackNavigation, action: /Action.stackNavigation) {
+			StackNavigation<Screen>()
+		}
+		Reduce { state, action in
+			switch action {
+			case .emailEntered:
+				return .task { .stackNavigation(.pushItem(.firstName)) }
+			case .firstNameEntered:
+				return .task { .stackNavigation(.pushItem(.lastName)) }
+			...
+			}
+			return .none
+		}
+	}
 }
 ```
 
@@ -133,25 +123,20 @@ struct Root {
         case tabNavigation(TabNavigation<Screen>.Action)
         ...
     }
-
-    private static let privateReducer = Reducer<State, Action, Environment> { state, action, environment in
-        switch action {
-        case .goToSettings:
-            return .task { .tabNavigation(.setActiveItem(.settings)) }
-        ...
-        }
-        return .none
-    }
-
-    static let reducer: Reducer<State, Action, Environment> = Reducer.combine([
-        TabNavigation<Screen>.reducer()
-            .pullback(
-                state: \.tabNavigation,
-                action: /Action.tabNavigation,
-                environment: { _ in () }
-            ),
-        privateReducer
-    ])
+    
+	var body: some ReducerProtocol<State, Action> {
+		Scope(state: \.tabNavigation, action: /Action.tabNavigation) {
+			TabNavigation<Screen>()
+		}
+		Reduce { state, action in
+			switch action {
+			case .goToSettings:
+				return .task { .tabNavigation(.setActiveItem(.settings)) }
+			...
+			}
+			return .none
+		}
+	}
 }
 ```
 
@@ -225,7 +210,8 @@ class ExistingViewController: UIViewController {
 			store: store.scope(
 				state: \.modalNavigation,
 				action: ExistingViewShowcase.Action.modalNavigation
-			), viewProvider: ExistingViewShowcase.ViewProvider(store: store)
+			), 
+			viewProvider: ExistingViewShowcase.ViewProvider(store: store)
 		)
 		super.init(nibName: nil, bundle: nil)
 		

@@ -6,7 +6,9 @@ import OrderedCollections
 ///
 /// The active navigation item can be changed by setting a new item. Mutations to the items array
 /// are reflected as well (e.g. changing the tab order).
-public struct TabNavigation<Item: Equatable> {
+public struct TabNavigation<Item: Equatable>: ReducerProtocol {
+	public init() {}
+	
 	public struct State: Equatable {
 		public var items: [Item]
 		public var activeItem: Item
@@ -29,32 +31,30 @@ public struct TabNavigation<Item: Equatable> {
 		case setItems([Item], animated: Bool = true)
 	}
 	
-	public static func reducer() -> Reducer<State, Action, Void> {
-		Reducer { state, action, _ in
-			switch action {
-			case .setActiveItem(let newActiveItem):
-				setActiveItem(newActiveItem, on: &state)
-			case .setActiveIndex(let newIndex):
-				setActiveIndex(newIndex, on: &state)
-			case let .setItems(newItems, animated):
-				state.items = newItems
-				state.areAnimationsEnabled = animated
-				if !newItems.contains(state.activeItem) {
-					setActiveIndex(0, on: &state)
-				}
+	public func reduce(into state: inout State, action: Action) -> Effect<Action, Never> {
+		switch action {
+		case .setActiveItem(let newActiveItem):
+			setActiveItem(newActiveItem, on: &state)
+		case .setActiveIndex(let newIndex):
+			setActiveIndex(newIndex, on: &state)
+		case let .setItems(newItems, animated):
+			state.items = newItems
+			state.areAnimationsEnabled = animated
+			if !newItems.contains(state.activeItem) {
+				setActiveIndex(0, on: &state)
 			}
-			return .none
 		}
+		return .none
 	}
 	
-	private static func setActiveIndex(_ index: Int, on state: inout State) {
+	private func setActiveIndex(_ index: Int, on state: inout State) {
 		guard state.items.indices.contains(index) else {
 			return
 		}
 		state.activeItem = state.items[index]
 	}
 	
-	private static func setActiveItem(_ item: Item, on state: inout State) {
+	private func setActiveItem(_ item: Item, on state: inout State) {
 		guard state.items.contains(item) else {
 			return
 		}

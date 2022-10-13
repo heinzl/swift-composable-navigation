@@ -3,7 +3,9 @@ import ComposableArchitecture
 
 /// `ModalNavigation` models state and actions of a commonly used modal view presentation.
 /// Views can be presented with a certain style and dismissed.
-public struct ModalNavigation<Item: Equatable> {
+public struct ModalNavigation<Item: Equatable>: ReducerProtocol {
+	public init() {}
+	
 	public struct State: Equatable {
 		public var styledItem: StyledItem?
 		public var areAnimationsEnabled: Bool
@@ -24,23 +26,21 @@ public struct ModalNavigation<Item: Equatable> {
 		case presentSheet(Item, animated: Bool = true)
 	}
 	
-	public static func reducer() -> Reducer<State, Action, Void> {
-		Reducer { state, action, _ in
-			switch action {
-			case let .set(styledItem, animated):
-				setStyledItem(styledItem, on: &state, animated: animated)
-			case let .dismiss(animated):
-				setStyledItem(nil, on: &state, animated: animated)
-			case let .presentFullScreen(item, animated):
-				setStyledItem(StyledItem(item: item, style: .fullScreen), on: &state, animated: animated)
-			case let .presentSheet(item, animated):
-				setStyledItem(StyledItem(item: item, style: .pageSheet), on: &state, animated: animated)
-			}
-			return .none
+	public func reduce(into state: inout State, action: Action) -> Effect<Action, Never> {
+		switch action {
+		case let .set(styledItem, animated):
+			setStyledItem(styledItem, on: &state, animated: animated)
+		case let .dismiss(animated):
+			setStyledItem(nil, on: &state, animated: animated)
+		case let .presentFullScreen(item, animated):
+			setStyledItem(StyledItem(item: item, style: .fullScreen), on: &state, animated: animated)
+		case let .presentSheet(item, animated):
+			setStyledItem(StyledItem(item: item, style: .pageSheet), on: &state, animated: animated)
 		}
+		return .none
 	}
 	
-	private static func setStyledItem(_ item: StyledItem?, on state: inout State, animated: Bool) {
+	private func setStyledItem(_ item: StyledItem?, on state: inout State, animated: Bool) {
 		state.styledItem = item
 		state.areAnimationsEnabled = animated
 	}
