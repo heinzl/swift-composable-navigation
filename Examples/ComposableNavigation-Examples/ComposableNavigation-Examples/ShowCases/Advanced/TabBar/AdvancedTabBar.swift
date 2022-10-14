@@ -31,8 +31,6 @@ struct AdvancedTabBar: ReducerProtocol {
 		case tabNavigation(TabNavigation<Screen>.Action)
 	}
 	
-	let countryProvider: CountryProvider
-	
 	private var privateReducer: Reduce<State, Action> {
 		.init { state, action in
 			switch action {
@@ -71,7 +69,7 @@ struct AdvancedTabBar: ReducerProtocol {
 			CountryDeepLink()
 		}
 		Scope(state: \.listAndDetail, action: /Action.listAndDetail) {
-			CountryListAndDetail(countryProvider: countryProvider)
+			CountryListAndDetail()
 		}
 		Scope(state: \.alertPlayground, action: /Action.alertPlayground) {
 			AlertPlayground()

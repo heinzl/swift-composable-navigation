@@ -76,7 +76,7 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
 		case .advanced:
 			return AdvancedShowcase.makeView(Store(
 				initialState: AdvancedTabBar.State(),
-				reducer: AdvancedTabBar(countryProvider: .init())
+				reducer: AdvancedTabBar()
 			))
 		
 		case .uiTest(let uiTestCase):

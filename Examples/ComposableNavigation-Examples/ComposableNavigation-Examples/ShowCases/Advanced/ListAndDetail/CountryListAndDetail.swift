@@ -100,7 +100,7 @@ struct CountryListAndDetail: ReducerProtocol {
 		case modalNavigation(ModalNavigation<ModalScreen>.Action)
 	}
 	
-	let countryProvider: CountryProvider
+	@Dependency(\.countryProvider) var countryProvider
 	
 	private var privateReducer: Reduce<State, Action> {
 		.init { state, action in
@@ -195,5 +195,16 @@ struct CountryListAndDetail: ReducerProtocol {
 				))
 			}
 		}
+	}
+}
+
+private enum CountryProviderKey: DependencyKey {
+	static var liveValue: CountryProviderProtocol = CountryProvider()
+}
+
+extension DependencyValues {
+	var countryProvider: CountryProviderProtocol {
+		get { self[CountryProviderKey.self] }
+		set { self[CountryProviderKey.self] = newValue }
 	}
 }
