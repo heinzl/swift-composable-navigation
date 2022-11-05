@@ -26,7 +26,7 @@ public struct ModalNavigation<Item: Equatable>: ReducerProtocol {
 		case presentSheet(Item, animated: Bool = true)
 	}
 	
-	public func reduce(into state: inout State, action: Action) -> Effect<Action, Never> {
+	public func reduce(into state: inout State, action: Action) -> EffectTask<Action> {
 		switch action {
 		case let .set(styledItem, animated):
 			setStyledItem(styledItem, on: &state, animated: animated)

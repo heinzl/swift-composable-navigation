@@ -32,7 +32,7 @@ public struct StackNavigation<Item: Equatable>: ReducerProtocol {
 		case setItems([Item], animated: Bool = true)
 	}
 	
-	public func reduce(into state: inout State, action: Action) -> Effect<Action, Never> {
+	public func reduce(into state: inout State, action: Action) -> EffectTask<Action> {
 		switch action {
 		case let .pushItem(item, animated):
 			setItems(state.items + [item], on: &state, animated: animated)

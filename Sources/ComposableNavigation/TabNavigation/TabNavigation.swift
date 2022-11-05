@@ -31,7 +31,7 @@ public struct TabNavigation<Item: Equatable>: ReducerProtocol {
 		case setItems([Item], animated: Bool = true)
 	}
 	
-	public func reduce(into state: inout State, action: Action) -> Effect<Action, Never> {
+	public func reduce(into state: inout State, action: Action) -> EffectTask<Action> {
 		switch action {
 		case .setActiveItem(let newActiveItem):
 			setActiveItem(newActiveItem, on: &state)
