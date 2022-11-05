@@ -3,25 +3,45 @@ import Combine
 import OrderedCollections
 import ComposableArchitecture
 
+internal struct TabNavigationStore<Item: Equatable & Hashable> {
+	let publisher: () -> StorePublisher<TabNavigation<Item>.State>
+	let send: (TabNavigation<Item>.Action) -> Void
+}
+
 /// The `TabNavigationHandler` listens to state changes and updates the selected view or tab order accordingly.
 ///
 /// Additionally, it acts as the `UITabBarControllerDelegate` and automatically updates the state
 /// when the active tab is changed by the user.
+@MainActor
 public class TabNavigationHandler<ViewProvider: ViewProviding>: NSObject, UITabBarControllerDelegate {
 	public typealias Item = ViewProvider.Item
-	public typealias ItemTabs = TabNavigation<Item>
+	public typealias TabItem = TabNavigation<Item>
 	
-	internal let viewStore: ViewStore<ItemTabs.State, ItemTabs.Action>
+	internal let store: TabNavigationStore<Item>
 	internal let viewProvider: ViewProvider
 	internal var currentViewControllerItems: OrderedDictionary<Item, UIViewController>
 	
 	private var cancellable: AnyCancellable?
 	
-	public init(
-		store: Store<ItemTabs.State, ItemTabs.Action>,
+	public convenience init(
+		store: Store<TabItem.State, TabItem.Action>,
 		viewProvider: ViewProvider
 	) {
-		self.viewStore = ViewStore(store)
+		let viewStore = ViewStore(store)
+		self.init(
+			store: .init(
+				publisher: { viewStore.publisher },
+				send: { viewStore.send($0) }
+			),
+			viewProvider: viewProvider
+		)
+	}
+	
+	internal init(
+		store: TabNavigationStore<Item>,
+		viewProvider: ViewProvider
+	) {
+		self.store = store
 		self.viewProvider = viewProvider
 		self.currentViewControllerItems = [:]
 	}
@@ -29,16 +49,16 @@ public class TabNavigationHandler<ViewProvider: ViewProviding>: NSObject, UITabB
 	public func setup(with tabBarController: UITabBarController) {
 		tabBarController.delegate = self
 		
-		cancellable = viewStore.publisher
-			.sink { [weak self, weak tabBarController] in
-				guard let self = self, let tabBarController = tabBarController else { return }
-				self.updateViewControllers(newState: $0, for: tabBarController)
-				self.updateSelectedItem($0.activeItem, newItems: $0.items, for: tabBarController)
+		cancellable = store.publisher()
+			.sink { [weak self, weak tabBarController] state in
+				guard let self, let tabBarController else { return }
+				self.updateViewControllers(newState: state, for: tabBarController)
+				self.updateSelectedItem(state.activeItem, newItems: state.items, for: tabBarController)
 			}
 	}
 	
 	private func updateViewControllers(
-		newState: ItemTabs.State,
+		newState: TabItem.State,
 		for tabBarController: UITabBarController
 	) {
 		let newItems = newState.items
@@ -56,13 +76,13 @@ public class TabNavigationHandler<ViewProvider: ViewProviding>: NSObject, UITabB
 		
 		tabBarController.setViewControllers(
 			Array(currentViewControllerItems.values),
-			animated: shouldAnimateStackChanges(for: tabBarController, state: newState)
+			animated: shouldAnimateTabChanges(for: tabBarController, state: newState)
 		)
 	}
 	
-	private func shouldAnimateStackChanges(
+	private func shouldAnimateTabChanges(
 		for tabBarController: UITabBarController,
-		state: ItemTabs.State
+		state: TabItem.State
 	) -> Bool {
 		if tabBarController.viewControllers?.isEmpty ?? true {
 			return false
@@ -93,6 +113,10 @@ public class TabNavigationHandler<ViewProvider: ViewProviding>: NSObject, UITabB
 		guard let index = currentViewControllerItems.values.firstIndex(of: viewController) else {
 			return
 		}
-		viewStore.send(.setActiveIndex(index))
+		
+		Task { @MainActor in
+			await Task.yield()
+			store.send(.setActiveIndex(index))
+		}
 	}
 }
