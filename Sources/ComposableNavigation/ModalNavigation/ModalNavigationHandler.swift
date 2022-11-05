@@ -3,11 +3,6 @@ import UIKit
 import Combine
 import ComposableArchitecture
 
-internal struct ModalNavigationStore<Item: Equatable & Hashable> {
-	let publisher: () -> StorePublisher<ModalNavigation<Item>.State>
-	let send: (ModalNavigation<Item>.Action) -> Void
-}
-
 /// The `ModalNavigationHandler` listens to state changes and presents the provided views accordingly.
 ///
 /// Additionally, it acts as the `UIAdaptivePresentationControllerDelegate` and automatically updates the state
@@ -15,9 +10,9 @@ internal struct ModalNavigationStore<Item: Equatable & Hashable> {
 @MainActor
 public class ModalNavigationHandler<ViewProvider: ViewProviding>: NSObject, UIAdaptivePresentationControllerDelegate {
 	public typealias Item = ViewProvider.Item
-	public typealias ModalItem = ModalNavigation<Item>
+	public typealias Navigation = ModalNavigation<Item>
 	
-	internal let store: ModalNavigationStore<Item>
+	internal let viewStore: ViewStore<Navigation.State, Navigation.Action>
 	internal let viewProvider: ViewProvider
 	internal var currentViewControllerItem: ViewControllerItem?
 	internal let maxWindowWaitingDelay: TimeInterval
@@ -25,52 +20,38 @@ public class ModalNavigationHandler<ViewProvider: ViewProviding>: NSObject, UIAd
 	private var cancellable: AnyCancellable?
 	
 	internal struct ViewControllerItem {
-		let styledItem: ModalItem.StyledItem
+		let styledItem: Navigation.StyledItem
 		let viewController: UIViewController
 	}
 	
-	public convenience init(
-		store: Store<ModalItem.State, ModalItem.Action>,
+	public init(
+		store: Store<Navigation.State, Navigation.Action>,
 		viewProvider: ViewProvider,
 		maxWindowWaitingDelay: TimeInterval = 4
 	) {
-		let viewStore = ViewStore(store)
-		self.init(
-			store: .init(
-				publisher: { viewStore.publisher },
-				send: { viewStore.send($0) }
-			),
-			viewProvider: viewProvider,
-			maxWindowWaitingDelay: maxWindowWaitingDelay
-		)
-	}
-	
-	internal init(
-		store: ModalNavigationStore<Item>,
-		viewProvider: ViewProvider,
-		maxWindowWaitingDelay: TimeInterval
-	) {
-		self.store = store
+		self.viewStore = ViewStore(store)
 		self.viewProvider = viewProvider
 		self.maxWindowWaitingDelay = maxWindowWaitingDelay
 		self.currentViewControllerItem = nil
 	}
 	
 	public func setup(with presentingViewController: UIViewController) {
-		cancellable = store.publisher()
+		cancellable = viewStore.publisher
 			.sink { [weak self, weak presentingViewController] state in
-				guard let self, let presentingViewController else { return }
-				self.updateModalViewController(
-					newState: state,
-					presentingViewController: presentingViewController
-				)
+				guard let presentingViewController else { return }
+				Task { [weak self] in
+					await self?.updateModalViewController(
+						newState: state,
+						presentingViewController: presentingViewController
+					)
+				}
 			}
 	}
 	
-	private func updateModalViewController(
-		newState: ModalItem.State,
+	internal func updateModalViewController(
+		newState: Navigation.State,
 		presentingViewController: UIViewController
-	) {
+	) async {
 		let newStyledItem = newState.styledItem
 		let oldStyledItem = currentViewControllerItem?.styledItem
 		guard oldStyledItem != newStyledItem else {
@@ -80,10 +61,10 @@ public class ModalNavigationHandler<ViewProvider: ViewProviding>: NSObject, UIAd
 		switch (oldStyledItem, newStyledItem) {
 		case (.some, .none):
 			// Dismiss old
-			dismissModal(from: presentingViewController, animated: animated)
+			await dismissModal(from: presentingViewController, animated: animated)
 		case (.none, .some(let newStyledItem)):
 			// Present new
-			presentModal(newStyledItem, on: presentingViewController, animated: animated)
+			await presentModal(newStyledItem, on: presentingViewController, animated: animated)
 		case (.some(let oldStyledItem), .some(let newStyledItem)):
 			// Dismiss old, present new
 			let viewController: UIViewController
@@ -95,49 +76,39 @@ public class ModalNavigationHandler<ViewProvider: ViewProviding>: NSObject, UIAd
 			} else {
 				viewController = makeViewController(for: newStyledItem)
 			}
-			dismissModal(from: presentingViewController, animated: animated)
-			presentModal(viewController, newStyledItem, on: presentingViewController, animated: animated)
+			await dismissModal(from: presentingViewController, animated: animated)
+			await presentModal(viewController, newStyledItem, on: presentingViewController, animated: animated)
 		default:
 			break
 		}
 	}
 	
 	private func presentModal(
-		_ newStyledItem: ModalItem.StyledItem,
+		_ newStyledItem: Navigation.StyledItem,
 		on presentingViewController: UIViewController,
 		animated: Bool
-	) {
+	) async {
 		let viewController = makeViewController(for: newStyledItem)
-		presentModal(viewController, newStyledItem, on: presentingViewController, animated: animated)
+		await presentModal(viewController, newStyledItem, on: presentingViewController, animated: animated)
 	}
 	
 	private func presentModal(
 		_ viewController: UIViewController,
-		_ styledItem: ModalItem.StyledItem,
+		_ styledItem: Navigation.StyledItem,
 		on presentingViewController: UIViewController,
 		animated: Bool
-	) {
-		let presentation: () -> Void = {
-			presentingViewController.present(viewController, animated: animated, completion: nil)
-			self.currentViewControllerItem = ViewControllerItem(
-				styledItem: styledItem,
-				viewController: viewController
-			)
-		}
-		
-		if presentingViewController.view.window == nil {
-			Task { @MainActor in
-				await presentingViewController.waitForWindow(
-					maxWindowWaitingDelay: maxWindowWaitingDelay
-				)
-				presentation()
-			}
-		} else {
-			presentation()
-		}
+	) async {
+		await presentingViewController.waitForWindow(
+			maxWindowWaitingDelay: maxWindowWaitingDelay
+		)
+		self.currentViewControllerItem = ViewControllerItem(
+			styledItem: styledItem,
+			viewController: viewController
+		)
+		await presentingViewController.present(viewController, animated: animated)
 	}
 	
-	private func makeViewController(for styledItem: ModalItem.StyledItem) -> UIViewController {
+	private func makeViewController(for styledItem: Navigation.StyledItem) -> UIViewController {
 		let viewController = viewProvider.makeViewController(for: styledItem.item)
 		viewController.modalPresentationStyle = styledItem.style
 		if !(viewController is UIAlertController) {
@@ -150,15 +121,15 @@ public class ModalNavigationHandler<ViewProvider: ViewProviding>: NSObject, UIAd
 	private func dismissModal(
 		from presentingViewController: UIViewController,
 		animated: Bool
-	) {
+	) async {
 		// Prevent dismissal of unrelated view controller
 		if presentingViewController.presentedViewController == currentViewControllerItem?.viewController {
-			presentingViewController.dismiss(animated: animated, completion: nil)
+			await presentingViewController.dismiss(animated: animated)
 		}
 		currentViewControllerItem = nil
 	}
 	
-	private func shouldAnimateChanges(state: ModalItem.State) -> Bool {
+	private func shouldAnimateChanges(state: Navigation.State) -> Bool {
 		if !UIView.areAnimationsEnabled {
 			return false
 		} else {
@@ -173,7 +144,25 @@ public class ModalNavigationHandler<ViewProvider: ViewProviding>: NSObject, UIAd
 		
 		Task { @MainActor in
 			await Task.yield()
-			store.send(.dismiss())
+			viewStore.send(.dismiss())
+		}
+	}
+}
+
+internal extension UIViewController {
+	func present(_ viewControllerToPresent: UIViewController, animated flag: Bool) async {
+		await withCheckedContinuation { continuation in
+			present(viewControllerToPresent, animated: flag) {
+				continuation.resume()
+			}
+		}
+	}
+	
+	func dismiss(animated flag: Bool) async {
+		await withCheckedContinuation { continuation in
+			dismiss(animated: flag) {
+				continuation.resume()
+			}
 		}
 	}
 }

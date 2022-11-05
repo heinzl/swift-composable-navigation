@@ -3,44 +3,25 @@ import Combine
 import ComposableArchitecture
 import OrderedCollections
 
-internal struct StackNavigationStore<Item: Equatable & Hashable> {
-	let publisher: () -> StorePublisher<StackNavigation<Item>.State>
-	let send: (StackNavigation<Item>.Action) -> Void
-}
-
 /// The `StackNavigationHandler` listens to state changes and updates the UINavigationController accordingly.
 ///
 /// It also supports automatic state updates for popping items via the leading-edge swipe gesture or the long press back-button menu.
 @MainActor
 public class StackNavigationHandler<ViewProvider: ViewProviding>: NSObject, UINavigationControllerDelegate {
 	public typealias Item = ViewProvider.Item
-	public typealias StackItem = StackNavigation<Item>
+	public typealias Navigation = StackNavigation<Item>
 	
-	internal let store: StackNavigationStore<Item>
+	internal let viewStore: ViewStore<Navigation.State, Navigation.Action>
 	internal let viewProvider: ViewProvider
 	internal var currentViewControllerItems: OrderedDictionary<Item, UIViewController>
 	
 	private var cancellable: AnyCancellable?
 	
-	public convenience init(
-		store: Store<StackItem.State, StackItem.Action>,
+	public init(
+		store: Store<Navigation.State, Navigation.Action>,
 		viewProvider: ViewProvider
 	) {
-		let viewStore = ViewStore(store)
-		self.init(
-			store: .init(
-				publisher: { viewStore.publisher },
-				send: { viewStore.send($0) }
-			),
-			viewProvider: viewProvider
-		)
-	}
-	
-	internal init(
-		store: StackNavigationStore<Item>,
-		viewProvider: ViewProvider
-	) {
-		self.store = store
+		self.viewStore = ViewStore(store)
 		self.viewProvider = viewProvider
 		self.currentViewControllerItems = [:]
 	}
@@ -48,7 +29,7 @@ public class StackNavigationHandler<ViewProvider: ViewProviding>: NSObject, UINa
 	public func setup(with navigationController: UINavigationController) {
 		navigationController.delegate = self
 		
-		cancellable = store.publisher()
+		cancellable = viewStore.publisher
 			.sink { [weak self, weak navigationController] state in
 				guard let self, let navigationController else { return }
 				self.updateViewControllerStack(
@@ -59,7 +40,7 @@ public class StackNavigationHandler<ViewProvider: ViewProviding>: NSObject, UINa
 	}
 	
 	private func updateViewControllerStack(
-		newState: StackItem.State,
+		newState: Navigation.State,
 		for navigationController: UINavigationController
 	) {
 		let newItems = newState.items
@@ -82,7 +63,7 @@ public class StackNavigationHandler<ViewProvider: ViewProviding>: NSObject, UINa
 	
 	private func shouldAnimateStackChanges(
 		for navigationController: UINavigationController,
-		state: StackItem.State
+		state: Navigation.State
 	) -> Bool {
 		if navigationController.viewControllers.isEmpty {
 			return false
@@ -115,7 +96,7 @@ public class StackNavigationHandler<ViewProvider: ViewProviding>: NSObject, UINa
 		
 		Task { @MainActor in
 			await Task.yield()
-			store.send(.popItems(count: popCount))
+			viewStore.send(.popItems(count: popCount))
 		}
 	}
 }
