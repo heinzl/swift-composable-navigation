@@ -24,7 +24,7 @@ struct MultipleOptionalModalStatesShowcase: ReducerProtocol {
 		var selectedCount: Int?
 		
 		var selectedCountText: String {
-			guard let selectedCount = selectedCount else {
+			guard let selectedCount else {
 				return "None"
 			}
 			return "\(selectedCount)"

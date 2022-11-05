@@ -11,16 +11,18 @@ struct AdvancedTabBar: ReducerProtocol {
 		case deepLink
 		case listAndDetail
 		case alertPlayground
+		case nestedNavigation
 	}
 	
 	struct State: Equatable {
 		var deepLink = CountryDeepLink.State()
 		var listAndDetail = CountryListAndDetail.State()
 		var alertPlayground = AlertPlayground.State()
+		var nestedNavigation = NestedStack.State(modalLevel: 1)
 		
 		var tabNavigation = TabNavigation<Screen>.State(
 			items: Screen.allCases,
-			activeItem: .listAndDetail
+			activeItem: .deepLink
 		)
 	}
 	
@@ -29,39 +31,43 @@ struct AdvancedTabBar: ReducerProtocol {
 		case listAndDetail(CountryListAndDetail.Action)
 		case alertPlayground(AlertPlayground.Action)
 		case tabNavigation(TabNavigation<Screen>.Action)
+		case nestedNavigation(NestedStack.Action)
 	}
 	
-	private var privateReducer: Reduce<State, Action> {
-		.init { state, action in
-			switch action {
-			case .deepLink(.showSorting):
-				return .run { send in
-					await send(.tabNavigation(.setActiveItem(.listAndDetail)))
-					await send(.listAndDetail(.stackNavigation(.setItems([.list]))))
-					await send(.listAndDetail(.modalNavigation(.set(.init(item: .sort, style: .pageSheet)))))
-				}
-			case .deepLink(.showSortingReset):
-				return .run { send in
-					await send(.tabNavigation(.setActiveItem(.listAndDetail)))
-					await send(.listAndDetail(.stackNavigation(.setItems([.list]))))
-					await send(.listAndDetail(.modalNavigation(.set(.init(item: .sort, style: .pageSheet)))))
-					await send(.listAndDetail(.countrySort(.alertNavigation(.set(.init(item: .resetAlert, style: .fullScreen))))))
-				}
-			case .deepLink(.showCountry(let countryId)):
-				return .run { send in
-					await send(.tabNavigation(.setActiveItem(.listAndDetail)))
-					await send(.listAndDetail(.stackNavigation(.setItems([.list, .detail(id: countryId)]))))
-				}
-			case .deepLink(.showAlertOptions):
-				return .run { send in
-					await send(.tabNavigation(.setActiveItem(.alertPlayground)))
-					await send(.alertPlayground(.alertNavigation(.set(.init(item: .actionSheet, style: .fullScreen)))))
-				}
-			default:
-				break
+	private func privateReducer(state: inout State, action: Action) -> EffectTask<Action> {
+		switch action {
+		case .deepLink(.showSorting):
+			// Using actions to setup navigation
+			return .run { send in
+				await send(.tabNavigation(.setActiveItem(.listAndDetail)))
+				await send(.listAndDetail(.stackNavigation(.setItems([.list]))))
+				await send(.listAndDetail(.modalNavigation(.set(.init(item: .sort, style: .pageSheet)))))
 			}
+		case .deepLink(.showSortingReset):
+			// Using state directly to setup navigation
+			state.tabNavigation.activeItem = .listAndDetail
+			state.listAndDetail.stackNavigation.items = [.list]
+			state.listAndDetail.modalNavigation.styledItem = .init(item: .sort, style: .pageSheet)
+			state.listAndDetail.countrySort.alertNavigation.styledItem = .init(item: .resetAlert, style: .fullScreen)
 			return .none
+		case .deepLink(.showCountry(let countryId)):
+			return .run { send in
+				await send(.tabNavigation(.setActiveItem(.listAndDetail)))
+				await send(.listAndDetail(.stackNavigation(.setItems([.list, .detail(id: countryId)]))))
+			}
+		case .deepLink(.showAlertOptions):
+			return .run { send in
+				await send(.tabNavigation(.setActiveItem(.alertPlayground)))
+				await send(.alertPlayground(.alertNavigation(.set(.init(item: .actionSheet, style: .fullScreen)))))
+			}
+		case .deepLink(.showNestedNavigation):
+			state.tabNavigation.activeItem = .nestedNavigation
+			state.nestedNavigation = .example
+			return .none
+		default:
+			break
 		}
+		return .none
 	}
 	
 	var body: some ReducerProtocol<State, Action> {
@@ -74,10 +80,13 @@ struct AdvancedTabBar: ReducerProtocol {
 		Scope(state: \.alertPlayground, action: /Action.alertPlayground) {
 			AlertPlayground()
 		}
+		Scope(state: \.nestedNavigation, action: /Action.nestedNavigation) {
+			NestedStack()
+		}
 		Scope(state: \.tabNavigation, action: /Action.tabNavigation) {
 			TabNavigation<Screen>()
 		}
-		privateReducer
+		Reduce(privateReducer)
 	}
 	
 	// MARK: View creation
@@ -126,6 +135,19 @@ struct AdvancedTabBar: ReducerProtocol {
 					title: "Alerts",
 					image: UIImage(systemName: "exclamationmark.bubble"),
 					tag: 2
+				)
+				return viewController
+			case .nestedNavigation:
+				let viewController = NestedStack.makeView(
+					store: store.scope(
+						state: \.nestedNavigation,
+						action: Action.nestedNavigation
+					)
+				)
+				viewController.tabBarItem = UITabBarItem(
+					title: "Nested",
+					image: UIImage(systemName: "square.3.layers.3d.down.left"),
+					tag: 3
 				)
 				return viewController
 			}

@@ -38,6 +38,7 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
 			case swipeDownModalSheet
 			case swipeBackOnStackNavigation
 			case changingTabs
+			case nestedDeepLink
 		}
 	}
 	
@@ -95,6 +96,11 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
 				return ChangingTabs.makeView(Store(
 					initialState: .init(),
 					reducer: ChangingTabs()
+				))
+			case .nestedDeepLink:
+				return NestedStack.makeView(store: Store(
+					initialState: .example,
+					reducer: NestedStack()
 				))
 			}
 		}

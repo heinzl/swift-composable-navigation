@@ -9,7 +9,6 @@ internal extension UIViewController {
 		while view.window == nil && accumulatedDelay < maxWindowWaitingDelay {
 			try? await Task.sleep(nanoseconds: UInt64(Double(NSEC_PER_SEC) * delay))
 			accumulatedDelay += delay
-			print("wait")
 		}
 		#if DEBUG
 		if accumulatedDelay >= maxWindowWaitingDelay {

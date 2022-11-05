@@ -14,6 +14,7 @@ struct CountryDeepLink: ReducerProtocol {
 		case showSorting
 		case showSortingReset
 		case showAlertOptions
+		case showNestedNavigation
 	}
 	
 	func reduce(into state: inout State, action: Action) -> EffectTask<Action> {
@@ -50,6 +51,11 @@ struct CountryDeepLinkView: View, Presentable {
 					ViewStore(store).send(.showAlertOptions)
 				} label: {
 					Label("Show alert options", systemImage: "exclamationmark.bubble")
+				}
+				Button {
+					ViewStore(store).send(.showNestedNavigation)
+				} label: {
+					Label("Nest multiple layers of stack and modal navigation", systemImage: "square.3.layers.3d.down.left")
 				}
 			}
 			.navigationTitle("Deep link")
