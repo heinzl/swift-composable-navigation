@@ -194,6 +194,25 @@ struct CountryListAndDetail: ReducerProtocol {
 			}
 		}
 	}
+	
+	static func makeView(store: Store<State, Action>) -> UIViewController {
+		let stackNavigationController = StackNavigationViewController(
+			store: store.scope(
+				state: \.stackNavigation,
+				action: CountryListAndDetail.Action.stackNavigation
+			),
+			viewProvider: CountryListAndDetail.StackViewProvider(store: store)
+		)
+		stackNavigationController.navigationBar.prefersLargeTitles = true
+		return stackNavigationController
+			.withModal(
+				store: store.scope(
+					state: \.modalNavigation,
+					action: CountryListAndDetail.Action.modalNavigation
+				),
+				viewProvider: CountryListAndDetail.ModalViewProvider(store: store)
+			)
+	}
 }
 
 private enum CountryProviderKey: DependencyKey {

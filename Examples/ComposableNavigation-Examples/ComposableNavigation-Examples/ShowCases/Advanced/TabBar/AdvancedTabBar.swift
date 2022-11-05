@@ -88,12 +88,12 @@ struct AdvancedTabBar: ReducerProtocol {
 		func makePresentable(for navigationItem: Screen) -> Presentable {
 			switch navigationItem {
 			case .deepLink:
-				let viewController = CountryDeepLinkView(
+				let viewController = CountryDeepLink.makeView(
 					store: store.scope(
 						state: \.deepLink,
 						action: Action.deepLink
 					)
-				).viewController
+				)
 				viewController.tabBarItem = UITabBarItem(
 					title: "Deep link",
 					image: UIImage(systemName: "link"),
@@ -107,22 +107,7 @@ struct AdvancedTabBar: ReducerProtocol {
 					action: Action.listAndDetail
 				)
 				ViewStore(listAndDetailStore).send(.loadCountries)
-				let stackNavigationController = StackNavigationViewController(
-					store: listAndDetailStore.scope(
-						state: \.stackNavigation,
-						action: CountryListAndDetail.Action.stackNavigation
-					),
-					viewProvider: CountryListAndDetail.StackViewProvider(store: listAndDetailStore)
-				)
-				stackNavigationController.navigationBar.prefersLargeTitles = true
-				let viewController = stackNavigationController
-					.withModal(
-						store: listAndDetailStore.scope(
-							state: \.modalNavigation,
-							action: CountryListAndDetail.Action.modalNavigation
-						),
-						viewProvider: CountryListAndDetail.ModalViewProvider(store: listAndDetailStore)
-					)
+				let viewController = CountryListAndDetail.makeView(store: listAndDetailStore)
 				viewController.tabBarItem = UITabBarItem(
 					title: "List",
 					image: UIImage(systemName: "list.dash"),
@@ -131,18 +116,12 @@ struct AdvancedTabBar: ReducerProtocol {
 				return viewController
 				
 			case .alertPlayground:
-				let alertPlaygroundStore = store.scope(
-					state: \.alertPlayground,
-					action: Action.alertPlayground
-				)
-				let viewController = AlertPlaygroundView(store: alertPlaygroundStore).viewController
-					.withModal(
-						store: alertPlaygroundStore.scope(
-							state: \.alertNavigation,
-							action: AlertPlayground.Action.alertNavigation
-						),
-						viewProvider: AlertPlayground.ModalViewProvider(store: alertPlaygroundStore)
+				let viewController = AlertPlayground.makeView(
+					store: store.scope(
+						state: \.alertPlayground,
+						action: Action.alertPlayground
 					)
+				)
 				viewController.tabBarItem = UITabBarItem(
 					title: "Alerts",
 					image: UIImage(systemName: "exclamationmark.bubble"),

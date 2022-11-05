@@ -116,6 +116,17 @@ struct AlertPlayground: ReducerProtocol {
 			)
 		}
 	}
+	
+	static func makeView(store: Store<State, Action>) -> UIViewController {
+		AlertPlaygroundView(store: store).viewController
+			.withModal(
+				store: store.scope(
+					state: \.alertNavigation,
+					action: AlertPlayground.Action.alertNavigation
+				),
+				viewProvider: AlertPlayground.ModalViewProvider(store: store)
+			)
+	}
 }
 
 struct AlertPlaygroundView: View, Presentable {

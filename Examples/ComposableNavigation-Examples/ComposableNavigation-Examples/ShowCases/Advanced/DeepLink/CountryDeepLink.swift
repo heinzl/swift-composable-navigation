@@ -19,6 +19,10 @@ struct CountryDeepLink: ReducerProtocol {
 	func reduce(into state: inout State, action: Action) -> EffectTask<Action> {
 		.none
 	}
+	
+	static func makeView(store: Store<State, Action>) -> UIViewController {
+		CountryDeepLinkView(store: store).viewController
+	}
 }
 
 struct CountryDeepLinkView: View, Presentable {
