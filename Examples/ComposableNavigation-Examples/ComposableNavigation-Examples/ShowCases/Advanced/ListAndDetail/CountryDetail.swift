@@ -10,8 +10,8 @@ struct CountryDetail: ReducerProtocol {
 
 	enum Action: Equatable {}
 
-	func reduce(into state: inout State, action: Action) -> Effect<Action, Never> {
-		.none
+	var body: some ReducerProtocol<State, Action> {
+		EmptyReducer()
 	}
 }
 

@@ -77,7 +77,7 @@ struct MultipleOptionalModalStatesShowcase: ReducerProtocol {
 		case showCounterTwo
 	}
 	
-	private func privateReducer(state: inout State, action: Action) -> Effect<Action, Never> {
+	private func privateReducer(state: inout State, action: Action) -> EffectTask<Action> {
 		switch action {
 		case .showCounterOne:
 			return .task { .modalNavigation(.presentSheet(.counterOne)) }
@@ -99,7 +99,7 @@ struct MultipleOptionalModalStatesShowcase: ReducerProtocol {
 		Scope(state: \.modalNavigation, action: /Action.modalNavigation) {
 			ModalNavigation<Screen>()
 		}
-		Reduce(privateReducer(state:action:))
+		Reduce(privateReducer)
 			.ifLet(\.counterOne, action: /Action.counterOne) {
 				Counter()
 			}

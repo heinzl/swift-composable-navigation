@@ -29,7 +29,7 @@ struct AlertPlayground: ReducerProtocol {
 		case alertNavigation(ModalNavigation<ModalScreen>.Action)
 	}
 	
-	private func privateReducer(state: inout State, action: Action) -> Effect<Action, Never> {
+	private func privateReducer(state: inout State, action: Action) -> EffectTask<Action> {
 		switch action {
 		case .resetCounter:
 			state.counter.count = State.initialCount
@@ -46,7 +46,7 @@ struct AlertPlayground: ReducerProtocol {
 		Scope(state: \.counter, action: /Action.counter) {
 			Counter()
 		}
-		Reduce(privateReducer(state:action:))
+		Reduce(privateReducer)
 	}
 	
 	// MARK: View creation

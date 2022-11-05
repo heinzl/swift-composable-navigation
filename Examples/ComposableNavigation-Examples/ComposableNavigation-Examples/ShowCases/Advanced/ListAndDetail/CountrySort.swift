@@ -38,7 +38,7 @@ struct CountrySort: ReducerProtocol {
 		case alertNavigation(ModalNavigation<ModalScreen>.Action)
 	}
 	
-	private func privateReducer(state: inout State, action: Action) -> Effect<Action, Never> {
+	private func privateReducer(state: inout State, action: Action) -> EffectTask<Action> {
 		switch action {
 		case .selectSortKey(let sortKey):
 			state.sortKey = sortKey
@@ -59,7 +59,7 @@ struct CountrySort: ReducerProtocol {
 		Scope(state: \.alertNavigation, action: /Action.alertNavigation) {
 			ModalNavigation<ModalScreen>()
 		}
-		Reduce(privateReducer(state:action:))
+		Reduce(privateReducer)
 	}
 	
 	// MARK: View creation

@@ -35,7 +35,7 @@ struct ModalShowcase: ReducerProtocol {
 	
 	struct Environment {}
 	
-	private func privateReducer(state: inout State, action: Action) -> Effect<Action, Never> {
+	private func privateReducer(state: inout State, action: Action) -> EffectTask<Action> {
 		switch action {
 		case .counterOne(.done), .counterTwo(.done):
 			return .task { .modalNavigation(.dismiss()) }
@@ -62,7 +62,7 @@ struct ModalShowcase: ReducerProtocol {
 		Scope(state: \.modalNavigation, action: /Action.modalNavigation) {
 			ModalNavigation<Screen>()
 		}
-		Reduce(privateReducer(state:action:))
+		Reduce(privateReducer)
 	}
 	
 	// MARK: View creation
@@ -147,7 +147,7 @@ extension ModalShowcase {
 			case showCounterTwo
 		}
 		
-		func reduce(into state: inout State, action: Action) -> Effect<Action, Never> {
+		func reduce(into state: inout State, action: Action) -> EffectTask<Action> {
 			.none
 		}
 	}

@@ -102,29 +102,27 @@ struct CountryListAndDetail: ReducerProtocol {
 	
 	@Dependency(\.countryProvider) var countryProvider
 	
-	private var privateReducer: Reduce<State, Action> {
-		.init { state, action in
-			switch action {
-			case .loadCountries:
-				let countries = self.countryProvider.getCountryList()
-				state.countries = countries
-				state.continentFilter.continents = Set(countries.map(\.continent)).sorted()
-			case .list(.selectCountry(let id)):
-				return .task { .stackNavigation(.pushItem(.detail(id: id))) }
-			case .list(.selectFilter),
-				 .countrySort(.showFilter):
-				return .task { .modalNavigation(.presentSheet(.filter)) }
-			case .list(.selectSorting),
-				 .continentFilter(.showSorting):
-				return .task { .modalNavigation(.presentSheet(.sort)) }
-			case .continentFilter(.done),
-				 .countrySort(.done):
-				return .task { .modalNavigation(.dismiss()) }
-			default:
-				break
-			}
-			return .none
+	private func privateReducer(state: inout State, action: Action) -> EffectTask<Action> {
+		switch action {
+		case .loadCountries:
+			let countries = self.countryProvider.getCountryList()
+			state.countries = countries
+			state.continentFilter.continents = Set(countries.map(\.continent)).sorted()
+		case .list(.selectCountry(let id)):
+			return .task { .stackNavigation(.pushItem(.detail(id: id))) }
+		case .list(.selectFilter),
+				.countrySort(.showFilter):
+			return .task { .modalNavigation(.presentSheet(.filter)) }
+		case .list(.selectSorting),
+				.continentFilter(.showSorting):
+			return .task { .modalNavigation(.presentSheet(.sort)) }
+		case .continentFilter(.done),
+				.countrySort(.done):
+			return .task { .modalNavigation(.dismiss()) }
+		default:
+			break
 		}
+		return .none
 	}
 	
 	var body: some ReducerProtocol<State, Action> {
@@ -143,7 +141,7 @@ struct CountryListAndDetail: ReducerProtocol {
 		Scope(state: \.modalNavigation, action: /Action.modalNavigation) {
 			ModalNavigation<ModalScreen>()
 		}
-		privateReducer
+		Reduce(privateReducer)
 			.ifLet(\.detail, action: /Action.detail) {
 				CountryDetail()
 			}

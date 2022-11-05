@@ -24,7 +24,7 @@ struct ExistingViewShowcase: ReducerProtocol {
 		case modalNavigation(ModalNavigation<Screen>.Action)
 	}
 	
-	private func privateReducer(state: inout State, action: Action) -> Effect<Action, Never> {
+	private func privateReducer(state: inout State, action: Action) -> EffectTask<Action> {
 		switch action {
 		case .optionSelected(let newOption):
 			state.selectedOption = newOption
@@ -38,7 +38,7 @@ struct ExistingViewShowcase: ReducerProtocol {
 		Scope(state: \.modalNavigation, action: /Action.modalNavigation) {
 			ModalNavigation<Screen>()
 		}
-		Reduce(privateReducer(state:action:))
+		Reduce(privateReducer)
 	}
 	
 	enum Option: String, CaseIterable {

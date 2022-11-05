@@ -52,7 +52,7 @@ struct StackShowcase: ReducerProtocol {
 		case stackNavigation(StackNavigation<Screen>.Action)
 	}
 	
-	private func privateReducer(state: inout State, action: Action) -> Effect<Action, Never> {
+	private func privateReducer(state: inout State, action: Action) -> EffectTask<Action> {
 		switch action {
 		case let .counter(id, .done):
 			let nextId = id + 1
@@ -76,7 +76,7 @@ struct StackShowcase: ReducerProtocol {
 		Scope(state: \.stackNavigation, action: /Action.stackNavigation) {
 			StackNavigation<Screen>()
 		}
-		Reduce(privateReducer(state:action:))
+		Reduce(privateReducer)
 			.forEach(\.counters, action: /Action.counter(id:action:)) {
 				Counter()
 			}
@@ -130,7 +130,7 @@ extension StackShowcase {
 			case goTo(id: Counter.State.ID)
 		}
 		
-		func reduce(into state: inout State, action: Action) -> Effect<Action, Never> {
+		func reduce(into state: inout State, action: Action) -> EffectTask<Action> {
 			.none
 		}
 	}

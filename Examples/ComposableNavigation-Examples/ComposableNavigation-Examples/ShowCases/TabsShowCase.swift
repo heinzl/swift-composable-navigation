@@ -36,7 +36,7 @@ struct TabsShowcase: ReducerProtocol {
 		case tabNavigation(TabNavigation<Screen>.Action)
 	}
 	
-	private func privateReducer(state: inout State, action: Action) -> Effect<Action, Never> {
+	private func privateReducer(state: inout State, action: Action) -> EffectTask<Action> {
 		switch action {
 		case .helper(.switchTabs):
 			var newOrder = state.tabNavigation.items
@@ -63,7 +63,7 @@ struct TabsShowcase: ReducerProtocol {
 		Scope(state: \.tabNavigation, action: /Action.tabNavigation) {
 			TabNavigation<Screen>()
 		}
-		Reduce(privateReducer(state:action:))
+		Reduce(privateReducer)
 	}
 	
 	// MARK: View creation
@@ -153,7 +153,7 @@ extension TabsShowcase {
 			case showTab(Int)
 		}
 		
-		func reduce(into state: inout State, action: Action) -> Effect<Action, Never> {
+		func reduce(into state: inout State, action: Action) -> EffectTask<Action> {
 			.none
 		}
 	}
