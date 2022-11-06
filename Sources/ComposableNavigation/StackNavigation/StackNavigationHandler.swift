@@ -35,6 +35,7 @@ public class StackNavigationHandler<ViewProvider: ViewProviding>: NSObject, UINa
 		cancellable = viewStore.publisher
 			.sink { [weak self, weak navigationController] in
 				guard let self = self, let navigationController = navigationController else { return }
+				self.checkNavigationControllerDelegate(navigationController)
 				self.updateViewControllerStack(
 					newState: $0,
 					for: navigationController,
@@ -113,5 +114,23 @@ public class StackNavigationHandler<ViewProvider: ViewProviding>: NSObject, UINa
 		let popCount = fromIndex - toIndex
 		currentViewControllerItems.removeLast(popCount)
 		viewStore.send(.popItems(count: popCount))
+	}
+	
+	private func checkNavigationControllerDelegate(_ navigationController: UINavigationController) {
+		#if DEBUG
+		guard navigationController.delegate !== self else {
+			return
+		}
+		let delegateString: String
+		if let delegate = navigationController.delegate {
+			delegateString = String(describing: delegate)
+		} else {
+			delegateString = "nil"
+		}
+		print("""
+		WARNING: ComposableNavigation: StackNavigationHandler \(self) is not delegate of the UINavigationController \(navigationController).
+		The delegate is now \(delegateString). Make sure that the delegate is not changed when the StackNavigationHandler is active.
+		""")
+		#endif
 	}
 }
