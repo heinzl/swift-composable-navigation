@@ -32,6 +32,7 @@ public class TabNavigationHandler<ViewProvider: ViewProviding>: NSObject, UITabB
 		cancellable = viewStore.publisher
 			.sink { [weak self, weak tabBarController] in
 				guard let self = self, let tabBarController = tabBarController else { return }
+				self.checkTabBarControllerDelegate(tabBarController)
 				self.updateViewControllers(newState: $0, for: tabBarController)
 				self.updateSelectedItem($0.activeItem, newItems: $0.items, for: tabBarController)
 			}
@@ -94,5 +95,23 @@ public class TabNavigationHandler<ViewProvider: ViewProviding>: NSObject, UITabB
 			return
 		}
 		viewStore.send(.setActiveIndex(index))
+	}
+	
+	private func checkTabBarControllerDelegate(_ tabBarController: UITabBarController) {
+		#if DEBUG
+		guard tabBarController.delegate !== self else {
+			return
+		}
+		let delegateString: String
+		if let delegate = tabBarController.delegate {
+			delegateString = String(describing: delegate)
+		} else {
+			delegateString = "nil"
+		}
+		print("""
+		WARNING: ComposableNavigation: TabNavigationHandler \(self) is not delegate of the UITabBarController \(tabBarController).
+		The delegate is now \(delegateString). Make sure that the delegate is not changed when the TabNavigationHandler is active.
+		""")
+		#endif
 	}
 }
