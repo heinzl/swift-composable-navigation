@@ -133,7 +133,7 @@ private class Container {
 	let sut: ModalNavigationHandler<ItemViewProvider>
 	
 	let window = UIWindow(frame: UIScreen.main.bounds)
-	let baseViewController = MockPresentingViewController()
+	let baseViewController = MockViewController()
 	
 	init() {
 		self.sut = ModalNavigationHandler(
@@ -150,7 +150,7 @@ private class Container {
 	}
 }
 
-class MockPresentingViewController: UIViewController {
+class MockViewController: UIViewController {
 	var _presentedViewController: UIViewController?
 	
 	override var presentedViewController: UIViewController? {

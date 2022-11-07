@@ -39,7 +39,7 @@ public class StackNavigationHandler<ViewProvider: ViewProviding>: NSObject, UINa
 			}
 	}
 	
-	private func updateViewControllerStack(
+	internal func updateViewControllerStack(
 		newState: Navigation.State,
 		for navigationController: UINavigationController
 	) {

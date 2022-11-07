@@ -56,7 +56,7 @@ public struct StackNavigation<Item: Equatable>: ReducerProtocol {
 	}
 	
 	private func popItems(count: Int, on state: inout State, animated: Bool) {
-		guard state.items.count >= count else {
+		guard state.items.count >= count, count >= 0 else {
 			return
 		}
 		state.items.removeLast(count)

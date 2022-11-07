@@ -15,7 +15,7 @@ internal struct TabNavigationStore<Item: Equatable & Hashable> {
 @MainActor
 public class TabNavigationHandler<ViewProvider: ViewProviding>: NSObject, UITabBarControllerDelegate {
 	public typealias Item = ViewProvider.Item
-	public typealias TabItem = TabNavigation<Item>
+	public typealias Navigation = TabNavigation<Item>
 	
 	internal let store: TabNavigationStore<Item>
 	internal let viewProvider: ViewProvider
@@ -24,7 +24,7 @@ public class TabNavigationHandler<ViewProvider: ViewProviding>: NSObject, UITabB
 	private var cancellable: AnyCancellable?
 	
 	public convenience init(
-		store: Store<TabItem.State, TabItem.Action>,
+		store: Store<Navigation.State, Navigation.Action>,
 		viewProvider: ViewProvider
 	) {
 		let viewStore = ViewStore(store)
@@ -52,13 +52,20 @@ public class TabNavigationHandler<ViewProvider: ViewProviding>: NSObject, UITabB
 		cancellable = store.publisher()
 			.sink { [weak self, weak tabBarController] state in
 				guard let self, let tabBarController else { return }
-				self.updateViewControllers(newState: state, for: tabBarController)
-				self.updateSelectedItem(state.activeItem, newItems: state.items, for: tabBarController)
+				self.updateTabViewController(newState: state, for: tabBarController)
 			}
 	}
 	
+	internal func updateTabViewController(
+		newState: Navigation.State,
+		for tabBarController: UITabBarController
+	) {
+		updateViewControllers(newState: newState, for: tabBarController)
+		updateSelectedItem(newState.activeItem, newItems: newState.items, for: tabBarController)
+	}
+	
 	private func updateViewControllers(
-		newState: TabItem.State,
+		newState: Navigation.State,
 		for tabBarController: UITabBarController
 	) {
 		let newItems = newState.items
@@ -82,7 +89,7 @@ public class TabNavigationHandler<ViewProvider: ViewProviding>: NSObject, UITabB
 	
 	private func shouldAnimateTabChanges(
 		for tabBarController: UITabBarController,
-		state: TabItem.State
+		state: Navigation.State
 	) -> Bool {
 		if tabBarController.viewControllers?.isEmpty ?? true {
 			return false
