@@ -3,11 +3,6 @@ import Combine
 import OrderedCollections
 import ComposableArchitecture
 
-internal struct TabNavigationStore<Item: Equatable & Hashable> {
-	let publisher: () -> StorePublisher<TabNavigation<Item>.State>
-	let send: (TabNavigation<Item>.Action) -> Void
-}
-
 /// The `TabNavigationHandler` listens to state changes and updates the selected view or tab order accordingly.
 ///
 /// Additionally, it acts as the `UITabBarControllerDelegate` and automatically updates the state
@@ -17,31 +12,17 @@ public class TabNavigationHandler<ViewProvider: ViewProviding>: NSObject, UITabB
 	public typealias Item = ViewProvider.Item
 	public typealias Navigation = TabNavigation<Item>
 	
-	internal let store: TabNavigationStore<Item>
+	internal let viewStore: ViewStore<Navigation.State, Navigation.Action>
 	internal let viewProvider: ViewProvider
 	internal var currentViewControllerItems: OrderedDictionary<Item, UIViewController>
 	
 	private var cancellable: AnyCancellable?
-	
-	public convenience init(
+
+	public init(
 		store: Store<Navigation.State, Navigation.Action>,
 		viewProvider: ViewProvider
 	) {
-		let viewStore = ViewStore(store)
-		self.init(
-			store: .init(
-				publisher: { viewStore.publisher },
-				send: { viewStore.send($0) }
-			),
-			viewProvider: viewProvider
-		)
-	}
-
-	internal init(
-		store: TabNavigationStore<Item>,
-		viewProvider: ViewProvider
-	) {
-		self.store = store
+		self.viewStore = ViewStore(store)
 		self.viewProvider = viewProvider
 		self.currentViewControllerItems = [:]
 	}
@@ -49,7 +30,7 @@ public class TabNavigationHandler<ViewProvider: ViewProviding>: NSObject, UITabB
 	public func setup(with tabBarController: UITabBarController) {
 		tabBarController.delegate = self
 		
-		cancellable = store.publisher()
+		cancellable = viewStore.publisher
 			.sink { [weak self, weak tabBarController] state in
 				guard let self, let tabBarController else { return }
 				self.checkTabBarControllerDelegate(tabBarController)
@@ -124,7 +105,7 @@ public class TabNavigationHandler<ViewProvider: ViewProviding>: NSObject, UITabB
 
 		Task { @MainActor in
 			await Task.yield()
-			store.send(.setActiveIndex(index))
+			viewStore.send(.setActiveIndex(index))
 		}
 	}
 
