@@ -125,7 +125,8 @@ class StackNavigationHandlerTests: XCTestCase {
 private func whenNewStateIsReceived(_ state: StackNavigation<Int>.State, _ container: Container) {
 	container.sut.updateViewControllerStack(
 		newState: state,
-		for: container.navigationController
+		for: container.navigationController,
+		numberOfViewControllersOnStackToIgnore: 0
 	)
 }
 
