@@ -16,32 +16,39 @@ public class StackNavigationHandler<ViewProvider: ViewProviding>: NSObject, UINa
 	internal var currentViewControllerItems: OrderedDictionary<Item, UIViewController>
 	
 	private var cancellable: AnyCancellable?
-	
+	private let ignorePreviousViewControllers: Bool
+
 	public init(
 		store: Store<Navigation.State, Navigation.Action>,
-		viewProvider: ViewProvider
+		viewProvider: ViewProvider,
+		ignorePreviousViewControllers: Bool = false
 	) {
 		self.viewStore = ViewStore(store)
 		self.viewProvider = viewProvider
+		self.ignorePreviousViewControllers = ignorePreviousViewControllers
 		self.currentViewControllerItems = [:]
 	}
 	
 	public func setup(with navigationController: UINavigationController) {
 		navigationController.delegate = self
-		
+		let numberOfViewControllersOnStackToIgnore = numberOfViewControllersOnStackToIgnore(for: navigationController)
+
 		cancellable = viewStore.publisher
 			.sink { [weak self, weak navigationController] state in
 				guard let self, let navigationController else { return }
+				self.checkNavigationControllerDelegate(navigationController)
 				self.updateViewControllerStack(
 					newState: state,
-					for: navigationController
+					for: navigationController,
+					numberOfViewControllersOnStackToIgnore: numberOfViewControllersOnStackToIgnore
 				)
 			}
 	}
 	
 	internal func updateViewControllerStack(
 		newState: Navigation.State,
-		for navigationController: UINavigationController
+		for navigationController: UINavigationController,
+		numberOfViewControllersOnStackToIgnore: Int
 	) {
 		let newItems = newState.items
 		let oldItems = Array(currentViewControllerItems.keys)
@@ -55,8 +62,13 @@ public class StackNavigationHandler<ViewProvider: ViewProviding>: NSObject, UINa
 			viewProvider: viewProvider
 		)
 		
+		let viewControllerToIgnore = Array(navigationController.viewControllers.prefix(
+			upTo: numberOfViewControllersOnStackToIgnore
+		))
+		let updatedViewControllers = Array(currentViewControllerItems.values)
+
 		navigationController.setViewControllers(
-			Array(currentViewControllerItems.values),
+			viewControllerToIgnore + updatedViewControllers,
 			animated: shouldAnimateStackChanges(for: navigationController, state: newState)
 		)
 	}
@@ -74,6 +86,15 @@ public class StackNavigationHandler<ViewProvider: ViewProviding>: NSObject, UINa
 		}
 	}
 	
+	private func numberOfViewControllersOnStackToIgnore(
+		for navigationController: UINavigationController
+	) -> Int {
+		guard ignorePreviousViewControllers else {
+			return 0
+		}
+		return navigationController.viewControllers.count
+	}
+
 	// MARK: UINavigationControllerDelegate
 
 	public func navigationController(
@@ -93,10 +114,28 @@ public class StackNavigationHandler<ViewProvider: ViewProviding>: NSObject, UINa
 		}
 		let popCount = fromIndex - toIndex
 		currentViewControllerItems.removeLast(popCount)
-		
+
 		Task { @MainActor in
 			await Task.yield()
 			viewStore.send(.popItems(count: popCount))
 		}
+	}
+
+	private func checkNavigationControllerDelegate(_ navigationController: UINavigationController) {
+		#if DEBUG
+		guard navigationController.delegate !== self else {
+			return
+		}
+		let delegateString: String
+		if let delegate = navigationController.delegate {
+			delegateString = String(describing: delegate)
+		} else {
+			delegateString = "nil"
+		}
+		print("""
+		WARNING: ComposableNavigation: StackNavigationHandler \(self) is not delegate of the UINavigationController \(navigationController).
+		The delegate is now \(delegateString). Make sure that the delegate is not changed when the StackNavigationHandler is active.
+		""")
+		#endif
 	}
 }
