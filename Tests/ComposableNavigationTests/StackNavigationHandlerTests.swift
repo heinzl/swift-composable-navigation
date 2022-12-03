@@ -13,6 +13,8 @@ class StackNavigationHandlerTests: XCTestCase {
 	func testPushOnEmptyStack() {
 		let container = Container()
 		
+		givenSUT(container)
+		
 		whenNewStateIsReceived(.init(items: [1]), container)
 		
 		thenAssertItems([1], container)
@@ -22,7 +24,9 @@ class StackNavigationHandlerTests: XCTestCase {
 	
 	func testPushOnStack() {
 		let container = Container()
-
+		
+		givenSUT(container)
+		
 		whenNewStateIsReceived(.init(items: [1, 2]), container)
 		whenNewStateIsReceived(.init(items: [1, 2, 3]), container)
 
@@ -33,7 +37,9 @@ class StackNavigationHandlerTests: XCTestCase {
 
 	func testConsecutivePushsOnStack() {
 		let container = Container()
-
+		
+		givenSUT(container)
+		
 		whenNewStateIsReceived(.init(items: [1]), container)
 		whenNewStateIsReceived(.init(items: [1, 2]), container)
 		whenNewStateIsReceived(.init(items: [1, 2, 3]), container)
@@ -45,7 +51,9 @@ class StackNavigationHandlerTests: XCTestCase {
 
 	func testPushMultipleItemsOnStack() {
 		let container = Container()
-
+		
+		givenSUT(container)
+		
 		whenNewStateIsReceived(.init(items: [1, 2]), container)
 		whenNewStateIsReceived(.init(items: [1, 2, 3, 4]), container)
 
@@ -58,7 +66,9 @@ class StackNavigationHandlerTests: XCTestCase {
 
 	func testPopFromEmptyStack() {
 		let container = Container()
-
+		
+		givenSUT(container)
+		
 		whenNewStateIsReceived(.init(items: []), container)
 		whenNewStateIsReceived(.init(items: []), container)
 
@@ -69,7 +79,9 @@ class StackNavigationHandlerTests: XCTestCase {
 
 	func testPopFromStack() {
 		let container = Container()
-
+		
+		givenSUT(container)
+		
 		whenNewStateIsReceived(.init(items: [1, 2]), container)
 		whenNewStateIsReceived(.init(items: [1]), container)
 
@@ -80,7 +92,9 @@ class StackNavigationHandlerTests: XCTestCase {
 
 	func testConsecutivePopsFromStack() {
 		let container = Container()
-
+		
+		givenSUT(container)
+		
 		whenNewStateIsReceived(.init(items: [1, 2, 3]), container)
 		whenNewStateIsReceived(.init(items: [1, 2]), container)
 		whenNewStateIsReceived(.init(items: [1]), container)
@@ -92,7 +106,9 @@ class StackNavigationHandlerTests: XCTestCase {
 
 	func testPopMultipleItems() {
 		let container = Container()
-
+		
+		givenSUT(container)
+		
 		whenNewStateIsReceived(.init(items: [1, 2, 3, 4]), container)
 		whenNewStateIsReceived(.init(items: [1, 2]), container)
 
@@ -103,7 +119,9 @@ class StackNavigationHandlerTests: XCTestCase {
 
 	func testPopAllItems() {
 		let container = Container()
-
+		
+		givenSUT(container)
+		
 		whenNewStateIsReceived(.init(items: [1, 2, 3, 4]), container)
 		whenNewStateIsReceived(.init(items: []), container)
 
@@ -111,9 +129,26 @@ class StackNavigationHandlerTests: XCTestCase {
 		thenAssertViewControllerStack(container)
 		thenAssertCreatedViews(for: [1, 2, 3, 4], container)
 	}
+	
+	// MARK: Ignoring view controllers
+	
+	func testHandlerIgnoresViewControllersOnStack() {
+		let container = Container()
+		
+		givenLegacyViewControllersOnStack(count: 2, container)
+		givenSUT(ignorePreviousViewControllers: true, container)
+		
+		whenNewStateIsReceived(.init(items: [1]), container)
+		
+		thenAssertNumberOfViewControllersOnStack(3, container) // 2 + 1
+	}
 
+	// MARK: Memory
+	
 	func testMemoryLeak() {
 		var container: Container! = Container()
+		givenSUT(container)
+		
 		container.sut.setup(with: container.navigationController)
 		assertNil(container.sut) {
 			container = nil
@@ -122,11 +157,32 @@ class StackNavigationHandlerTests: XCTestCase {
 }
 
 @MainActor
+private func givenSUT(
+	ignorePreviousViewControllers: Bool = false,
+	_ container: Container
+) {
+	container.sut = StackNavigationHandler(
+		store: Store(
+			initialState: .init(items: []),
+			reducer: StackNavigation<Int>()
+		),
+		viewProvider: ItemViewProvider(),
+		ignorePreviousViewControllers: ignorePreviousViewControllers
+	)
+}
+
+@MainActor
+private func givenLegacyViewControllersOnStack(count: Int, _ container: Container) {
+	container.numberOfViewControllersOnStackToIgnore = count
+	container.navigationController.viewControllers = (0..<count).map { _ in UIViewController() }
+}
+
+@MainActor
 private func whenNewStateIsReceived(_ state: StackNavigation<Int>.State, _ container: Container) {
 	container.sut.updateViewControllerStack(
 		newState: state,
 		for: container.navigationController,
-		numberOfViewControllersOnStackToIgnore: 0
+		numberOfViewControllersOnStackToIgnore: container.numberOfViewControllersOnStackToIgnore
 	)
 }
 
@@ -141,24 +197,20 @@ private func thenAssertViewControllerStack(_ container: Container) {
 }
 
 @MainActor
+private func thenAssertNumberOfViewControllersOnStack(_ count: Int, _ container: Container) {
+	XCTAssertEqual(container.navigationController.viewControllers.count, count)
+}
+
+@MainActor
 private func thenAssertCreatedViews(for items: [Int], _ container: Container) {
 	XCTAssertEqual(container.sut.viewProvider.viewsCreatedFrom, items)
 }
 
 @MainActor
 private class Container {
-	let sut: StackNavigationHandler<ItemViewProvider>
+	var sut: StackNavigationHandler<ItemViewProvider>!
 	let navigationController = MockNavigationController()
-	
-	init() {
-		self.sut = StackNavigationHandler(
-			store: Store(
-				initialState: .init(items: []),
-				reducer: StackNavigation<Int>()
-			),
-			viewProvider: ItemViewProvider()
-		)
-	}
+	var numberOfViewControllersOnStackToIgnore: Int = 0
 }
 
 class MockNavigationController: UINavigationController {

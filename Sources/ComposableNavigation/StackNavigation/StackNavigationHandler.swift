@@ -86,7 +86,7 @@ public class StackNavigationHandler<ViewProvider: ViewProviding>: NSObject, UINa
 		}
 	}
 	
-	private func numberOfViewControllersOnStackToIgnore(
+	internal func numberOfViewControllersOnStackToIgnore(
 		for navigationController: UINavigationController
 	) -> Int {
 		guard ignorePreviousViewControllers else {

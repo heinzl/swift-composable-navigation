@@ -115,6 +115,7 @@ class TabNavigationHandlerTests: XCTestCase {
 		thenAssertSelectedIndex(0, container)
 	}
 
+	// MARK: Memory
 
 	func testMemoryLeak() {
 		var container: Container! = Container()
