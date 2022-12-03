@@ -236,6 +236,10 @@ class ExistingViewController: UIViewController {
 }
 ```
 
+
+#### Existing UINavigationController
+`StackNavigationHandler` can be initialized with the `ignorePreviousViewControllers: Bool` parameter. When this parameter is set to `true` the `StackNavigationHandler` will ignore the view controllers that are already on the stack. This is particularly helpful when Composable Navigation is used on top of already existing code. 
+
 ## Showcases
 
 You can find multiple showcases in the [Examples project](Examples/ComposableNavigation-Examples/ComposableNavigation-Examples/).
