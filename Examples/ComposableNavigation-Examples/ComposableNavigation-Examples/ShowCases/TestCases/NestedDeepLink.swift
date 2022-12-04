@@ -5,7 +5,7 @@ import ComposableArchitecture
 /// This setup is used for a UI test
 
 struct NestedModal: ReducerProtocol {
-	struct State: Equatable, Identifiable {
+	struct State: Equatable, Identifiable, Codable {
 		let modalLevel: Int
 		let stackLevel: Int
 		
@@ -35,7 +35,7 @@ struct NestedModal: ReducerProtocol {
 		}
 	}
 	
-	enum Action: Equatable {
+	enum Action: Equatable, Codable {
 		case pushTapped
 		case presentTapped
 		
@@ -115,7 +115,7 @@ struct NestedModal: ReducerProtocol {
 }
 
 struct NestedStack: ReducerProtocol {
-	struct State: Equatable {
+	struct State: Equatable, Codable {
 		let modalLevel: Int
 		
 		init(modalLevel: Int, nestedModals: IdentifiedArrayOf<NestedModal.State>? = nil) {
@@ -136,7 +136,7 @@ struct NestedStack: ReducerProtocol {
 		}
 	}
 	
-	indirect enum Action: Equatable {
+	indirect enum Action: Equatable, Codable {
 		case nestedModal(id: NestedModal.State.ID, action: NestedModal.Action)
 		case stack(StackNavigation<Int>.Action)
 	}

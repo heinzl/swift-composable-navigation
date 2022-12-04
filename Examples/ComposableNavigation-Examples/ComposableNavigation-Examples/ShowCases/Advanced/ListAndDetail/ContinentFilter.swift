@@ -4,12 +4,12 @@ import ComposableNavigation
 import ComposableArchitecture
 
 struct ContinentFilter: ReducerProtocol {
-	struct State: Equatable {
+	struct State: Equatable, Codable {
 		var continents = [String]()
 		var selectedContinent: String?
 	}
 	
-	enum Action: Equatable {
+	enum Action: Equatable, Codable {
 		case selectContinent(String?)
 		case done
 		case showSorting

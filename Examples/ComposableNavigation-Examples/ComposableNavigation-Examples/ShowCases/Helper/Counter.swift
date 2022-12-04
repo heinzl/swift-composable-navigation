@@ -4,13 +4,13 @@ import ComposableNavigation
 import SwiftUI
 
 struct Counter: ReducerProtocol {
-	struct State: Equatable, Identifiable {
+	struct State: Equatable, Identifiable, Codable {
 		let id: Int
 		var count: Int = 0
 		var showDone = true
 	}
 	
-	enum Action: Equatable {
+	enum Action: Equatable, Codable {
 		case up
 		case down
 		case done

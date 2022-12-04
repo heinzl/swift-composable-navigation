@@ -4,21 +4,21 @@ import ComposableNavigation
 import ComposableArchitecture
 
 struct CountrySort: ReducerProtocol {
-	enum SortKey: CaseIterable {
+	enum SortKey: CaseIterable, Codable {
 		case country
 		case capital
 	}
 	
-	enum SortOrder: CaseIterable {
+	enum SortOrder: CaseIterable, Codable {
 		case ascending
 		case descending
 	}
 	
-	enum ModalScreen {
+	enum ModalScreen: Codable {
 		case resetAlert
 	}
 	
-	struct State: Equatable {
+	struct State: Equatable, Codable {
 		var sortKey: SortKey = .country
 		var sortOrder: SortOrder = .ascending
 		var alertNavigation = ModalNavigation<ModalScreen>.State()
@@ -28,7 +28,7 @@ struct CountrySort: ReducerProtocol {
 		}
 	}
 	
-	enum Action: Equatable {
+	enum Action: Equatable, Codable {
 		case selectSortKey(SortKey)
 		case selectSortOrder(SortOrder)
 		case done

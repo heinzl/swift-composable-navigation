@@ -7,11 +7,11 @@ struct SwipeDownModalSheet: ReducerProtocol {
 	
 	// MARK: TCA
 	
-	enum Screen: String {
+	enum Screen: String, Codable {
 		case sheet
 	}
 	
-	struct State: Equatable {
+	struct State: Equatable, Codable {
 		var modalNavigation = ModalNavigation<Screen>.State()
 	}
 	

@@ -61,3 +61,6 @@ public struct TabNavigation<Item: Equatable>: ReducerProtocol {
 		state.activeItem = item
 	}
 }
+
+extension TabNavigation.State: Codable where Item: Codable {}
+extension TabNavigation.Action: Codable where Item: Codable {}

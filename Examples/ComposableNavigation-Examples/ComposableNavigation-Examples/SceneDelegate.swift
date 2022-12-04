@@ -2,6 +2,7 @@ import UIKit
 import SwiftUI
 import ComposableNavigation
 import ComposableArchitecture
+import TCA_DevTool_Client
 
 class SceneDelegate: UIResponder, UIWindowSceneDelegate {
 	var window: UIWindow?
@@ -25,6 +26,7 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
 	// MARK: - Showcases
 	
 	enum Showcase {
+		case counter
 		case modal
 		case stack
 		case tabs
@@ -44,6 +46,13 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
 	
 	func makeRootViewController(with showcase: Showcase) -> UIViewController {
 		switch showcase {
+		case .counter:
+			return CounterView(
+				store: Store.withDevToolDebugging(
+					initialState: Counter.State(id: 0),
+					reducer: Counter()
+				)
+			).viewController
 		case .modal:
 			return ModalShowcase.makeView(Store(
 				initialState: .init(),
@@ -75,7 +84,7 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
 				reducer: MultipleOptionalModalStatesShowcase()
 			))
 		case .advanced:
-			return AdvancedShowcase.makeView(Store(
+			return AdvancedShowcase.makeView(Store.withDevToolDebugging(
 				initialState: AdvancedTabBar.State(),
 				reducer: AdvancedTabBar()
 			))

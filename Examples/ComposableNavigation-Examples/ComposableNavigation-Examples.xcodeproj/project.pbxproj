@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		A609030F293CA1B600CE73E7 /* TCA-DevTool-Client in Frameworks */ = {isa = PBXBuildFile; productRef = A609030E293CA1B600CE73E7 /* TCA-DevTool-Client */; };
 		A63B034128FB71D100FBB02D /* NestedDeepLink.swift in Sources */ = {isa = PBXBuildFile; fileRef = A63B034028FB71D100FBB02D /* NestedDeepLink.swift */; };
 		A66070252806F1E2005FC86E /* MultipleOptionalModalStatesShowcase.swift in Sources */ = {isa = PBXBuildFile; fileRef = A66070242806F1E2005FC86E /* MultipleOptionalModalStatesShowcase.swift */; };
 		A668098529168B8600F63C78 /* NestedStackExample.swift in Sources */ = {isa = PBXBuildFile; fileRef = A668098429168B8600F63C78 /* NestedStackExample.swift */; };
@@ -51,6 +52,7 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		A609030D293B71DF00CE73E7 /* TCA-DevTool */ = {isa = PBXFileReference; lastKnownFileType = wrapper; name = "TCA-DevTool"; path = "../../../TCA-DevTool"; sourceTree = "<group>"; };
 		A63B034028FB71D100FBB02D /* NestedDeepLink.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = NestedDeepLink.swift; path = "ComposableNavigation-Examples/ShowCases/TestCases/NestedDeepLink.swift"; sourceTree = SOURCE_ROOT; };
 		A66070242806F1E2005FC86E /* MultipleOptionalModalStatesShowcase.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = MultipleOptionalModalStatesShowcase.swift; path = "ComposableNavigation-Examples/ShowCases/MultipleOptionalModalStatesShowcase.swift"; sourceTree = SOURCE_ROOT; };
 		A668098429168B8600F63C78 /* NestedStackExample.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = NestedStackExample.swift; path = "ComposableNavigation-Examples/ShowCases/Helper/NestedStackExample.swift"; sourceTree = SOURCE_ROOT; };
@@ -93,6 +95,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				A609030F293CA1B600CE73E7 /* TCA-DevTool-Client in Frameworks */,
 				D8E7BAFE265CCE0D00936E27 /* ComposableNavigation in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -202,6 +205,7 @@
 				D8E7BAEC265C340200936E27 /* ComposableNavigation-ExamplesUITests */,
 				D8E7BAC9265C340000936E27 /* Products */,
 				D8E7BAFC265CCE0D00936E27 /* Frameworks */,
+				A609030D293B71DF00CE73E7 /* TCA-DevTool */,
 			);
 			sourceTree = "<group>";
 		};
@@ -278,6 +282,7 @@
 			name = "ComposableNavigation-Examples";
 			packageProductDependencies = (
 				D8E7BAFD265CCE0D00936E27 /* ComposableNavigation */,
+				A609030E293CA1B600CE73E7 /* TCA-DevTool-Client */,
 			);
 			productName = "ComposableNavigation-Examples";
 			productReference = D8E7BAC8265C340000936E27 /* ComposableNavigation-Examples.app */;
@@ -547,6 +552,7 @@
 				DEVELOPMENT_ASSET_PATHS = "\"ComposableNavigation-Examples/Preview Content\"";
 				ENABLE_PREVIEWS = YES;
 				INFOPLIST_FILE = "ComposableNavigation-Examples/Info.plist";
+				IPHONEOS_DEPLOYMENT_TARGET = 16.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -567,6 +573,7 @@
 				DEVELOPMENT_ASSET_PATHS = "\"ComposableNavigation-Examples/Preview Content\"";
 				ENABLE_PREVIEWS = YES;
 				INFOPLIST_FILE = "ComposableNavigation-Examples/Info.plist";
+				IPHONEOS_DEPLOYMENT_TARGET = 16.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -649,6 +656,10 @@
 /* End XCConfigurationList section */
 
 /* Begin XCSwiftPackageProductDependency section */
+		A609030E293CA1B600CE73E7 /* TCA-DevTool-Client */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = "TCA-DevTool-Client";
+		};
 		D8E7BAFD265CCE0D00936E27 /* ComposableNavigation */ = {
 			isa = XCSwiftPackageProductDependency;
 			productName = ComposableNavigation;

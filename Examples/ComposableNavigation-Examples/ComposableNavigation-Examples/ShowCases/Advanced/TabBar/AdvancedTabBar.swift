@@ -7,14 +7,14 @@ struct AdvancedTabBar: ReducerProtocol {
 	
 	// MARK: TCA
 	
-	enum Screen: CaseIterable {
+	enum Screen: CaseIterable, Codable {
 		case deepLink
 		case listAndDetail
 		case alertPlayground
 		case nestedNavigation
 	}
 	
-	struct State: Equatable {
+	struct State: Equatable, Codable {
 		var deepLink = CountryDeepLink.State()
 		var listAndDetail = CountryListAndDetail.State()
 		var alertPlayground = AlertPlayground.State()
@@ -26,7 +26,7 @@ struct AdvancedTabBar: ReducerProtocol {
 		)
 	}
 	
-	enum Action: Equatable {
+	enum Action: Equatable, Codable {
 		case deepLink(CountryDeepLink.Action)
 		case listAndDetail(CountryListAndDetail.Action)
 		case alertPlayground(AlertPlayground.Action)

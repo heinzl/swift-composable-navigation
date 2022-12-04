@@ -4,11 +4,13 @@ import ComposableNavigation
 import ComposableArchitecture
 
 struct CountryDetail: ReducerProtocol {
-	struct State: Equatable {
+	struct State: Equatable, Codable {
 		let country: Country
 	}
 
-	enum Action: Equatable {}
+	enum Action: Equatable, Codable {
+		case empty
+	}
 
 	var body: some ReducerProtocol<State, Action> {
 		EmptyReducer()

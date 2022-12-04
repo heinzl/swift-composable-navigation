@@ -63,3 +63,6 @@ public struct StackNavigation<Item: Equatable>: ReducerProtocol {
 		state.areAnimationsEnabled = animated
 	}
 }
+
+extension StackNavigation.State: Codable where Item: Codable {}
+extension StackNavigation.Action: Codable where Item: Codable {}

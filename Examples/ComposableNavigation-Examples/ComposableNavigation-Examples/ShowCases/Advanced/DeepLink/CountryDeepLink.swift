@@ -7,9 +7,9 @@ struct CountryDeepLink: ReducerProtocol {
 	
 	// MARK: TCA
 	
-	struct State: Equatable {}
+	struct State: Equatable, Codable {}
 	
-	enum Action: Equatable {
+	enum Action: Equatable, Codable {
 		case showCountry(Country.ID)
 		case showSorting
 		case showSortingReset

@@ -55,3 +55,8 @@ public struct ModalNavigation<Item: Equatable>: ReducerProtocol {
 		}
 	}
 }
+
+extension ModalNavigation.StyledItem: Codable where Item: Codable {}
+extension ModalNavigation.State: Codable where Item: Codable {}
+extension ModalNavigation.Action: Codable where Item: Codable {}
+extension UIModalPresentationStyle: Codable {}

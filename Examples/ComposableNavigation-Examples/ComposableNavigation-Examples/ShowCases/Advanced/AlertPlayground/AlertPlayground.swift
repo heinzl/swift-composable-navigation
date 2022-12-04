@@ -7,12 +7,12 @@ struct AlertPlayground: ReducerProtocol {
 	
 	// MARK: TCA
 	
-	enum ModalScreen: Hashable {
+	enum ModalScreen: Hashable, Codable {
 		case resetAlert
 		case actionSheet
 	}
 	
-	struct State: Equatable {
+	struct State: Equatable, Codable {
 		static let initialCount = 5
 		
 		var counter = Counter.State(id: 0, count: Self.initialCount)
@@ -23,7 +23,7 @@ struct AlertPlayground: ReducerProtocol {
 		}
 	}
 	
-	enum Action: Equatable {
+	enum Action: Equatable, Codable {
 		case counter(Counter.Action)
 		case resetCounter
 		case alertNavigation(ModalNavigation<ModalScreen>.Action)

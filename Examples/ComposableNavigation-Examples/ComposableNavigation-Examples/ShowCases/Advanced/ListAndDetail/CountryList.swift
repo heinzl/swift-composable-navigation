@@ -4,11 +4,11 @@ import ComposableNavigation
 import ComposableArchitecture
 
 struct CountryList: ReducerProtocol {
-	struct State: Equatable {
+	struct State: Equatable, Codable {
 		let countries: [Country]
 	}
 
-	enum Action: Equatable {
+	enum Action: Equatable, Codable {
 		case selectCountry(id: Country.ID)
 		case selectFilter
 		case selectSorting

@@ -6,17 +6,17 @@ struct CountryListAndDetail: ReducerProtocol {
 	
 	// MARK: TCA
 	
-	enum StackScreen: Hashable {
+	enum StackScreen: Hashable, Codable {
 		case list
 		case detail(id: Country.ID)
 	}
 	
-	enum ModalScreen: Hashable {
+	enum ModalScreen: Hashable, Codable {
 		case filter
 		case sort
 	}
 	
-	struct State: Equatable {
+	struct State: Equatable, Codable {
 		var countries = [Country]()
 		
 		var list: CountryList.State {
@@ -88,7 +88,7 @@ struct CountryListAndDetail: ReducerProtocol {
 		}
 	}
 	
-	enum Action: Equatable {
+	enum Action: Equatable, Codable {
 		case loadCountries
 		
 		case list(CountryList.Action)

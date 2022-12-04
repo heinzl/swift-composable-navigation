@@ -7,7 +7,7 @@ struct ChangingTabs: ReducerProtocol {
 	
 	// MARK: TCA
 	
-	enum Screen: String {
+	enum Screen: String, Codable {
 		case one
 		case two
 	}

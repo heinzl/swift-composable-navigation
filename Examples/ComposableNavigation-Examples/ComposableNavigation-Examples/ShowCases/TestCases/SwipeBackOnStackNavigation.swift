@@ -7,7 +7,7 @@ struct SwipeBackOnStackNavigation: ReducerProtocol {
 	
 	// MARK: TCA
 	
-	enum Screen: String {
+	enum Screen: String, Codable {
 		case root
 		case pushed
 	}
