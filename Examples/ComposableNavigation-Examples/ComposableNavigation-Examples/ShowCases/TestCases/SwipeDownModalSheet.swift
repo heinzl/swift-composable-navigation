@@ -3,7 +3,7 @@ import ComposableNavigation
 import ComposableArchitecture
 
 /// This setup is used for a UI test
-struct SwipeDownModalSheet {
+struct SwipeDownModalSheet: ReducerProtocol {
 	
 	// MARK: TCA
 	
@@ -19,16 +19,11 @@ struct SwipeDownModalSheet {
 		case modalNavigation(ModalNavigation<Screen>.Action)
 	}
 	
-	struct Environment {}
-	
-	static let reducer: Reducer<State, Action, Environment> = Reducer.combine([
-		ModalNavigation<Screen>.reducer()
-			.pullback(
-				state: \State.modalNavigation,
-				action: /Action.modalNavigation,
-				environment: { _ in () }
-			)
-	])
+	var body: some ReducerProtocol<State, Action> {
+		Scope(state: \.modalNavigation, action: /Action.modalNavigation) {
+			ModalNavigation<Screen>()
+		}
+	}
 	
 	// MARK: View creation
 	

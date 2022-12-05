@@ -3,7 +3,7 @@ import SwiftUI
 import ComposableNavigation
 import ComposableArchitecture
 
-struct AlertPlayground {
+struct AlertPlayground: ReducerProtocol {
 	
 	// MARK: TCA
 	
@@ -29,9 +29,7 @@ struct AlertPlayground {
 		case alertNavigation(ModalNavigation<ModalScreen>.Action)
 	}
 	
-	struct Environment {}
-	
-	private static let privateReducer = Reducer<State, Action, Environment> { state, action, environment in
+	private func privateReducer(state: inout State, action: Action) -> EffectTask<Action> {
 		switch action {
 		case .resetCounter:
 			state.counter.count = State.initialCount
@@ -41,21 +39,15 @@ struct AlertPlayground {
 		return .none
 	}
 	
-	static let reducer: Reducer<State, Action, Environment> = Reducer.combine([
-		ModalNavigation<ModalScreen>.reducer()
-			.pullback(
-				state: \.alertNavigation,
-				action: /Action.alertNavigation,
-				environment: { _ in () }
-			),
-		Counter.reducer
-			.pullback(
-				state: \.counter,
-				action: /Action.counter,
-				environment: { _ in .init() }
-			),
-		privateReducer
-	])
+	var body: some ReducerProtocol<State, Action> {
+		Scope(state: \.alertNavigation, action: /Action.alertNavigation) {
+			ModalNavigation<ModalScreen>()
+		}
+		Scope(state: \.counter, action: /Action.counter) {
+			Counter()
+		}
+		Reduce(privateReducer)
+	}
 	
 	// MARK: View creation
 	
@@ -123,6 +115,17 @@ struct AlertPlayground {
 				toNavigationAction: Action.alertNavigation
 			)
 		}
+	}
+	
+	static func makeView(store: Store<State, Action>) -> UIViewController {
+		AlertPlaygroundView(store: store).viewController
+			.withModal(
+				store: store.scope(
+					state: \.alertNavigation,
+					action: AlertPlayground.Action.alertNavigation
+				),
+				viewProvider: AlertPlayground.ModalViewProvider(store: store)
+			)
 	}
 }
 

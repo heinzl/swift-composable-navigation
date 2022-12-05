@@ -2,7 +2,7 @@ import UIKit
 import ComposableNavigation
 import ComposableArchitecture
 
-struct CountryListAndDetail {
+struct CountryListAndDetail: ReducerProtocol {
 	
 	// MARK: TCA
 	
@@ -100,26 +100,24 @@ struct CountryListAndDetail {
 		case modalNavigation(ModalNavigation<ModalScreen>.Action)
 	}
 	
-	struct Environment {
-		let countryProvider: CountryProvider
-	}
+	@Dependency(\.countryProvider) var countryProvider
 	
-	private static let privateReducer = Reducer<State, Action, Environment> { state, action, environment in
+	private func privateReducer(state: inout State, action: Action) -> EffectTask<Action> {
 		switch action {
 		case .loadCountries:
-			let countries = environment.countryProvider.getCountryList()
+			let countries = self.countryProvider.getCountryList()
 			state.countries = countries
 			state.continentFilter.continents = Set(countries.map(\.continent)).sorted()
 		case .list(.selectCountry(let id)):
 			return .task { .stackNavigation(.pushItem(.detail(id: id))) }
 		case .list(.selectFilter),
-			 .countrySort(.showFilter):
+				.countrySort(.showFilter):
 			return .task { .modalNavigation(.presentSheet(.filter)) }
 		case .list(.selectSorting),
-			 .continentFilter(.showSorting):
+				.continentFilter(.showSorting):
 			return .task { .modalNavigation(.presentSheet(.sort)) }
 		case .continentFilter(.done),
-			 .countrySort(.done):
+				.countrySort(.done):
 			return .task { .modalNavigation(.dismiss()) }
 		default:
 			break
@@ -127,46 +125,27 @@ struct CountryListAndDetail {
 		return .none
 	}
 	
-	static let reducer: Reducer<State, Action, Environment> = Reducer.combine([
-		CountryDetail.reducer
-			.optional()
-			.pullback(
-				state: \.detail,
-				action: /Action.detail,
-				environment: { _ in .init() }
-			),
-		CountryList.reducer
-			.pullback(
-				state: \.list,
-				action: /Action.list,
-				environment: { _ in .init() }
-			),
-		ContinentFilter.reducer
-			.pullback(
-				state: \.continentFilter,
-				action: /Action.continentFilter,
-				environment: { _ in .init() }
-			),
-		CountrySort.reducer
-			.pullback(
-				state: \.countrySort,
-				action: /Action.countrySort,
-				environment: { _ in .init() }
-			),
-		StackNavigation<StackScreen>.reducer()
-			.pullback(
-				state: \.stackNavigation,
-				action: /Action.stackNavigation,
-				environment: { _ in () }
-			),
-		ModalNavigation<ModalScreen>.reducer()
-			.pullback(
-				state: \.modalNavigation,
-				action: /Action.modalNavigation,
-				environment: { _ in () }
-			),
-		privateReducer
-	])
+	var body: some ReducerProtocol<State, Action> {
+		Scope(state: \.continentFilter, action: /Action.continentFilter) {
+			ContinentFilter()
+		}
+		Scope(state: \.countrySort, action: /Action.countrySort) {
+			CountrySort()
+		}
+		Scope(state: \.list, action: /Action.list) {
+			CountryList()
+		}
+		Scope(state: \.stackNavigation, action: /Action.stackNavigation) {
+			StackNavigation<StackScreen>()
+		}
+		Scope(state: \.modalNavigation, action: /Action.modalNavigation) {
+			ModalNavigation<ModalScreen>()
+		}
+		Reduce(privateReducer)
+			.ifLet(\.detail, action: /Action.detail) {
+				CountryDetail()
+			}
+	}
 	
 	// MARK: View creation
 	
@@ -214,5 +193,35 @@ struct CountryListAndDetail {
 				))
 			}
 		}
+	}
+	
+	static func makeView(store: Store<State, Action>) -> UIViewController {
+		let stackNavigationController = StackNavigationViewController(
+			store: store.scope(
+				state: \.stackNavigation,
+				action: CountryListAndDetail.Action.stackNavigation
+			),
+			viewProvider: CountryListAndDetail.StackViewProvider(store: store)
+		)
+		stackNavigationController.navigationBar.prefersLargeTitles = true
+		return stackNavigationController
+			.withModal(
+				store: store.scope(
+					state: \.modalNavigation,
+					action: CountryListAndDetail.Action.modalNavigation
+				),
+				viewProvider: CountryListAndDetail.ModalViewProvider(store: store)
+			)
+	}
+}
+
+private enum CountryProviderKey: DependencyKey {
+	static var liveValue: CountryProviderProtocol = CountryProvider()
+}
+
+extension DependencyValues {
+	var countryProvider: CountryProviderProtocol {
+		get { self[CountryProviderKey.self] }
+		set { self[CountryProviderKey.self] = newValue }
 	}
 }

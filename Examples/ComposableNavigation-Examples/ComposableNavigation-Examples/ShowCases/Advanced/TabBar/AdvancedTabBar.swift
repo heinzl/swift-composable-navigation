@@ -3,7 +3,7 @@ import SwiftUI
 import ComposableNavigation
 import ComposableArchitecture
 
-struct AdvancedTabBar {
+struct AdvancedTabBar: ReducerProtocol {
 	
 	// MARK: TCA
 	
@@ -11,16 +11,18 @@ struct AdvancedTabBar {
 		case deepLink
 		case listAndDetail
 		case alertPlayground
+		case nestedNavigation
 	}
 	
 	struct State: Equatable {
 		var deepLink = CountryDeepLink.State()
 		var listAndDetail = CountryListAndDetail.State()
 		var alertPlayground = AlertPlayground.State()
+		var nestedNavigation = NestedStack.State(modalLevel: 1)
 		
 		var tabNavigation = TabNavigation<Screen>.State(
 			items: Screen.allCases,
-			activeItem: .listAndDetail
+			activeItem: .deepLink
 		)
 	}
 	
@@ -29,27 +31,25 @@ struct AdvancedTabBar {
 		case listAndDetail(CountryListAndDetail.Action)
 		case alertPlayground(AlertPlayground.Action)
 		case tabNavigation(TabNavigation<Screen>.Action)
+		case nestedNavigation(NestedStack.Action)
 	}
 	
-	struct Environment {
-		let countryProvider: CountryProvider
-	}
-	
-	private static let privateReducer = Reducer<State, Action, Environment> { state, action, environment in
+	private func privateReducer(state: inout State, action: Action) -> EffectTask<Action> {
 		switch action {
 		case .deepLink(.showSorting):
+			// Using actions to setup navigation
 			return .run { send in
 				await send(.tabNavigation(.setActiveItem(.listAndDetail)))
 				await send(.listAndDetail(.stackNavigation(.setItems([.list]))))
 				await send(.listAndDetail(.modalNavigation(.set(.init(item: .sort, style: .pageSheet)))))
 			}
 		case .deepLink(.showSortingReset):
-			return .run { send in
-				await send(.tabNavigation(.setActiveItem(.listAndDetail)))
-				await send(.listAndDetail(.stackNavigation(.setItems([.list]))))
-				await send(.listAndDetail(.modalNavigation(.set(.init(item: .sort, style: .pageSheet)))))
-				await send(.listAndDetail(.countrySort(.alertNavigation(.set(.init(item: .resetAlert, style: .fullScreen))))))
-			}
+			// Using state directly to setup navigation
+			state.tabNavigation.activeItem = .listAndDetail
+			state.listAndDetail.stackNavigation.items = [.list]
+			state.listAndDetail.modalNavigation.styledItem = .init(item: .sort, style: .pageSheet)
+			state.listAndDetail.countrySort.alertNavigation.styledItem = .init(item: .resetAlert, style: .fullScreen)
+			return .none
 		case .deepLink(.showCountry(let countryId)):
 			return .run { send in
 				await send(.tabNavigation(.setActiveItem(.listAndDetail)))
@@ -60,39 +60,34 @@ struct AdvancedTabBar {
 				await send(.tabNavigation(.setActiveItem(.alertPlayground)))
 				await send(.alertPlayground(.alertNavigation(.set(.init(item: .actionSheet, style: .fullScreen)))))
 			}
+		case .deepLink(.showNestedNavigation):
+			state.tabNavigation.activeItem = .nestedNavigation
+			state.nestedNavigation = .example
+			return .none
 		default:
 			break
 		}
 		return .none
 	}
 	
-	static let reducer: Reducer<State, Action, Environment> = Reducer.combine([
-		CountryDeepLink.reducer
-			.pullback(
-				state: \.deepLink,
-				action: /Action.deepLink,
-				environment: { _ in .init() }
-			),
-		CountryListAndDetail.reducer
-			.pullback(
-				state: \.listAndDetail,
-				action: /Action.listAndDetail,
-				environment: { .init(countryProvider: $0.countryProvider) }
-			),
-		AlertPlayground.reducer
-			.pullback(
-				state: \.alertPlayground,
-				action: /Action.alertPlayground,
-				environment: { _ in .init() }
-			),
-		TabNavigation<Screen>.reducer()
-			.pullback(
-				state: \.tabNavigation,
-				action: /Action.tabNavigation,
-				environment: { _ in () }
-			),
-		privateReducer
-	])
+	var body: some ReducerProtocol<State, Action> {
+		Scope(state: \.deepLink, action: /Action.deepLink) {
+			CountryDeepLink()
+		}
+		Scope(state: \.listAndDetail, action: /Action.listAndDetail) {
+			CountryListAndDetail()
+		}
+		Scope(state: \.alertPlayground, action: /Action.alertPlayground) {
+			AlertPlayground()
+		}
+		Scope(state: \.nestedNavigation, action: /Action.nestedNavigation) {
+			NestedStack()
+		}
+		Scope(state: \.tabNavigation, action: /Action.tabNavigation) {
+			TabNavigation<Screen>()
+		}
+		Reduce(privateReducer)
+	}
 	
 	// MARK: View creation
 	
@@ -102,12 +97,12 @@ struct AdvancedTabBar {
 		func makePresentable(for navigationItem: Screen) -> Presentable {
 			switch navigationItem {
 			case .deepLink:
-				let viewController = CountryDeepLinkView(
+				let viewController = CountryDeepLink.makeView(
 					store: store.scope(
 						state: \.deepLink,
 						action: Action.deepLink
 					)
-				).viewController
+				)
 				viewController.tabBarItem = UITabBarItem(
 					title: "Deep link",
 					image: UIImage(systemName: "link"),
@@ -121,22 +116,7 @@ struct AdvancedTabBar {
 					action: Action.listAndDetail
 				)
 				ViewStore(listAndDetailStore).send(.loadCountries)
-				let stackNavigationController = StackNavigationViewController(
-					store: listAndDetailStore.scope(
-						state: \.stackNavigation,
-						action: CountryListAndDetail.Action.stackNavigation
-					),
-					viewProvider: CountryListAndDetail.StackViewProvider(store: listAndDetailStore)
-				)
-				stackNavigationController.navigationBar.prefersLargeTitles = true
-				let viewController = stackNavigationController
-					.withModal(
-						store: listAndDetailStore.scope(
-							state: \.modalNavigation,
-							action: CountryListAndDetail.Action.modalNavigation
-						),
-						viewProvider: CountryListAndDetail.ModalViewProvider(store: listAndDetailStore)
-					)
+				let viewController = CountryListAndDetail.makeView(store: listAndDetailStore)
 				viewController.tabBarItem = UITabBarItem(
 					title: "List",
 					image: UIImage(systemName: "list.dash"),
@@ -145,22 +125,29 @@ struct AdvancedTabBar {
 				return viewController
 				
 			case .alertPlayground:
-				let alertPlaygroundStore = store.scope(
-					state: \.alertPlayground,
-					action: Action.alertPlayground
-				)
-				let viewController = AlertPlaygroundView(store: alertPlaygroundStore).viewController
-					.withModal(
-						store: alertPlaygroundStore.scope(
-							state: \.alertNavigation,
-							action: AlertPlayground.Action.alertNavigation
-						),
-						viewProvider: AlertPlayground.ModalViewProvider(store: alertPlaygroundStore)
+				let viewController = AlertPlayground.makeView(
+					store: store.scope(
+						state: \.alertPlayground,
+						action: Action.alertPlayground
 					)
+				)
 				viewController.tabBarItem = UITabBarItem(
 					title: "Alerts",
 					image: UIImage(systemName: "exclamationmark.bubble"),
 					tag: 2
+				)
+				return viewController
+			case .nestedNavigation:
+				let viewController = NestedStack.makeView(
+					store: store.scope(
+						state: \.nestedNavigation,
+						action: Action.nestedNavigation
+					)
+				)
+				viewController.tabBarItem = UITabBarItem(
+					title: "Nested",
+					image: UIImage(systemName: "square.3.layers.3d.down.left"),
+					tag: 3
 				)
 				return viewController
 			}

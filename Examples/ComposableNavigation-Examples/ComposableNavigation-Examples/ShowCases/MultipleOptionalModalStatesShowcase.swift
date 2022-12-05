@@ -6,7 +6,7 @@ import SwiftUI
 /// This example showcases how to model multiple optional states.
 /// This can be necessary if you want to present modal screens without
 /// keeping the modal state after dismissing it.
-struct MultipleOptionalModalStatesShowcase {
+struct MultipleOptionalModalStatesShowcase: ReducerProtocol {
 	// MARK: TCA
 	
 	enum Screen: Hashable {
@@ -24,7 +24,7 @@ struct MultipleOptionalModalStatesShowcase {
 		var selectedCount: Int?
 		
 		var selectedCountText: String {
-			guard let selectedCount = selectedCount else {
+			guard let selectedCount else {
 				return "None"
 			}
 			return "\(selectedCount)"
@@ -77,9 +77,7 @@ struct MultipleOptionalModalStatesShowcase {
 		case showCounterTwo
 	}
 	
-	struct Environment {}
-	
-	private static let privateReducer = Reducer<State, Action, Environment> { state, action, environment in
+	private func privateReducer(state: inout State, action: Action) -> EffectTask<Action> {
 		switch action {
 		case .showCounterOne:
 			return .task { .modalNavigation(.presentSheet(.counterOne)) }
@@ -97,29 +95,18 @@ struct MultipleOptionalModalStatesShowcase {
 		return .none
 	}
 	
-	static let reducer: Reducer<State, Action, Environment> = Reducer.combine([
-		Counter.reducer
-			.optional()
-			.pullback(
-				state: \.counterOne,
-				action: /Action.counterOne,
-				environment: { _ in .init() }
-			),
-		Counter.reducer
-			.optional()
-			.pullback(
-				state: \.counterTwo,
-				action: /Action.counterTwo,
-				environment: { _ in .init() }
-			),
-		ModalNavigation<Screen>.reducer()
-			.pullback(
-				state: \.modalNavigation,
-				action: /Action.modalNavigation,
-				environment: { _ in () }
-			),
-		privateReducer
-	])
+	var body: some ReducerProtocol<State, Action> {
+		Scope(state: \.modalNavigation, action: /Action.modalNavigation) {
+			ModalNavigation<Screen>()
+		}
+		Reduce(privateReducer)
+			.ifLet(\.counterOne, action: /Action.counterOne) {
+				Counter()
+			}
+			.ifLet(\.counterTwo, action: /Action.counterTwo) {
+				Counter()
+			}
+	}
 	
 	struct ViewProvider: ViewProviding {
 		let store: Store<State, Action>

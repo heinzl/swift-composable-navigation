@@ -3,7 +3,7 @@ import SwiftUI
 import ComposableNavigation
 import ComposableArchitecture
 
-struct ContinentFilter {
+struct ContinentFilter: ReducerProtocol {
 	struct State: Equatable {
 		var continents = [String]()
 		var selectedContinent: String?
@@ -13,12 +13,9 @@ struct ContinentFilter {
 		case selectContinent(String?)
 		case done
 		case showSorting
-		case resetDefaults
 	}
-	
-	struct Environment {}
-	
-	static let reducer = Reducer<State, Action, Environment> { state, action, environment in
+
+	func reduce(into state: inout State, action: Action) -> EffectTask<Action> {
 		switch action {
 		case .selectContinent(let continent):
 			state.selectedContinent = continent
@@ -56,15 +53,6 @@ struct ContinentFilterView: View, Presentable {
 				.listStyle(InsetGroupedListStyle())
 				.navigationTitle("Select continent")
 				.toolbar {
-					ToolbarItem(placement: .navigationBarLeading) {
-						Button(action: {
-							viewStore.send(.resetDefaults)
-						}, label: {
-							Text("Reset")
-								.foregroundColor(.red)
-								.bold()
-						})
-					}
 					ToolbarItem(placement: .navigationBarTrailing) {
 						Button(action: {
 							viewStore.send(.done)

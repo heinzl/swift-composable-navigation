@@ -3,7 +3,7 @@ import ComposableNavigation
 import ComposableArchitecture
 
 /// This setup is used for a UI test
-struct ChangingTabs {
+struct ChangingTabs: ReducerProtocol {
 	
 	// MARK: TCA
 	
@@ -23,16 +23,11 @@ struct ChangingTabs {
 		case tabNavigation(TabNavigation<Screen>.Action)
 	}
 	
-	struct Environment {}
-	
-	static let reducer: Reducer<State, Action, Environment> = Reducer.combine([
-		TabNavigation<Screen>.reducer()
-			.pullback(
-				state: \State.tabNavigation,
-				action: /Action.tabNavigation,
-				environment: { _ in () }
-			)
-	])
+	var body: some ReducerProtocol<State, Action> {
+		Scope(state: \.tabNavigation, action: /Action.tabNavigation) {
+			TabNavigation<Screen>()
+		}
+	}
 	
 	// MARK: View creation
 	

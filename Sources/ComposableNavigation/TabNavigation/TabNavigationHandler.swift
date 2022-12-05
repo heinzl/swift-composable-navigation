@@ -7,18 +7,19 @@ import ComposableArchitecture
 ///
 /// Additionally, it acts as the `UITabBarControllerDelegate` and automatically updates the state
 /// when the active tab is changed by the user.
+@MainActor
 public class TabNavigationHandler<ViewProvider: ViewProviding>: NSObject, UITabBarControllerDelegate {
 	public typealias Item = ViewProvider.Item
-	public typealias ItemTabs = TabNavigation<Item>
+	public typealias Navigation = TabNavigation<Item>
 	
-	internal let viewStore: ViewStore<ItemTabs.State, ItemTabs.Action>
+	internal let viewStore: ViewStore<Navigation.State, Navigation.Action>
 	internal let viewProvider: ViewProvider
 	internal var currentViewControllerItems: OrderedDictionary<Item, UIViewController>
 	
 	private var cancellable: AnyCancellable?
-	
+
 	public init(
-		store: Store<ItemTabs.State, ItemTabs.Action>,
+		store: Store<Navigation.State, Navigation.Action>,
 		viewProvider: ViewProvider
 	) {
 		self.viewStore = ViewStore(store)
@@ -30,16 +31,23 @@ public class TabNavigationHandler<ViewProvider: ViewProviding>: NSObject, UITabB
 		tabBarController.delegate = self
 		
 		cancellable = viewStore.publisher
-			.sink { [weak self, weak tabBarController] in
-				guard let self = self, let tabBarController = tabBarController else { return }
+			.sink { [weak self, weak tabBarController] state in
+				guard let self, let tabBarController else { return }
 				self.checkTabBarControllerDelegate(tabBarController)
-				self.updateViewControllers(newState: $0, for: tabBarController)
-				self.updateSelectedItem($0.activeItem, newItems: $0.items, for: tabBarController)
+				self.updateTabViewController(newState: state, for: tabBarController)
 			}
 	}
-	
+
+	internal func updateTabViewController(
+		newState: Navigation.State,
+		for tabBarController: UITabBarController
+	) {
+		updateViewControllers(newState: newState, for: tabBarController)
+		updateSelectedItem(newState.activeItem, newItems: newState.items, for: tabBarController)
+	}
+
 	private func updateViewControllers(
-		newState: ItemTabs.State,
+		newState: Navigation.State,
 		for tabBarController: UITabBarController
 	) {
 		let newItems = newState.items
@@ -57,13 +65,13 @@ public class TabNavigationHandler<ViewProvider: ViewProviding>: NSObject, UITabB
 		
 		tabBarController.setViewControllers(
 			Array(currentViewControllerItems.values),
-			animated: shouldAnimateStackChanges(for: tabBarController, state: newState)
+			animated: shouldAnimateTabChanges(for: tabBarController, state: newState)
 		)
 	}
 	
-	private func shouldAnimateStackChanges(
+	private func shouldAnimateTabChanges(
 		for tabBarController: UITabBarController,
-		state: ItemTabs.State
+		state: Navigation.State
 	) -> Bool {
 		if tabBarController.viewControllers?.isEmpty ?? true {
 			return false
@@ -94,9 +102,13 @@ public class TabNavigationHandler<ViewProvider: ViewProviding>: NSObject, UITabB
 		guard let index = currentViewControllerItems.values.firstIndex(of: viewController) else {
 			return
 		}
-		viewStore.send(.setActiveIndex(index))
+
+		Task { @MainActor in
+			await Task.yield()
+			viewStore.send(.setActiveIndex(index))
+		}
 	}
-	
+
 	private func checkTabBarControllerDelegate(_ tabBarController: UITabBarController) {
 		#if DEBUG
 		guard tabBarController.delegate !== self else {

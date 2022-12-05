@@ -1,5 +1,6 @@
 import XCTest
 
+@MainActor
 class ComposableNavigation_ExamplesUITests: XCTestCase {
 	var app: XCUIApplication!
 	
@@ -90,5 +91,25 @@ class ComposableNavigation_ExamplesUITests: XCTestCase {
 		let secondLabel = app.staticTexts["tabsState"]
 		XCTAssertEqual(firstLabel.label, "two")
 		XCTAssertEqual(secondLabel.label, "two")
+	}
+	
+	// MARK: Nested deep link
+	
+	func testNestedDeepLink() async throws {
+		setupTestCase("nestedDeepLink")
+		
+		let modalLevels = app.staticTexts.matching(identifier: "modalLevel")
+		XCTAssertEqual(modalLevels.element(boundBy: 0).label, "1")
+		XCTAssertEqual(modalLevels.element(boundBy: 1).label, "2")
+		XCTAssertEqual(modalLevels.element(boundBy: 2).label, "3")
+		XCTAssertEqual(modalLevels.element(boundBy: 3).label, "4")
+		XCTAssertEqual(modalLevels.element(boundBy: 4).label, "5")
+		
+		let stackLevels = app.staticTexts.matching(identifier: "stackLevel")
+		XCTAssertEqual(stackLevels.element(boundBy: 0).label, "2")
+		XCTAssertEqual(stackLevels.element(boundBy: 1).label, "2")
+		XCTAssertEqual(stackLevels.element(boundBy: 2).label, "2")
+		XCTAssertEqual(stackLevels.element(boundBy: 3).label, "2")
+		XCTAssertEqual(stackLevels.element(boundBy: 4).label, "2")
 	}
 }

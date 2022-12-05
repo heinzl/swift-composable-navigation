@@ -3,7 +3,7 @@ import SwiftUI
 import ComposableNavigation
 import ComposableArchitecture
 
-struct CountryDeepLink {
+struct CountryDeepLink: ReducerProtocol {
 	
 	// MARK: TCA
 	
@@ -14,11 +14,16 @@ struct CountryDeepLink {
 		case showSorting
 		case showSortingReset
 		case showAlertOptions
+		case showNestedNavigation
 	}
 	
-	struct Environment {}
+	func reduce(into state: inout State, action: Action) -> EffectTask<Action> {
+		.none
+	}
 	
-	static let reducer: Reducer<State, Action, Environment> = .empty
+	static func makeView(store: Store<State, Action>) -> UIViewController {
+		CountryDeepLinkView(store: store).viewController
+	}
 }
 
 struct CountryDeepLinkView: View, Presentable {
@@ -46,6 +51,11 @@ struct CountryDeepLinkView: View, Presentable {
 					ViewStore(store).send(.showAlertOptions)
 				} label: {
 					Label("Show alert options", systemImage: "exclamationmark.bubble")
+				}
+				Button {
+					ViewStore(store).send(.showNestedNavigation)
+				} label: {
+					Label("Nest multiple layers of stack and modal navigation", systemImage: "square.3.layers.3d.down.left")
 				}
 			}
 			.navigationTitle("Deep link")

@@ -7,7 +7,7 @@ import SwiftUI
 /// - Two counter screens and a helper screen.
 /// - You can navigate to another tab.
 /// - You can switch the tab order tab.
-struct TabsShowcase {
+struct TabsShowcase: ReducerProtocol {
 	
 	// MARK: TCA
 	
@@ -36,9 +36,7 @@ struct TabsShowcase {
 		case tabNavigation(TabNavigation<Screen>.Action)
 	}
 	
-	struct Environment {}
-	
-	private static let privateRducer = Reducer<State, Action, Environment> { state, action, environment in
+	private func privateReducer(state: inout State, action: Action) -> EffectTask<Action> {
 		switch action {
 		case .helper(.switchTabs):
 			var newOrder = state.tabNavigation.items
@@ -52,33 +50,21 @@ struct TabsShowcase {
 		return .none
 	}
 	
-	static let reducer: Reducer<State, Action, Environment> = Reducer.combine([
-		Counter.reducer
-			.pullback(
-				state: \State.counterOne,
-				action: /Action.counterOne,
-				environment: { _ in .init() }
-			),
-		Counter.reducer
-			.pullback(
-				state: \State.counterTwo,
-				action: /Action.counterTwo,
-				environment: { _ in .init() }
-			),
-		Helper.reducer
-			.pullback(
-				state: \State.helper,
-				action: /Action.helper,
-				environment: { _ in .init() }
-			),
-		TabNavigation<Screen>.reducer()
-			.pullback(
-				state: \State.tabNavigation,
-				action: /Action.tabNavigation,
-				environment: { _ in () }
-			),
-		privateRducer
-	])
+	var body: some ReducerProtocol<State, Action> {
+		Scope(state: \.counterOne, action: /Action.counterOne) {
+			Counter()
+		}
+		Scope(state: \.counterTwo, action: /Action.counterTwo) {
+			Counter()
+		}
+		Scope(state: \.helper, action: /Action.helper) {
+			Helper()
+		}
+		Scope(state: \.tabNavigation, action: /Action.tabNavigation) {
+			TabNavigation<Screen>()
+		}
+		Reduce(privateReducer)
+	}
 	
 	// MARK: View creation
 	
@@ -159,7 +145,7 @@ struct TabsShowcase {
 // MARK: Helper
 
 extension TabsShowcase {
-	struct Helper {
+	struct Helper: ReducerProtocol {
 		struct State: Equatable {}
 		
 		enum Action: Equatable {
@@ -167,9 +153,9 @@ extension TabsShowcase {
 			case showTab(Int)
 		}
 		
-		struct Environment {}
-		
-		static let reducer: Reducer<State, Action, Environment> = .empty
+		func reduce(into state: inout State, action: Action) -> EffectTask<Action> {
+			.none
+		}
 	}
 
 	struct HelperView: View {

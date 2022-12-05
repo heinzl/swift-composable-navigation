@@ -6,19 +6,20 @@ import OrderedCollections
 /// The `StackNavigationHandler` listens to state changes and updates the UINavigationController accordingly.
 ///
 /// It also supports automatic state updates for popping items via the leading-edge swipe gesture or the long press back-button menu.
+@MainActor
 public class StackNavigationHandler<ViewProvider: ViewProviding>: NSObject, UINavigationControllerDelegate {
 	public typealias Item = ViewProvider.Item
-	public typealias ItemStack = StackNavigation<Item>
+	public typealias Navigation = StackNavigation<Item>
 	
-	internal let viewStore: ViewStore<ItemStack.State, ItemStack.Action>
+	internal let viewStore: ViewStore<Navigation.State, Navigation.Action>
 	internal let viewProvider: ViewProvider
 	internal var currentViewControllerItems: OrderedDictionary<Item, UIViewController>
 	
 	private var cancellable: AnyCancellable?
 	private let ignorePreviousViewControllers: Bool
-	
+
 	public init(
-		store: Store<ItemStack.State, ItemStack.Action>,
+		store: Store<Navigation.State, Navigation.Action>,
 		viewProvider: ViewProvider,
 		ignorePreviousViewControllers: Bool = false
 	) {
@@ -31,21 +32,21 @@ public class StackNavigationHandler<ViewProvider: ViewProviding>: NSObject, UINa
 	public func setup(with navigationController: UINavigationController) {
 		navigationController.delegate = self
 		let numberOfViewControllersOnStackToIgnore = numberOfViewControllersOnStackToIgnore(for: navigationController)
-		
+
 		cancellable = viewStore.publisher
-			.sink { [weak self, weak navigationController] in
-				guard let self = self, let navigationController = navigationController else { return }
+			.sink { [weak self, weak navigationController] state in
+				guard let self, let navigationController else { return }
 				self.checkNavigationControllerDelegate(navigationController)
 				self.updateViewControllerStack(
-					newState: $0,
+					newState: state,
 					for: navigationController,
 					numberOfViewControllersOnStackToIgnore: numberOfViewControllersOnStackToIgnore
 				)
 			}
 	}
 	
-	private func updateViewControllerStack(
-		newState: ItemStack.State,
+	internal func updateViewControllerStack(
+		newState: Navigation.State,
 		for navigationController: UINavigationController,
 		numberOfViewControllersOnStackToIgnore: Int
 	) {
@@ -65,7 +66,7 @@ public class StackNavigationHandler<ViewProvider: ViewProviding>: NSObject, UINa
 			upTo: numberOfViewControllersOnStackToIgnore
 		))
 		let updatedViewControllers = Array(currentViewControllerItems.values)
-		
+
 		navigationController.setViewControllers(
 			viewControllerToIgnore + updatedViewControllers,
 			animated: shouldAnimateStackChanges(for: navigationController, state: newState)
@@ -74,7 +75,7 @@ public class StackNavigationHandler<ViewProvider: ViewProviding>: NSObject, UINa
 	
 	private func shouldAnimateStackChanges(
 		for navigationController: UINavigationController,
-		state: ItemStack.State
+		state: Navigation.State
 	) -> Bool {
 		if navigationController.viewControllers.isEmpty {
 			return false
@@ -85,7 +86,7 @@ public class StackNavigationHandler<ViewProvider: ViewProviding>: NSObject, UINa
 		}
 	}
 	
-	private func numberOfViewControllersOnStackToIgnore(
+	internal func numberOfViewControllersOnStackToIgnore(
 		for navigationController: UINavigationController
 	) -> Int {
 		guard ignorePreviousViewControllers else {
@@ -93,7 +94,7 @@ public class StackNavigationHandler<ViewProvider: ViewProviding>: NSObject, UINa
 		}
 		return navigationController.viewControllers.count
 	}
-	
+
 	// MARK: UINavigationControllerDelegate
 
 	public func navigationController(
@@ -113,9 +114,13 @@ public class StackNavigationHandler<ViewProvider: ViewProviding>: NSObject, UINa
 		}
 		let popCount = fromIndex - toIndex
 		currentViewControllerItems.removeLast(popCount)
-		viewStore.send(.popItems(count: popCount))
+
+		Task { @MainActor in
+			await Task.yield()
+			viewStore.send(.popItems(count: popCount))
+		}
 	}
-	
+
 	private func checkNavigationControllerDelegate(_ navigationController: UINavigationController) {
 		#if DEBUG
 		guard navigationController.delegate !== self else {

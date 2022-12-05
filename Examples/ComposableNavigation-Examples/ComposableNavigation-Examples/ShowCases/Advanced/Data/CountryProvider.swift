@@ -1,6 +1,10 @@
 import Foundation
 
-struct CountryProvider {
+protocol CountryProviderProtocol {
+	func getCountryList() -> [Country]
+}
+
+struct CountryProvider: CountryProviderProtocol {
 	func getCountryList() -> [Country] {
 		guard
 			let url = Bundle.main.url(forResource: "countries", withExtension: "json"),
