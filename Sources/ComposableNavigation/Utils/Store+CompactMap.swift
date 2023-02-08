@@ -4,9 +4,13 @@ public extension Store where State: Equatable {
 	func compactMap<NonOptionalState, Unwrapped>(
 		_ transform: (Store<NonOptionalState, Action>) -> Unwrapped
 	) -> Unwrapped? where State == NonOptionalState? {
-		guard let state = ViewStore(self).state else {
+		if var state = ViewStore(self).state {
+			return transform(self.scope {
+				state = $0 ?? state
+				return state
+			})
+		} else {
 			return nil
 		}
-		return transform(self.scope { $0 ?? state })
 	}
 }
