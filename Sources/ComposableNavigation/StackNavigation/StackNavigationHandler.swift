@@ -16,7 +16,11 @@ public class StackNavigationHandler<ViewProvider: ViewProviding>: NSObject, UINa
 	internal var currentViewControllerItems: OrderedDictionary<Item, UIViewController>
 	
 	private var cancellable: AnyCancellable?
-	private let ignorePreviousViewControllers: Bool
+	
+	/// This field can be set to `true` if `StackNavigationHandler` is used
+	/// on top of an already existing `UINavigationController` containing view controllers
+	/// which are not managed by `StackNavigationHandler`
+	public let ignorePreviousViewControllers: Bool
 
 	public init(
 		store: Store<Navigation.State, Navigation.Action>,
@@ -105,14 +109,22 @@ public class StackNavigationHandler<ViewProvider: ViewProviding>: NSObject, UINa
 		guard
 			let transition = navigationController.transitionCoordinator,
 			let fromViewController = transition.viewController(forKey: .from),
-			let toViewController = transition.viewController(forKey: .to),
+			let toViewController = transition.viewController(forKey: .to)
+		else {
+			return
+		}
+		/// If `StackNavigationHandler` is used with un-managed view controllers
+		/// (see `ignorePreviousViewControllers`) we want to be able to pop to these view controllers.
+		/// Popping the the last managed view controller will result in a `toIndex` of -1 and a `fromIndex`
+		/// of 0 which will result in a `popCount` of 1.
+		let toIndex = currentViewControllerItems.values.firstIndex(of: toViewController) ?? -1
+		guard
 			let fromIndex = currentViewControllerItems.values.firstIndex(of: fromViewController),
-			let toIndex = currentViewControllerItems.values.firstIndex(of: toViewController),
 			toIndex < fromIndex
 		else {
 			return
 		}
-		let popCount = fromIndex - toIndex
+		let popCount = max(fromIndex - toIndex, 0)
 		currentViewControllerItems.removeLast(popCount)
 
 		Task { @MainActor in
