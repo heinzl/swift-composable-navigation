@@ -1,3 +1,4 @@
+#if canImport(UIKit)
 import Foundation
 import UIKit
 import Combine
@@ -193,3 +194,4 @@ public extension UIAlertAction {
 		}
 	}
 }
+#endif

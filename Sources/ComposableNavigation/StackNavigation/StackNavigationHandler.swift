@@ -1,3 +1,4 @@
+#if canImport(UIKit)
 import UIKit
 import Combine
 import ComposableArchitecture
@@ -151,3 +152,4 @@ public class StackNavigationHandler<ViewProvider: ViewProviding>: NSObject, UINa
 		#endif
 	}
 }
+#endif

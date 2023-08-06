@@ -19,7 +19,7 @@ let package = Package(
 		.target(
 			name: "ComposableNavigation",
 			dependencies: [
-				.product(name: "ComposableArchitecture", package: "swift-composable-architecture"),
+                .product(name: "ComposableArchitecture", package: "swift-composable-architecture", condition: .when(platforms: [.iOS])),
 				.product(name: "OrderedCollections", package: "swift-collections"),
 			]
 		),

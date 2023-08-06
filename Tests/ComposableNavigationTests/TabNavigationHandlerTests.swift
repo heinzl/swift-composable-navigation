@@ -1,3 +1,4 @@
+#if canImport(ComposableArchitecture)
 import XCTest
 import SwiftUI
 import ComposableArchitecture
@@ -172,3 +173,4 @@ private class Container {
 		)
 	}
 }
+#endif

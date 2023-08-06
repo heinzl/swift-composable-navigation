@@ -1,3 +1,4 @@
+#if canImport(ComposableArchitecture)
 import XCTest
 import SwiftUI
 import ComposableArchitecture
@@ -168,3 +169,4 @@ class MockViewController: UIViewController {
 		completion?()
 	}
 }
+#endif

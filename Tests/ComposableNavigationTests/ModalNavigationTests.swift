@@ -1,3 +1,4 @@
+#if canImport(ComposableArchitecture)
 import Foundation
 import XCTest
 import ComposableArchitecture
@@ -87,3 +88,4 @@ class ModalNavigationTests: XCTestCase {
 		TestStore(initialState: state, reducer: TestFeature())
 	}
 }
+#endif

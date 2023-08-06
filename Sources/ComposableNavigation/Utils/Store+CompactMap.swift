@@ -1,3 +1,4 @@
+#if canImport(ComposableArchitecture)
 import ComposableArchitecture
 
 public extension Store where State: Equatable {
@@ -14,3 +15,4 @@ public extension Store where State: Equatable {
 		}
 	}
 }
+#endif

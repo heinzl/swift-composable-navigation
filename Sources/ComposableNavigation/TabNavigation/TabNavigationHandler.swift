@@ -1,3 +1,4 @@
+#if canImport(UIKit)
 import UIKit
 import Combine
 import OrderedCollections
@@ -127,3 +128,4 @@ public class TabNavigationHandler<ViewProvider: ViewProviding>: NSObject, UITabB
 		#endif
 	}
 }
+#endif

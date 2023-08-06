@@ -1,3 +1,4 @@
+#if canImport(UIKit)
 import Foundation
 import SwiftUI
 @testable import ComposableNavigation
@@ -18,3 +19,4 @@ struct ItemView: View, Presentable {
 		Text("\(item)")
 	}
 }
+#endif

@@ -1,3 +1,4 @@
+#if canImport(ComposableArchitecture)
 import Foundation
 import ComposableArchitecture
 import OrderedCollections
@@ -61,3 +62,4 @@ public struct TabNavigation<Item: Equatable>: ReducerProtocol {
 		state.activeItem = item
 	}
 }
+#endif

@@ -1,3 +1,4 @@
+#if canImport(UIKit)
 import Foundation
 import OrderedCollections
 import UIKit
@@ -24,3 +25,4 @@ internal struct ReorderUtil {
 		return newViewControllerItems
 	}
 }
+#endif

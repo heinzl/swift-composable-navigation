@@ -1,3 +1,4 @@
+#if canImport(UIKit)
 import UIKit
 import ComposableArchitecture
 
@@ -55,3 +56,4 @@ public struct ModalNavigation<Item: Equatable>: ReducerProtocol {
 		}
 	}
 }
+#endif

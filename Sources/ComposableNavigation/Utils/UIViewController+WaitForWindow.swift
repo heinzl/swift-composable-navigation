@@ -1,3 +1,4 @@
+#if canImport(UIKit)
 import Foundation
 import UIKit
 
@@ -19,3 +20,4 @@ internal extension UIViewController {
 		#endif
 	}
 }
+#endif

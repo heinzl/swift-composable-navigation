@@ -1,3 +1,4 @@
+#if canImport(UIKit)
 import XCTest
 import SwiftUI
 import UIKit
@@ -225,3 +226,4 @@ class MockNavigationController: UINavigationController {
 		self.viewControllers = viewControllers
 	}
 }
+#endif

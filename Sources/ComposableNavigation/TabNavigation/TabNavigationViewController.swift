@@ -1,3 +1,4 @@
+#if canImport(UIKit)
 import UIKit
 import ComposableArchitecture
 
@@ -22,3 +23,4 @@ public class TabNavigationViewController<ViewProvider: ViewProviding>: UITabBarC
 		fatalError("init(coder:) has not been implemented")
 	}
 }
+#endif

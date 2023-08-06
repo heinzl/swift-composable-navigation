@@ -1,3 +1,4 @@
+#if canImport(ComposableArchitecture)
 import XCTest
 import ComposableArchitecture
 @testable import ComposableNavigation
@@ -18,3 +19,4 @@ class StoreCompactMapTest: XCTestCase {
 		XCTAssertNil(compactMappedStore)
 	}
 }
+#endif

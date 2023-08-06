@@ -1,3 +1,4 @@
+#if canImport(UIKit)
 import UIKit
 import ComposableArchitecture
 
@@ -59,3 +60,4 @@ public extension Presentable {
 		)
 	}
 }
+#endif

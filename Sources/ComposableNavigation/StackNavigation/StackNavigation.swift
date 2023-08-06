@@ -1,3 +1,4 @@
+#if canImport(UIKit)
 import ComposableArchitecture
 import OrderedCollections
 
@@ -63,3 +64,4 @@ public struct StackNavigation<Item: Equatable>: ReducerProtocol {
 		state.areAnimationsEnabled = animated
 	}
 }
+#endif
