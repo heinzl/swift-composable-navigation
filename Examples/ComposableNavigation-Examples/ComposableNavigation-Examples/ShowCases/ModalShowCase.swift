@@ -7,7 +7,7 @@ import ComposableArchitecture
 /// - Screens are presented using sheet and fullscreen style.
 /// - Screens are dismissed automatically when another screen is presented.
 /// - Modal sheet can be swiped down. Navigation state update automatically.
-struct ModalShowcase: ReducerProtocol {
+struct ModalShowcase: Reducer {
 	
 	// MARK: TCA
 	
@@ -35,21 +35,21 @@ struct ModalShowcase: ReducerProtocol {
 	
 	struct Environment {}
 	
-	private func privateReducer(state: inout State, action: Action) -> EffectTask<Action> {
+	private func privateReducer(state: inout State, action: Action) -> Effect<Action> {
 		switch action {
 		case .counterOne(.done), .counterTwo(.done):
-			return .task { .modalNavigation(.dismiss()) }
+			return .send(.modalNavigation(.dismiss()))
 		case .helper(.showCounterOne):
-			return .task { .modalNavigation(.presentSheet(.counterOne)) }
+			return .send(.modalNavigation(.presentSheet(.counterOne)))
 		case .helper(.showCounterTwo):
-			return .task { .modalNavigation(.presentFullScreen(.counterTwo)) }
+			return .send(.modalNavigation(.presentFullScreen(.counterTwo)))
 		default:
 			break
 		}
 		return .none
 	}
 	
-	var body: some ReducerProtocol<State, Action> {
+	var body: some Reducer<State, Action> {
 		Scope(state: \.counterOne, action: /Action.counterOne) {
 			Counter()
 		}
@@ -123,14 +123,14 @@ struct ModalShowcaseView: View {
 	var body: some View {
 		VStack(spacing: 20) {
 			Button("Show counter 1 (red)\nusing sheet style") {
-				ViewStore(store).send(.modalNavigation(.presentSheet(.counterOne)))
+				store.send(.modalNavigation(.presentSheet(.counterOne)))
 			}
 			Button("Show counter 2 (green)\nusing fullscreen style") {
-				ViewStore(store).send(.modalNavigation(.presentFullScreen(.counterTwo)))
+				store.send(.modalNavigation(.presentFullScreen(.counterTwo)))
 			}
 			
 			Button("Show helper screen") {
-				ViewStore(store).send(.modalNavigation(.presentSheet(.helper)))
+				store.send(.modalNavigation(.presentSheet(.helper)))
 			}
 		}
 	}
@@ -139,7 +139,7 @@ struct ModalShowcaseView: View {
 // MARK: Helper
 
 extension ModalShowcase {
-	struct Helper: ReducerProtocol {
+	struct Helper: Reducer {
 		struct State: Equatable {}
 		
 		enum Action: Equatable {
@@ -147,7 +147,7 @@ extension ModalShowcase {
 			case showCounterTwo
 		}
 		
-		func reduce(into state: inout State, action: Action) -> EffectTask<Action> {
+		func reduce(into state: inout State, action: Action) -> Effect<Action> {
 			.none
 		}
 	}
@@ -158,10 +158,10 @@ extension ModalShowcase {
 		var body: some View {
 			VStack(spacing: 20) {
 				Button("Dismiss and show counter 1 (red)\nusing sheet style") {
-					ViewStore(store).send(.showCounterOne)
+					store.send(.showCounterOne)
 				}
 				Button("Dismiss and show counter 2 (green)\nusing fullscreen style") {
-					ViewStore(store).send(.showCounterTwo)
+					store.send(.showCounterTwo)
 				}
 			}
 		}

@@ -7,7 +7,7 @@ import SwiftUI
 /// - Two counter screens and a helper screen.
 /// - You can navigate to another tab.
 /// - You can switch the tab order tab.
-struct TabsShowcase: ReducerProtocol {
+struct TabsShowcase: Reducer {
 	
 	// MARK: TCA
 	
@@ -36,21 +36,21 @@ struct TabsShowcase: ReducerProtocol {
 		case tabNavigation(TabNavigation<Screen>.Action)
 	}
 	
-	private func privateReducer(state: inout State, action: Action) -> EffectTask<Action> {
+	private func privateReducer(state: inout State, action: Action) -> Effect<Action> {
 		switch action {
 		case .helper(.switchTabs):
 			var newOrder = state.tabNavigation.items
 			newOrder.swapAt(0, newOrder.count-1)
-			return .task { [newOrder] in .tabNavigation(.setItems(newOrder)) }
+			return .send(.tabNavigation(.setItems(newOrder)))
 		case .helper(.showTab(let index)):
-			return .task { .tabNavigation(.setActiveIndex(index)) }
+			return .send(.tabNavigation(.setActiveIndex(index)))
 		default:
 			break
 		}
 		return .none
 	}
 	
-	var body: some ReducerProtocol<State, Action> {
+	var body: some Reducer<State, Action> {
 		Scope(state: \.counterOne, action: /Action.counterOne) {
 			Counter()
 		}
@@ -145,7 +145,7 @@ struct TabsShowcase: ReducerProtocol {
 // MARK: Helper
 
 extension TabsShowcase {
-	struct Helper: ReducerProtocol {
+	struct Helper: Reducer {
 		struct State: Equatable {}
 		
 		enum Action: Equatable {
@@ -153,7 +153,7 @@ extension TabsShowcase {
 			case showTab(Int)
 		}
 		
-		func reduce(into state: inout State, action: Action) -> EffectTask<Action> {
+		func reduce(into state: inout State, action: Action) -> Effect<Action> {
 			.none
 		}
 	}
@@ -164,10 +164,10 @@ extension TabsShowcase {
 		var body: some View {
 			VStack(spacing: 20) {
 				Button("Switch tabs") {
-					ViewStore(store).send(.switchTabs)
+					store.send(.switchTabs)
 				}
 				Button("Show second tab") {
-					ViewStore(store).send(.showTab(1))
+					store.send(.showTab(1))
 				}
 			}
 		}

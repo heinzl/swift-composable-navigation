@@ -3,7 +3,7 @@ import SwiftUI
 import ComposableNavigation
 import ComposableArchitecture
 
-struct AdvancedTabBar: ReducerProtocol {
+struct AdvancedTabBar: Reducer {
 	
 	// MARK: TCA
 	
@@ -34,7 +34,7 @@ struct AdvancedTabBar: ReducerProtocol {
 		case nestedNavigation(NestedStack.Action)
 	}
 	
-	private func privateReducer(state: inout State, action: Action) -> EffectTask<Action> {
+	private func privateReducer(state: inout State, action: Action) -> Effect<Action> {
 		switch action {
 		case .deepLink(.showSorting):
 			// Using actions to setup navigation
@@ -70,7 +70,7 @@ struct AdvancedTabBar: ReducerProtocol {
 		return .none
 	}
 	
-	var body: some ReducerProtocol<State, Action> {
+	var body: some Reducer<State, Action> {
 		Scope(state: \.deepLink, action: /Action.deepLink) {
 			CountryDeepLink()
 		}
@@ -115,7 +115,7 @@ struct AdvancedTabBar: ReducerProtocol {
 					state: \.listAndDetail,
 					action: Action.listAndDetail
 				)
-				ViewStore(listAndDetailStore).send(.loadCountries)
+				listAndDetailStore.send(.loadCountries)
 				let viewController = CountryListAndDetail.makeView(store: listAndDetailStore)
 				viewController.tabBarItem = UITabBarItem(
 					title: "List",

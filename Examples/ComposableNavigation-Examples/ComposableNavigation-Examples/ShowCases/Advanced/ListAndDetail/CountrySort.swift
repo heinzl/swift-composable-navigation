@@ -3,7 +3,7 @@ import SwiftUI
 import ComposableNavigation
 import ComposableArchitecture
 
-struct CountrySort: ReducerProtocol {
+struct CountrySort: Reducer {
 	enum SortKey: CaseIterable {
 		case country
 		case capital
@@ -38,14 +38,14 @@ struct CountrySort: ReducerProtocol {
 		case alertNavigation(ModalNavigation<ModalScreen>.Action)
 	}
 	
-	private func privateReducer(state: inout State, action: Action) -> EffectTask<Action> {
+	private func privateReducer(state: inout State, action: Action) -> Effect<Action> {
 		switch action {
 		case .selectSortKey(let sortKey):
 			state.sortKey = sortKey
 		case .selectSortOrder(let sortOrder):
 			state.sortOrder = sortOrder
 		case .resetTapped:
-			return .task { .alertNavigation(.presentFullScreen(.resetAlert)) }
+			return .send(.alertNavigation(.presentFullScreen(.resetAlert)))
 		case .resetConfirmed:
 			state.sortKey = .country
 			state.sortOrder = .ascending
@@ -55,7 +55,7 @@ struct CountrySort: ReducerProtocol {
 		return .none
 	}
 	
-	var body: some ReducerProtocol<State, Action> {
+	var body: some Reducer<State, Action> {
 		Scope(state: \.alertNavigation, action: /Action.alertNavigation) {
 			ModalNavigation<ModalScreen>()
 		}

@@ -3,7 +3,7 @@ import ComposableArchitecture
 import ComposableNavigation
 import SwiftUI
 
-struct Counter: ReducerProtocol {
+struct Counter: Reducer {
 	struct State: Equatable, Identifiable {
 		let id: Int
 		var count: Int = 0
@@ -16,7 +16,7 @@ struct Counter: ReducerProtocol {
 		case done
 	}
 	
-	func reduce(into state: inout State, action: Action) -> EffectTask<Action> {
+	func reduce(into state: inout State, action: Action) -> Effect<Action> {
 		switch action {
 		case .up:
 			state.count += 1
@@ -64,8 +64,8 @@ struct CounterView: View, Presentable {
 struct CounterView_Previews: PreviewProvider {
 	static var previews: some View {
 		CounterView(store: Store(
-			initialState: .init(id: 0),
-			reducer: Counter()
+			initialState: Counter.State(id: 0),
+			reducer: { Counter() }
 		))
 	}
 }

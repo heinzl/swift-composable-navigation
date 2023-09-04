@@ -3,14 +3,14 @@ import SwiftUI
 import ComposableNavigation
 import ComposableArchitecture
 
-struct CountryDetail: ReducerProtocol {
+struct CountryDetail: Reducer {
 	struct State: Equatable {
 		let country: Country
 	}
 
 	enum Action: Equatable {}
 
-	var body: some ReducerProtocol<State, Action> {
+	var body: some Reducer<State, Action> {
 		EmptyReducer()
 	}
 }

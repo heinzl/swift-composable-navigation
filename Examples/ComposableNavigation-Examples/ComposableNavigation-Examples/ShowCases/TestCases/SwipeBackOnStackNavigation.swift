@@ -3,7 +3,7 @@ import ComposableNavigation
 import ComposableArchitecture
 
 /// This setup is used for a UI test
-struct SwipeBackOnStackNavigation: ReducerProtocol {
+struct SwipeBackOnStackNavigation: Reducer {
 	
 	// MARK: TCA
 	
@@ -20,7 +20,7 @@ struct SwipeBackOnStackNavigation: ReducerProtocol {
 		case stackNavigation(StackNavigation<Screen>.Action)
 	}
 	
-	var body: some ReducerProtocol<State, Action> {
+	var body: some Reducer<State, Action> {
 		Scope(state: \.stackNavigation, action: /Action.stackNavigation) {
 			StackNavigation<Screen>()
 		}

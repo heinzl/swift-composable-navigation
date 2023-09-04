@@ -5,7 +5,7 @@ import ComposableArchitecture
 
 /// This example showcases a UIAlertController
 /// - Send TCA action from UIAlertAction
-struct AlertShowcase: ReducerProtocol {
+struct AlertShowcase: Reducer {
 	
 	// MARK: TCA
 	
@@ -29,7 +29,7 @@ struct AlertShowcase: ReducerProtocol {
 		case modalNavigation(ModalNavigation<Screen>.Action)
 	}
 	
-	private func privateReducer(state: inout State, action: Action) -> EffectTask<Action> {
+	private func privateReducer(state: inout State, action: Action) -> Effect<Action> {
 		switch action {
 		case .resetCounter:
 			state.counter.count = 0
@@ -39,7 +39,7 @@ struct AlertShowcase: ReducerProtocol {
 		return .none
 	}
 	
-	var body: some ReducerProtocol<State, Action> {
+	var body: some Reducer<State, Action> {
 		Scope(state: \.counter, action: /Action.counter) {
 			Counter()
 		}

@@ -46,61 +46,61 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
 		switch showcase {
 		case .modal:
 			return ModalShowcase.makeView(Store(
-				initialState: .init(),
-				reducer: ModalShowcase()
+				initialState: ModalShowcase.State(),
+				reducer: { ModalShowcase() }
 			))
 		case .stack:
 			return StackShowcase.makeView(Store(
-				initialState: .init(),
-				reducer: StackShowcase()
+				initialState: StackShowcase.State(),
+				reducer: { StackShowcase() }
 			))
 		case .tabs:
 			return TabsShowcase.makeView(Store(
-				initialState: .init(),
-				reducer: TabsShowcase()
+				initialState: TabsShowcase.State(),
+				reducer: { TabsShowcase() }
 			))
 		case .alert:
 			return AlertShowcase.makeView(Store(
-				initialState: .init(),
-				reducer: AlertShowcase()
+				initialState: AlertShowcase.State(),
+				reducer: { AlertShowcase() }
 			))
 		case .existingView:
 			return ExistingViewShowcase.makeView(Store(
-				initialState: .init(),
-				reducer: ExistingViewShowcase()
+				initialState: ExistingViewShowcase.State(),
+				reducer: { ExistingViewShowcase() }
 			))
 		case .multipleOptionalModalStates:
 			return MultipleOptionalModalStatesShowcase.makeView(Store(
-				initialState: .init(),
-				reducer: MultipleOptionalModalStatesShowcase()
+				initialState: MultipleOptionalModalStatesShowcase.State(),
+				reducer: { MultipleOptionalModalStatesShowcase() }
 			))
 		case .advanced:
 			return AdvancedShowcase.makeView(Store(
 				initialState: AdvancedTabBar.State(),
-				reducer: AdvancedTabBar()
+				reducer: { AdvancedTabBar() }
 			))
 		
 		case .uiTest(let uiTestCase):
 			switch uiTestCase {
 			case .swipeDownModalSheet:
 				return SwipeDownModalSheet.makeView(Store(
-					initialState: .init(),
-					reducer: SwipeDownModalSheet()
+					initialState: SwipeDownModalSheet.State(),
+					reducer: { SwipeDownModalSheet() }
 				))
 			case .swipeBackOnStackNavigation:
 				return SwipeBackOnStackNavigation.makeView(Store(
-					initialState: .init(),
-					reducer: SwipeBackOnStackNavigation()
+					initialState: SwipeBackOnStackNavigation.State(),
+					reducer: { SwipeBackOnStackNavigation() }
 				))
 			case .changingTabs:
 				return ChangingTabs.makeView(Store(
-					initialState: .init(),
-					reducer: ChangingTabs()
+					initialState: ChangingTabs.State(),
+					reducer: { ChangingTabs() }
 				))
 			case .nestedDeepLink:
 				return NestedStack.makeView(store: Store(
 					initialState: .example,
-					reducer: NestedStack()
+					reducer: { NestedStack() }
 				))
 			}
 		}
