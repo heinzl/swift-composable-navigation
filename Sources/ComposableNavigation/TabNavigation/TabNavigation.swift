@@ -6,7 +6,7 @@ import OrderedCollections
 ///
 /// The active navigation item can be changed by setting a new item. Mutations to the items array
 /// are reflected as well (e.g. changing the tab order).
-public struct TabNavigation<Item: Equatable>: ReducerProtocol {
+public struct TabNavigation<Item: Equatable>: Reducer {
 	public init() {}
 	
 	public struct State: Equatable {
@@ -31,7 +31,7 @@ public struct TabNavigation<Item: Equatable>: ReducerProtocol {
 		case setItems([Item], animated: Bool = true)
 	}
 	
-	public func reduce(into state: inout State, action: Action) -> EffectTask<Action> {
+	public func reduce(into state: inout State, action: Action) -> Effect<Action> {
 		switch action {
 		case .setActiveItem(let newActiveItem):
 			setActiveItem(newActiveItem, on: &state)

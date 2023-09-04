@@ -3,7 +3,7 @@ import OrderedCollections
 
 /// `StackNavigation` models state and actions of a stack-based scheme for navigating hierarchical content.
 /// Views can be pushed on the stack or popped from the stack. Even mutations to the whole stack can be performed.
-public struct StackNavigation<Item: Equatable>: ReducerProtocol {
+public struct StackNavigation<Item: Equatable>: Reducer {
 	public init() {}
 	
 	public struct State: Equatable {
@@ -32,7 +32,7 @@ public struct StackNavigation<Item: Equatable>: ReducerProtocol {
 		case setItems([Item], animated: Bool = true)
 	}
 	
-	public func reduce(into state: inout State, action: Action) -> EffectTask<Action> {
+	public func reduce(into state: inout State, action: Action) -> Effect<Action> {
 		switch action {
 		case let .pushItem(item, animated):
 			setItems(state.items + [item], on: &state, animated: animated)
