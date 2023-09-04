@@ -138,8 +138,8 @@ private class Container {
 	init() {
 		self.sut = ModalNavigationHandler(
 			store: Store(
-				initialState: .init(),
-				reducer: ModalNavigation<Int>()
+				initialState: ModalNavigation<Int>.State(),
+				reducer: { ModalNavigation<Int>() }
 			),
 			viewProvider: ItemViewProvider()
 		)

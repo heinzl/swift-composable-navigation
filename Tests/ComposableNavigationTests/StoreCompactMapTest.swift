@@ -4,17 +4,17 @@ import ComposableArchitecture
 
 class StoreCompactMapTest: XCTestCase {
 	func testCompactMapNonOptional() throws {
-		let store = Store<Int?, Void>(initialState: 12, reducer: EmptyReducer())
+		let store = Store<Int?, Void>(initialState: 12, reducer: { EmptyReducer() })
 		let compactMappedStore = try XCTUnwrap(
-			store.compactMap({ $0.scope(state: { $0 * 2 }) }),
+			store.compactMap({ $0.scope(state: { $0 * 2 }, action: { $0 }) }),
 			"Store should not be nil after compactMap"
 		)
-		XCTAssertEqual(ViewStore(compactMappedStore).state, 24)
+		XCTAssertEqual(compactMappedStore.withState { $0 }, 24)
 	}
 	
 	func testCompactMapOptional() throws {
-		let store = Store<Int?, Void>(initialState: nil, reducer: EmptyReducer())
-		let compactMappedStore = store.compactMap({ $0.scope(state: { $0 * 2 }) })
+		let store = Store<Int?, Void>(initialState: nil, reducer: { EmptyReducer() })
+		let compactMappedStore = store.compactMap({ $0.scope(state: { $0 * 2 }, action: { $0 }) })
 		XCTAssertNil(compactMappedStore)
 	}
 }
