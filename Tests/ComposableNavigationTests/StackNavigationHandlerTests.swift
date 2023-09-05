@@ -163,8 +163,8 @@ private func givenSUT(
 ) {
 	container.sut = StackNavigationHandler(
 		store: Store(
-			initialState: .init(items: []),
-			reducer: StackNavigation<Int>()
+			initialState: StackNavigation<Int>.State(items: []),
+			reducer: { StackNavigation<Int>() }
 		),
 		viewProvider: ItemViewProvider(),
 		ignorePreviousViewControllers: ignorePreviousViewControllers

@@ -162,11 +162,11 @@ private class Container {
 	init() {
 		self.sut = TabNavigationHandler(
 			store: Store(
-				initialState: .init(
+				initialState: TabNavigation<Int>.State(
 					items: [],
 					activeItem: -1
 				),
-				reducer: TabNavigation<Int>()
+				reducer: { TabNavigation<Int>() }
 			),
 			viewProvider: ItemViewProvider()
 		)

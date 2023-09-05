@@ -3,7 +3,7 @@ import SwiftUI
 import ComposableNavigation
 import ComposableArchitecture
 
-struct ContinentFilter: ReducerProtocol {
+struct ContinentFilter: Reducer {
 	struct State: Equatable {
 		var continents = [String]()
 		var selectedContinent: String?
@@ -15,7 +15,7 @@ struct ContinentFilter: ReducerProtocol {
 		case showSorting
 	}
 
-	func reduce(into state: inout State, action: Action) -> EffectTask<Action> {
+	func reduce(into state: inout State, action: Action) -> Effect<Action> {
 		switch action {
 		case .selectContinent(let continent):
 			state.selectedContinent = continent

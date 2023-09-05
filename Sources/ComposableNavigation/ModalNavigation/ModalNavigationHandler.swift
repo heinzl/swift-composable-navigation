@@ -29,7 +29,7 @@ public class ModalNavigationHandler<ViewProvider: ViewProviding>: NSObject, UIAd
 		viewProvider: ViewProvider,
 		maxWindowWaitingDelay: TimeInterval = 4
 	) {
-		self.viewStore = ViewStore(store)
+		self.viewStore = ViewStore(store, observe: { $0 })
 		self.viewProvider = viewProvider
 		self.maxWindowWaitingDelay = maxWindowWaitingDelay
 		self.currentViewControllerItem = nil
@@ -182,13 +182,13 @@ public extension UIAlertAction {
 		toNavigationAction: @escaping (ModalNavigation<Item>.Action) -> Action
 	) {
 		self.init(title: title, style: style) { _ in
-			let statelessNavigationState = store.stateless.scope(
+			let statelessNavigationState = store.scope(
 				state: { _ in () },
 				action: toNavigationAction
 			)
-			ViewStore(statelessNavigationState).send(.dismiss())
+			statelessNavigationState.send(.dismiss())
 			if let action {
-				ViewStore(store).send(action)
+				store.send(action)
 			}
 		}
 	}

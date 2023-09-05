@@ -27,7 +27,7 @@ public class StackNavigationHandler<ViewProvider: ViewProviding>: NSObject, UINa
 		viewProvider: ViewProvider,
 		ignorePreviousViewControllers: Bool = false
 	) {
-		self.viewStore = ViewStore(store)
+		self.viewStore = ViewStore(store, observe: { $0 })
 		self.viewProvider = viewProvider
 		self.ignorePreviousViewControllers = ignorePreviousViewControllers
 		self.currentViewControllerItems = [:]

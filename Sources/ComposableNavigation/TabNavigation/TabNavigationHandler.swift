@@ -22,7 +22,7 @@ public class TabNavigationHandler<ViewProvider: ViewProviding>: NSObject, UITabB
 		store: Store<Navigation.State, Navigation.Action>,
 		viewProvider: ViewProvider
 	) {
-		self.viewStore = ViewStore(store)
+		self.viewStore = ViewStore(store, observe: { $0 })
 		self.viewProvider = viewProvider
 		self.currentViewControllerItems = [:]
 	}

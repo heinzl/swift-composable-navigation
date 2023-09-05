@@ -2,7 +2,7 @@ import UIKit
 import ComposableNavigation
 import ComposableArchitecture
 
-struct CountryListAndDetail: ReducerProtocol {
+struct CountryListAndDetail: Reducer {
 	
 	// MARK: TCA
 	
@@ -102,30 +102,30 @@ struct CountryListAndDetail: ReducerProtocol {
 	
 	@Dependency(\.countryProvider) var countryProvider
 	
-	private func privateReducer(state: inout State, action: Action) -> EffectTask<Action> {
+	private func privateReducer(state: inout State, action: Action) -> Effect<Action> {
 		switch action {
 		case .loadCountries:
 			let countries = self.countryProvider.getCountryList()
 			state.countries = countries
 			state.continentFilter.continents = Set(countries.map(\.continent)).sorted()
 		case .list(.selectCountry(let id)):
-			return .task { .stackNavigation(.pushItem(.detail(id: id))) }
+			return .send(.stackNavigation(.pushItem(.detail(id: id))))
 		case .list(.selectFilter),
 				.countrySort(.showFilter):
-			return .task { .modalNavigation(.presentSheet(.filter)) }
+			return .send(.modalNavigation(.presentSheet(.filter)))
 		case .list(.selectSorting),
 				.continentFilter(.showSorting):
-			return .task { .modalNavigation(.presentSheet(.sort)) }
+			return .send(.modalNavigation(.presentSheet(.sort)))
 		case .continentFilter(.done),
 				.countrySort(.done):
-			return .task { .modalNavigation(.dismiss()) }
+			return .send(.modalNavigation(.dismiss()))
 		default:
 			break
 		}
 		return .none
 	}
 	
-	var body: some ReducerProtocol<State, Action> {
+	var body: some Reducer<State, Action> {
 		Scope(state: \.continentFilter, action: /Action.continentFilter) {
 			ContinentFilter()
 		}

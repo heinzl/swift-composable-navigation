@@ -77,13 +77,7 @@ class ModalNavigationTests: XCTestCase {
 	
 	private func makeStore(
 		_ state: TestFeature.State
-	) -> TestStore<
-		TestFeature.State,
-		TestFeature.Action,
-		TestFeature.State,
-		TestFeature.Action,
-		()
-	> {
-		TestStore(initialState: state, reducer: TestFeature())
+	) -> TestStoreOf<TestFeature> {
+		TestStore(initialState: state, reducer: { TestFeature() })
 	}
 }

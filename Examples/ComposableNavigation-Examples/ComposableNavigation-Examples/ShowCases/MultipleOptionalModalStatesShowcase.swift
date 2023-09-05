@@ -6,7 +6,7 @@ import SwiftUI
 /// This example showcases how to model multiple optional states.
 /// This can be necessary if you want to present modal screens without
 /// keeping the modal state after dismissing it.
-struct MultipleOptionalModalStatesShowcase: ReducerProtocol {
+struct MultipleOptionalModalStatesShowcase: Reducer {
 	// MARK: TCA
 	
 	enum Screen: Hashable {
@@ -77,25 +77,25 @@ struct MultipleOptionalModalStatesShowcase: ReducerProtocol {
 		case showCounterTwo
 	}
 	
-	private func privateReducer(state: inout State, action: Action) -> EffectTask<Action> {
+	private func privateReducer(state: inout State, action: Action) -> Effect<Action> {
 		switch action {
 		case .showCounterOne:
-			return .task { .modalNavigation(.presentSheet(.counterOne)) }
+			return .send(.modalNavigation(.presentSheet(.counterOne)))
 		case .showCounterTwo:
-			return .task { .modalNavigation(.presentSheet(.counterTwo)) }
+			return .send(.modalNavigation(.presentSheet(.counterTwo)))
 		case .counterOne(.done):
 			state.selectedCount = state.counterOne?.count
-			return .task { .modalNavigation(.dismiss()) }
+			return .send(.modalNavigation(.dismiss()))
 		case .counterTwo(.done):
 			state.selectedCount = state.counterTwo?.count
-			return .task { .modalNavigation(.dismiss()) }
+			return .send(.modalNavigation(.dismiss()))
 		default:
 			break
 		}
 		return .none
 	}
 	
-	var body: some ReducerProtocol<State, Action> {
+	var body: some Reducer<State, Action> {
 		Scope(state: \.modalNavigation, action: /Action.modalNavigation) {
 			ModalNavigation<Screen>()
 		}

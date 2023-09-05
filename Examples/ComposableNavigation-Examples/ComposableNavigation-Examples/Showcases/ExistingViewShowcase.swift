@@ -6,7 +6,7 @@ import Combine
 
 /// This example showcases how to reuse an already existing UIViewController subclass
 /// by using a `NavigationHandler` in this case a `ModalNavigationHandler`
-struct ExistingViewShowcase: ReducerProtocol {
+struct ExistingViewShowcase: Reducer {
 	
 	// MARK: TCA
 	
@@ -24,7 +24,7 @@ struct ExistingViewShowcase: ReducerProtocol {
 		case modalNavigation(ModalNavigation<Screen>.Action)
 	}
 	
-	private func privateReducer(state: inout State, action: Action) -> EffectTask<Action> {
+	private func privateReducer(state: inout State, action: Action) -> Effect<Action> {
 		switch action {
 		case .optionSelected(let newOption):
 			state.selectedOption = newOption
@@ -34,7 +34,7 @@ struct ExistingViewShowcase: ReducerProtocol {
 		return .none
 	}
 	
-	var body: some ReducerProtocol<State, Action> {
+	var body: some Reducer<State, Action> {
 		Scope(state: \.modalNavigation, action: /Action.modalNavigation) {
 			ModalNavigation<Screen>()
 		}
@@ -100,7 +100,7 @@ class ExistingViewController: UIViewController {
 	let navigationHandler: ModalNavigationHandler<ExistingViewShowcase.ViewProvider>
 	
 	init(store: Store<ExistingViewShowcase.State, ExistingViewShowcase.Action>) {
-		self.viewStore = ViewStore(store)
+		self.viewStore = ViewStore(store, observe: { $0 })
 		self.navigationHandler = ModalNavigationHandler(
 			store: store.scope(
 				state: \.modalNavigation,

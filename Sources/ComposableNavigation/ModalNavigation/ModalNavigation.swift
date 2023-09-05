@@ -3,7 +3,7 @@ import ComposableArchitecture
 
 /// `ModalNavigation` models state and actions of a commonly used modal view presentation.
 /// Views can be presented with a certain style and dismissed.
-public struct ModalNavigation<Item: Equatable>: ReducerProtocol {
+public struct ModalNavigation<Item: Equatable>: Reducer {
 	public init() {}
 	
 	public struct State: Equatable {
@@ -26,7 +26,7 @@ public struct ModalNavigation<Item: Equatable>: ReducerProtocol {
 		case presentSheet(Item, animated: Bool = true)
 	}
 	
-	public func reduce(into state: inout State, action: Action) -> EffectTask<Action> {
+	public func reduce(into state: inout State, action: Action) -> Effect<Action> {
 		switch action {
 		case let .set(styledItem, animated):
 			setStyledItem(styledItem, on: &state, animated: animated)

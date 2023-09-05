@@ -3,7 +3,7 @@ import SwiftUI
 import ComposableNavigation
 import ComposableArchitecture
 
-struct AlertPlayground: ReducerProtocol {
+struct AlertPlayground: Reducer {
 	
 	// MARK: TCA
 	
@@ -29,7 +29,7 @@ struct AlertPlayground: ReducerProtocol {
 		case alertNavigation(ModalNavigation<ModalScreen>.Action)
 	}
 	
-	private func privateReducer(state: inout State, action: Action) -> EffectTask<Action> {
+	private func privateReducer(state: inout State, action: Action) -> Effect<Action> {
 		switch action {
 		case .resetCounter:
 			state.counter.count = State.initialCount
@@ -39,7 +39,7 @@ struct AlertPlayground: ReducerProtocol {
 		return .none
 	}
 	
-	var body: some ReducerProtocol<State, Action> {
+	var body: some Reducer<State, Action> {
 		Scope(state: \.alertNavigation, action: /Action.alertNavigation) {
 			ModalNavigation<ModalScreen>()
 		}
@@ -100,7 +100,7 @@ struct AlertPlayground: ReducerProtocol {
 					style: .destructive,
 					action: .alertNavigation(.presentFullScreen(.resetAlert))
 				)
-				resetAction.isEnabled = !ViewStore(store).isResetDisabled
+				resetAction.isEnabled = !store.withState({ $0.isResetDisabled })
 				alert.addAction(resetAction)
 				return alert
 			}

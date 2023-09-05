@@ -4,7 +4,7 @@ import ComposableArchitecture
 
 /// This setup is used for a UI test
 
-struct NestedModal: ReducerProtocol {
+struct NestedModal: Reducer {
 	struct State: Equatable, Identifiable {
 		let modalLevel: Int
 		let stackLevel: Int
@@ -43,7 +43,7 @@ struct NestedModal: ReducerProtocol {
 		case modal(ModalNavigation<Int>.Action)
 	}
 	
-	var body: some ReducerProtocol<State, Action> {
+	var body: some Reducer<State, Action> {
 		Scope(state: \.modal, action: /Action.modal) {
 			ModalNavigation<Int>()
 		}
@@ -52,9 +52,7 @@ struct NestedModal: ReducerProtocol {
 			switch action {
 			case .presentTapped:
 				let nextModalLevel = state.modalLevel + 1
-				return .task {
-					.modal(.presentSheet(nextModalLevel))
-				}
+				return .send(.modal(.presentSheet(nextModalLevel)))
 			default:
 				return .none
 			}
@@ -68,7 +66,7 @@ struct NestedModal: ReducerProtocol {
 		let store: Store<State, Action>
 		
 		var body: some View {
-			WithViewStore(store) { viewStore in
+			WithViewStore(store, observe: { $0 }) { viewStore in
 				VStack(spacing: 8) {
 					HStack {
 						Text("Modal level:")
@@ -114,7 +112,7 @@ struct NestedModal: ReducerProtocol {
 	}
 }
 
-struct NestedStack: ReducerProtocol {
+struct NestedStack: Reducer {
 	struct State: Equatable {
 		let modalLevel: Int
 		
@@ -141,7 +139,7 @@ struct NestedStack: ReducerProtocol {
 		case stack(StackNavigation<Int>.Action)
 	}
 	
-	var body: some ReducerProtocol<State, Action> {
+	var body: some Reducer<State, Action> {
 		Scope(state: \.stack, action: /Action.stack) {
 			StackNavigation<Int>()
 		}
@@ -150,9 +148,7 @@ struct NestedStack: ReducerProtocol {
 			switch action {
 			case .nestedModal(_, .pushTapped):
 				let nextStackLevel = state.nestedModals.last!.stackLevel + 1
-				return .task {
-					.stack(.pushItem(nextStackLevel))
-				}
+				return .send(.stack(.pushItem(nextStackLevel)))
 			default:
 				return .none
 			}
@@ -173,7 +169,7 @@ struct NestedStack: ReducerProtocol {
 		let store: Store<State, Action>
 		
 		func makePresentable(for navigationItem: Int) -> Presentable {
-			let cacheElement = ViewStore(store).state.nestedModals[id: navigationItem]!
+			let cacheElement = store.withState { $0.nestedModals[id: navigationItem]! }
 			return NestedModal.makeView(store: store.scope(
 				state: { $0.nestedModals[id: navigationItem] ?? cacheElement },
 				action: { Action.nestedModal(id: navigationItem, action: $0) }

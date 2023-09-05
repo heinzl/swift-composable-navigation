@@ -7,7 +7,7 @@ import SwiftUI
 /// - Three counter screens + summary screen at the end.
 /// - The StackNavigation state is a computed property
 /// - Navigation to counter screens from summary screen
-struct StackShowcase: ReducerProtocol {
+struct StackShowcase: Reducer {
 	
 	// MARK: TCA
 	
@@ -52,14 +52,14 @@ struct StackShowcase: ReducerProtocol {
 		case stackNavigation(StackNavigation<Screen>.Action)
 	}
 	
-	private func privateReducer(state: inout State, action: Action) -> EffectTask<Action> {
+	private func privateReducer(state: inout State, action: Action) -> Effect<Action> {
 		switch action {
 		case let .counter(id, .done):
 			let nextId = id + 1
 			if state.counters.ids.contains(nextId) {
-				return .task { .stackNavigation(.pushItem(.counter(id: nextId))) }
+				return .send(.stackNavigation(.pushItem(.counter(id: nextId))))
 			} else {
-				return .task { .stackNavigation(.pushItem(.summary)) }
+				return .send(.stackNavigation(.pushItem(.summary)))
 			}
 		case .summary(.goTo(let id)):
 			state.currentScreen = .counter(id: id)
@@ -69,7 +69,7 @@ struct StackShowcase: ReducerProtocol {
 		return .none
 	}
 	
-	var body: some ReducerProtocol<State, Action> {
+	var body: some Reducer<State, Action> {
 		Scope(state: \.summary, action: /Action.summary) {
 			Summary()
 		}
@@ -121,7 +121,7 @@ struct StackShowcase: ReducerProtocol {
 // MARK: Helper
 
 extension StackShowcase {
-	struct Summary: ReducerProtocol {
+	struct Summary: Reducer {
 		struct State: Equatable {
 			let counters: IdentifiedArrayOf<Counter.State>
 		}
@@ -130,7 +130,7 @@ extension StackShowcase {
 			case goTo(id: Counter.State.ID)
 		}
 		
-		func reduce(into state: inout State, action: Action) -> EffectTask<Action> {
+		func reduce(into state: inout State, action: Action) -> Effect<Action> {
 			.none
 		}
 	}

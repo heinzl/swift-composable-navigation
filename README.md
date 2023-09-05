@@ -20,7 +20,7 @@ It also supports automatic state updates for pull-to-dismiss for views presented
 
 This example shows how a modal-navigation could be implemented using an enum:
 ```swift
-struct Onboarding: ReducerProtocol {
+struct Onboarding: Reducer {
     enum Screen {
         case login
         case register
@@ -36,16 +36,16 @@ struct Onboarding: ReducerProtocol {
         ...
     }
     
-	var body: some ReducerProtocol<State, Action> {
+	var body: some Reducer<State, Action> {
 		Scope(state: \.modalNavigation, action: /Action.modalNavigation) {
 			ModalNavigation<Screen>()
 		}
 		Reduce { state, action in
 			switch action {
 			case .loginButtonPressed:
-				return .task { .modalNavigation(.presentFullScreen(.login)) }
+				return .send(.modalNavigation(.presentFullScreen(.login)))
 			case .anotherAction:
-				return .task { .modalNavigation(.dismiss) }
+				return .send(.modalNavigation(.dismiss))
 			}
 			return .none
 		}
@@ -62,7 +62,7 @@ It also supports automatic state updates for popping items via the leading-edge 
 
 This example shows how a series of text inputs could be implemented:
 ```swift
-struct Register: ReducerProtocol {
+struct Register: Reducer {
     enum Screen {
         case email
         case firstName
@@ -79,16 +79,16 @@ struct Register: ReducerProtocol {
         ...
     }
     
-	var body: some ReducerProtocol<State, Action> {
+	var body: some Reducer<State, Action> {
 		Scope(state: \.stackNavigation, action: /Action.stackNavigation) {
 			StackNavigation<Screen>()
 		}
 		Reduce { state, action in
 			switch action {
 			case .emailEntered:
-				return .task { .stackNavigation(.pushItem(.firstName)) }
+				return .send(.stackNavigation(.pushItem(.firstName)))
 			case .firstNameEntered:
-				return .task { .stackNavigation(.pushItem(.lastName)) }
+				return .send(.stackNavigation(.pushItem(.lastName)))
 			...
 			}
 			return .none
@@ -124,14 +124,14 @@ struct Root {
         ...
     }
     
-	var body: some ReducerProtocol<State, Action> {
+	var body: some Reducer<State, Action> {
 		Scope(state: \.tabNavigation, action: /Action.tabNavigation) {
 			TabNavigation<Screen>()
 		}
 		Reduce { state, action in
 			switch action {
 			case .goToSettings:
-				return .task { .tabNavigation(.setActiveItem(.settings)) }
+				return .send(.tabNavigation(.setActiveItem(.settings)))
 			...
 			}
 			return .none
@@ -205,7 +205,7 @@ class ExistingViewController: UIViewController {
 	let navigationHandler: ModalNavigationHandler<ExistingViewShowcase.ViewProvider>
 	
 	init(store: Store<ExistingViewShowcase.State, ExistingViewShowcase.Action>) {
-		self.viewStore = ViewStore(store)
+		self.viewStore = ViewStore(store, observe: { $0 })
 		self.navigationHandler = ModalNavigationHandler(
 			store: store.scope(
 				state: \.modalNavigation,
