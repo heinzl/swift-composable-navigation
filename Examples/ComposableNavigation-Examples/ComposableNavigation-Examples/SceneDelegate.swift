@@ -32,7 +32,13 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
 		case existingView
 		case advanced
 		case multipleOptionalModalStates
+		case combiningStacks(CombiningStacks)
 		case uiTest(UITest)
+		
+		enum CombiningStacks {
+			case individual
+			case combined
+		}
 		
 		enum UITest: String {
 			case swipeDownModalSheet
@@ -78,6 +84,16 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
 			return AdvancedShowcase.makeView(Store(
 				initialState: AdvancedTabBar.State(),
 				reducer: { AdvancedTabBar() }
+			))
+		case .combiningStacks(.individual):
+			return CombiningStacksShowCase.IndividualStack.makeView(Store(
+				initialState: CombiningStacksShowCase.IndividualStack.State(),
+				reducer: { CombiningStacksShowCase.IndividualStack() }
+			))
+		case .combiningStacks(.combined):
+			return CombiningStacksShowCase.makeView(Store(
+				initialState: CombiningStacksShowCase.State(),
+				reducer: { CombiningStacksShowCase() }
 			))
 		
 		case .uiTest(let uiTestCase):
