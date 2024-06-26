@@ -117,6 +117,7 @@ struct AlertPlayground: Reducer {
 		}
 	}
 	
+	@MainActor
 	static func makeView(store: Store<State, Action>) -> UIViewController {
 		AlertPlaygroundView(store: store).viewController
 			.withModal(

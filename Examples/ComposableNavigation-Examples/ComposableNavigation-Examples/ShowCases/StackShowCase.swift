@@ -107,6 +107,7 @@ struct StackShowcase: Reducer {
 		}
 	}
 	
+	@MainActor
 	static func makeView(_ store: Store<State, Action>) -> UIViewController {
 		StackNavigationViewController(
 			store: store.scope(

@@ -91,6 +91,7 @@ struct NestedModal: Reducer {
 		}
 	}
 	
+	@MainActor
 	static func makeView(store: Store<State, Action>) -> UIViewController {
 		UIHostingController(rootView: ContentView(store: store))
 			.withModal(
@@ -158,6 +159,7 @@ struct NestedStack: Reducer {
 		}
 	}
 	
+	@MainActor
 	static func makeView(store: Store<State, Action>) -> UIViewController {
 		StackNavigationViewController(
 			store: store.scope(state: \.stack, action: Action.stack),

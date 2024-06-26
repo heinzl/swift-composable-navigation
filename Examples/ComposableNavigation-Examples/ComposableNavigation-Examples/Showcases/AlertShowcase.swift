@@ -81,6 +81,7 @@ struct AlertShowcase: Reducer {
 		}
 	}
 
+	@MainActor
 	static func makeView(_ store: Store<State, Action>) -> UIViewController {
 		UIHostingController(
 			rootView: AlertShowcaseView(store: store)

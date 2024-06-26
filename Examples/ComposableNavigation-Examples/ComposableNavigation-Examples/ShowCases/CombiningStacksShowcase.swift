@@ -94,6 +94,7 @@ struct CombiningStacksShowCase: Reducer {
 		}
 	}
 	
+	@MainActor
 	static func makeView(_ store: Store<State, Action>) -> UIViewController {
 		StackNavigationViewController(
 			store: store.scope(
@@ -202,6 +203,7 @@ extension CombiningStacksShowCase {
 			}
 		}
 		
+		@MainActor
 		static func makeView(_ store: Store<State, Action>) -> UIViewController {
 			StackNavigationViewController(
 				store: store.scope(

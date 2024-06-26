@@ -1,6 +1,7 @@
 import UIKit
 import SwiftUI
 
+@MainActor
 public protocol ViewProviding {
 	associatedtype Item: Hashable
 	func makePresentable(for navigationItem: Item) -> Presentable
@@ -12,6 +13,7 @@ public extension ViewProviding {
 	}
 }
 
+@MainActor
 public protocol Presentable {
 	var viewController: UIViewController { get }
 }

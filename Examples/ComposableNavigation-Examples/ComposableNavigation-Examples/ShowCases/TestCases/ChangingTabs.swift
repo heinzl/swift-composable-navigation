@@ -59,6 +59,7 @@ struct ChangingTabs: Reducer {
 		}
 	}
 	
+	@MainActor
 	static func makeView(_ store: Store<State, Action>) -> UIViewController {
 		TabNavigationViewController(
 			store: store.scope(

@@ -6,6 +6,7 @@ import ComposableArchitecture
 internal struct ReorderUtil {
 	/// Re-orders items and view controllers based on `newItems`.
 	/// View controllers for existing items are reused.
+	@MainActor
 	internal static func rearrangingItems<ViewProvider: ViewProviding>(
 		newItems: [ViewProvider.Item],
 		currentViewControllerItems: OrderedDictionary<ViewProvider.Item, UIViewController>,

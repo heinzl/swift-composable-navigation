@@ -21,6 +21,7 @@ struct CountryDeepLink: Reducer {
 		.none
 	}
 	
+	@MainActor
 	static func makeView(store: Store<State, Action>) -> UIViewController {
 		CountryDeepLinkView(store: store).viewController
 	}
