@@ -5,11 +5,10 @@ import ComposableArchitecture
 import OrderedCollections
 @testable import ComposableNavigation
 
-@MainActor
 class StackNavigationHandlerTests: XCTestCase {
 	
 	// MARK: Push
-	
+	@MainActor
 	func testPushOnEmptyStack() {
 		let container = Container()
 		
@@ -22,6 +21,7 @@ class StackNavigationHandlerTests: XCTestCase {
 		thenAssertCreatedViews(for: [1], container)
 	}
 	
+	@MainActor
 	func testPushOnStack() {
 		let container = Container()
 		
@@ -35,6 +35,7 @@ class StackNavigationHandlerTests: XCTestCase {
 		thenAssertCreatedViews(for: [1, 2, 3], container)
 	}
 
+	@MainActor
 	func testConsecutivePushsOnStack() {
 		let container = Container()
 		
@@ -49,6 +50,7 @@ class StackNavigationHandlerTests: XCTestCase {
 		thenAssertCreatedViews(for: [1, 2, 3], container)
 	}
 
+	@MainActor
 	func testPushMultipleItemsOnStack() {
 		let container = Container()
 		
@@ -64,6 +66,7 @@ class StackNavigationHandlerTests: XCTestCase {
 
 	// MARK: Pop
 
+	@MainActor
 	func testPopFromEmptyStack() {
 		let container = Container()
 		
@@ -77,6 +80,7 @@ class StackNavigationHandlerTests: XCTestCase {
 		thenAssertCreatedViews(for: [], container)
 	}
 
+	@MainActor
 	func testPopFromStack() {
 		let container = Container()
 		
@@ -90,6 +94,7 @@ class StackNavigationHandlerTests: XCTestCase {
 		thenAssertCreatedViews(for: [1, 2], container)
 	}
 
+	@MainActor
 	func testConsecutivePopsFromStack() {
 		let container = Container()
 		
@@ -104,6 +109,7 @@ class StackNavigationHandlerTests: XCTestCase {
 		thenAssertCreatedViews(for: [1, 2, 3], container)
 	}
 
+	@MainActor
 	func testPopMultipleItems() {
 		let container = Container()
 		
@@ -117,6 +123,7 @@ class StackNavigationHandlerTests: XCTestCase {
 		thenAssertCreatedViews(for: [1, 2, 3, 4], container)
 	}
 
+	@MainActor
 	func testPopAllItems() {
 		let container = Container()
 		
@@ -132,6 +139,7 @@ class StackNavigationHandlerTests: XCTestCase {
 	
 	// MARK: Ignoring view controllers
 	
+	@MainActor
 	func testHandlerIgnoresViewControllersOnStack() {
 		let container = Container()
 		
@@ -145,6 +153,7 @@ class StackNavigationHandlerTests: XCTestCase {
 
 	// MARK: Memory
 	
+	@MainActor
 	func testMemoryLeak() {
 		var container: Container! = Container()
 		givenSUT(container)

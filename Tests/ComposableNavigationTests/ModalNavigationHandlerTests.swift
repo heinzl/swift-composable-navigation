@@ -4,8 +4,8 @@ import ComposableArchitecture
 import OrderedCollections
 @testable import ComposableNavigation
 
-@MainActor
 class ModalNavigationHandlerTests: XCTestCase {
+	@MainActor
 	func testPresentSheet() async {
 		let container = Container()
 		await whenNewStateIsReceived(.init(
@@ -17,6 +17,7 @@ class ModalNavigationHandlerTests: XCTestCase {
 		thenAssertCreatedViews(for: [1], container)
 	}
 	
+	@MainActor
 	func testPresentFullScreen() async {
 		let container = Container()
 		await whenNewStateIsReceived(.init(
@@ -28,6 +29,7 @@ class ModalNavigationHandlerTests: XCTestCase {
 		thenAssertCreatedViews(for: [1], container)
 	}
 	
+	@MainActor
 	func testSetStyledItemToNil() async {
 		let container = Container()
 		await whenNewStateIsReceived(.init(
@@ -40,6 +42,7 @@ class ModalNavigationHandlerTests: XCTestCase {
 		thenAssertCreatedViews(for: [2], container)
 	}
 	
+	@MainActor
 	func testDismissAfterPresent() async {
 		let container = Container()
 		await whenNewStateIsReceived(.init(
@@ -53,6 +56,7 @@ class ModalNavigationHandlerTests: XCTestCase {
 		thenAssertCreatedViews(for: [1], container)
 	}
 	
+	@MainActor
 	func testPresentDifferentItemButSameStyle() async {
 		let container = Container()
 		await whenNewStateIsReceived(.init(
@@ -67,6 +71,7 @@ class ModalNavigationHandlerTests: XCTestCase {
 		thenAssertCreatedViews(for: [1, 2], container)
 	}
 	
+	@MainActor
 	func testPresentDifferentItemAndDifferentStyle() async {
 		let container = Container()
 		await whenNewStateIsReceived(.init(
@@ -81,6 +86,7 @@ class ModalNavigationHandlerTests: XCTestCase {
 		thenAssertCreatedViews(for: [1, 2], container)
 	}
 	
+	@MainActor
 	func testPresentSameItemButDifferentStyle() async {
 		let container = Container()
 		await whenNewStateIsReceived(.init(
@@ -95,6 +101,7 @@ class ModalNavigationHandlerTests: XCTestCase {
 		thenAssertCreatedViews(for: [1], container)
 	}
 	
+	@MainActor
 	func testMemoryLeak() {
 		var container: Container! = Container()
 		container.sut.setup(with: UIViewController())
