@@ -12,26 +12,26 @@ public extension XCTestCase {
 		guard let value = subject else {
 			return XCTFail("Argument must not be nil", file: file, line: line)
 		}
-		let afterContainer = LockContainer(after)
+		let closureContainer = LockClosureContainer(after)
 		let weakContainer = WeakLockContainer(value)
 		addTeardownBlock {
-			afterContainer.value()
-			XCTAssert(weakContainer.isValueNil, "Expected subject to be nil after test! Retain cycle?", file: file, line: line)
+			closureContainer.perform()
+			XCTAssert(weakContainer.isDeallocated, "Expected subject to be nil after test! Retain cycle?", file: file, line: line)
 		}
 	}
 	
-	private class LockContainer<Value>: @unchecked Sendable {
-		private let _value: Value
+	private class LockClosureContainer: @unchecked Sendable {
+		private var closure: () -> Void
 		private let lock = NSRecursiveLock()
 		
-		init(_ value: Value) {
-			self._value = value
+		init(_ closure: @escaping () -> Void) {
+			self.closure = closure
 		}
 		
-		var value: Value {
+		func perform() {
 			lock.lock()
 			defer { lock.unlock() }
-			return _value
+			closure()
 		}
 	}
 	
@@ -43,7 +43,7 @@ public extension XCTestCase {
 			self.value = value
 		}
 		
-		var isValueNil: Bool {
+		var isDeallocated: Bool {
 			lock.lock()
 			defer { lock.unlock() }
 			return self.value == nil
