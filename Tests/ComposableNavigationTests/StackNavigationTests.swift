@@ -3,8 +3,8 @@ import XCTest
 import ComposableArchitecture
 @testable import ComposableNavigation
 
-@MainActor
 class StackNavigationTests: XCTestCase {
+	@MainActor
 	func testPushItem() async {
 		let store = makeStore(.init(items: []))
 		
@@ -13,6 +13,7 @@ class StackNavigationTests: XCTestCase {
 		}
 	}
 	
+	@MainActor
 	func testPushItemOnExistingStack() async {
 		let store = makeStore(.init(items: [1, 2]))
 		
@@ -21,6 +22,7 @@ class StackNavigationTests: XCTestCase {
 		}
 	}
 	
+	@MainActor
 	func testPushItems() async {
 		let store = makeStore(.init(items: []))
 		
@@ -29,6 +31,7 @@ class StackNavigationTests: XCTestCase {
 		}
 	}
 	
+	@MainActor
 	func testPushItemsOnExistingStack() async {
 		let store = makeStore(.init(items: [1, 2]))
 		
@@ -37,6 +40,7 @@ class StackNavigationTests: XCTestCase {
 		}
 	}
 	
+	@MainActor
 	func testPopItem() async {
 		let store = makeStore(.init(items: [1, 2]))
 		
@@ -45,6 +49,7 @@ class StackNavigationTests: XCTestCase {
 		}
 	}
 	
+	@MainActor
 	func testPopItemsCount() async {
 		let store = makeStore(.init(items: [1, 2, 3]))
 		
@@ -53,18 +58,21 @@ class StackNavigationTests: XCTestCase {
 		}
 	}
 	
+	@MainActor
 	func testPopItemFromEmptyStack() async {
 		let store = makeStore(.init(items: []))
 		
 		await store.send(.popItem())
 	}
 	
+	@MainActor
 	func testPopTooManyItems() async {
 		let store = makeStore(.init(items: [1, 2]))
 		
 		await store.send(.popItems(count: 5))
 	}
 	
+	@MainActor
 	func testPopToRoot() async {
 		let store = makeStore(.init(items: [1, 2, 3]))
 		
@@ -73,18 +81,21 @@ class StackNavigationTests: XCTestCase {
 		}
 	}
 	
+	@MainActor
 	func testPopToRootOnEmptyStack() async {
 		let store = makeStore(.init(items: []))
 		
 		await store.send(.popToRoot())
 	}
 	
+	@MainActor
 	func testPopToRootWithOnlyRoot() async {
 		let store = makeStore(.init(items: [1]))
 		
 		await store.send(.popToRoot())
 	}
 	
+	@MainActor
 	func testSetItems() async {
 		let store = makeStore(.init(items: [1, 2]))
 		
@@ -93,6 +104,7 @@ class StackNavigationTests: XCTestCase {
 		}
 	}
 	
+	@MainActor
 	func testSetItemsFromEmpty() async {
 		let store = makeStore(.init(items: []))
 		
@@ -101,6 +113,7 @@ class StackNavigationTests: XCTestCase {
 		}
 	}
 	
+	@MainActor
 	func testSetSameItemsDifferentOrder() async {
 		let store = makeStore(.init(items: [1, 2, 3]))
 		
@@ -109,6 +122,7 @@ class StackNavigationTests: XCTestCase {
 		}
 	}
 	
+	@MainActor
 	func testDisablingAnimation() async {
 		let store = makeStore(.init(items: [1, 2]))
 		
@@ -117,6 +131,7 @@ class StackNavigationTests: XCTestCase {
 		}
 	}
 	
+	@MainActor
 	func testDisablingAnimationAndSettingsItems() async {
 		let store = makeStore(.init(items: [1, 2]))
 		

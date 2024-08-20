@@ -127,6 +127,7 @@ struct MultipleOptionalModalStatesShowcase: Reducer {
 		}
 	}
 
+	@MainActor
 	static func makeView(_ store: Store<State, Action>) -> UIViewController {
 		UIHostingController(
 			rootView: MultipleOptionalModalStatesShowcaseView(store: store)

@@ -9,6 +9,7 @@ import ComposableArchitecture
 /// - modal navigation (incl. alerts)
 /// - deep linking
 struct AdvancedShowcase {
+	@MainActor
 	static func makeView(_ store: Store<AdvancedTabBar.State, AdvancedTabBar.Action>) -> UIViewController {
 		AdvancedTabBar.makeView(store)
 	}

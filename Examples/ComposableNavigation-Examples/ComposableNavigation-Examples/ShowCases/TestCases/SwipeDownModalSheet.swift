@@ -70,6 +70,7 @@ struct SwipeDownModalSheet: Reducer {
 		}
 	}
 	
+	@MainActor
 	static func makeView(_ store: Store<State, Action>) -> UIViewController {
 		UIHostingController(
 			rootView: SwipeDownModalSheet.RootView(store: store)

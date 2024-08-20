@@ -93,6 +93,7 @@ struct CountrySort: Reducer {
 		}
 	}
 
+	@MainActor
 	static func makeView(_ store: Store<State, Action>) -> UIViewController {
 		return CountrySortView(store: store)
 			.viewController.withModal(

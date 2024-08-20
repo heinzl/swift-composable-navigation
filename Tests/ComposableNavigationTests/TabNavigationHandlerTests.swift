@@ -4,10 +4,10 @@ import ComposableArchitecture
 import OrderedCollections
 @testable import ComposableNavigation
 
-@MainActor
 class TabNavigationHandlerTests: XCTestCase {
 	// MARK: Set tab items
 	
+	@MainActor
 	func testSetStackFromEmpty() {
 		let container = Container()
 		
@@ -18,6 +18,7 @@ class TabNavigationHandlerTests: XCTestCase {
 		thenAssertCreatedViews(for: [1, 2], container)
 	}
 	
+	@MainActor
 	func testSetStackToEmpty() {
 		let container = Container()
 
@@ -29,6 +30,7 @@ class TabNavigationHandlerTests: XCTestCase {
 		thenAssertCreatedViews(for: [1, 2], container)
 	}
 
+	@MainActor
 	func testSetStackAddItemsOnTop() {
 		let container = Container()
 
@@ -40,6 +42,7 @@ class TabNavigationHandlerTests: XCTestCase {
 		thenAssertCreatedViews(for: [1, 2], container)
 	}
 
+	@MainActor
 	func testSetStackRemoveItemsFromTop() {
 		let container = Container()
 
@@ -51,6 +54,7 @@ class TabNavigationHandlerTests: XCTestCase {
 		thenAssertCreatedViews(for: [1, 2], container)
 	}
 
+	@MainActor
 	func testSetStackSwitchItems() {
 		let container = Container()
 
@@ -62,6 +66,7 @@ class TabNavigationHandlerTests: XCTestCase {
 		thenAssertCreatedViews(for: [1, 2], container)
 	}
 
+	@MainActor
 	func testSetStackSwitchAndAddItems() {
 		let container = Container()
 
@@ -73,6 +78,7 @@ class TabNavigationHandlerTests: XCTestCase {
 		thenAssertCreatedViews(for: [1, 2, 3, 4], container)
 	}
 
+	@MainActor
 	func testSetStackSwitchAndRemoveItems() {
 		let container = Container()
 		
@@ -86,6 +92,7 @@ class TabNavigationHandlerTests: XCTestCase {
 
 	// MARK: Set active item
 
+	@MainActor
 	func testChangeActiveItem() {
 		let container = Container()
 		
@@ -95,6 +102,7 @@ class TabNavigationHandlerTests: XCTestCase {
 		thenAssertSelectedIndex(1, container)
 	}
 
+	@MainActor
 	func testChangeActiveItemOutOfBounds() {
 		let container = Container()
 		
@@ -104,6 +112,7 @@ class TabNavigationHandlerTests: XCTestCase {
 		thenAssertSelectedIndex(0, container)
 	}
 
+	@MainActor
 	func testRemoveItemsSetsActiveIndexTo0() {
 		let container = Container()
 		
@@ -117,6 +126,7 @@ class TabNavigationHandlerTests: XCTestCase {
 
 	// MARK: Memory
 
+	@MainActor
 	func testMemoryLeak() {
 		var container: Container! = Container()
 		container.sut.setup(with: container.tabBarController)

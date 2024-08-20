@@ -89,6 +89,7 @@ struct ExistingViewShowcase: Reducer {
 		}
 	}
 
+	@MainActor
 	static func makeView(_ store: Store<State, Action>) -> UIViewController {
 		ExistingViewController(store: store)
 	}

@@ -195,6 +195,7 @@ struct CountryListAndDetail: Reducer {
 		}
 	}
 	
+	@MainActor
 	static func makeView(store: Store<State, Action>) -> UIViewController {
 		let stackNavigationController = StackNavigationViewController(
 			store: store.scope(
@@ -216,7 +217,7 @@ struct CountryListAndDetail: Reducer {
 }
 
 private enum CountryProviderKey: DependencyKey {
-	static var liveValue: CountryProviderProtocol = CountryProvider()
+	static let liveValue: CountryProviderProtocol = CountryProvider()
 }
 
 extension DependencyValues {

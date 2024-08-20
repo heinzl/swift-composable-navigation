@@ -154,6 +154,7 @@ struct AdvancedTabBar: Reducer {
 		}
 	}
 	
+	@MainActor
 	static func makeView(_ store: Store<State, Action>) -> UIViewController {
 		return TabNavigationViewController(
 			store: store.scope(
