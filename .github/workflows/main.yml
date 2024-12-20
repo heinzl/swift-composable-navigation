@@ -24,7 +24,6 @@ jobs:
               -clonedSourcePackagesDirPath ClonedSourcePackages
 
             xcodebuild clean test \
-              -sdk iphonesimulator \
               -project 'Examples/ComposableNavigation-Examples/ComposableNavigation-Examples.xcodeproj' \
               -scheme 'ComposableNavigation-Examples' \
               -derivedDataPath DerivedData \
