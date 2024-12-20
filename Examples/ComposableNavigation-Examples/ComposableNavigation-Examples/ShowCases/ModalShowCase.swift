@@ -7,7 +7,8 @@ import ComposableArchitecture
 /// - Screens are presented using sheet and fullscreen style.
 /// - Screens are dismissed automatically when another screen is presented.
 /// - Modal sheet can be swiped down. Navigation state update automatically.
-struct ModalShowcase: Reducer {
+@Reducer
+struct ModalShowcase {
 	
 	// MARK: TCA
 	
@@ -17,6 +18,7 @@ struct ModalShowcase: Reducer {
 		case helper
 	}
 	
+	@ObservableState
 	struct State: Equatable {
 		var counterOne = Counter.State(id: 1)
 		var counterTwo = Counter.State(id: 2)
@@ -25,15 +27,14 @@ struct ModalShowcase: Reducer {
 		var modalNavigation = ModalNavigation<Screen>.State()
 	}
 	
-	enum Action: Equatable {
+	@CasePathable
+	enum Action {
 		case counterOne(Counter.Action)
 		case counterTwo(Counter.Action)
 		case helper(Helper.Action)
 		
 		case modalNavigation(ModalNavigation<Screen>.Action)
 	}
-	
-	struct Environment {}
 	
 	private func privateReducer(state: inout State, action: Action) -> Effect<Action> {
 		switch action {
@@ -49,17 +50,17 @@ struct ModalShowcase: Reducer {
 		return .none
 	}
 	
-	var body: some Reducer<State, Action> {
-		Scope(state: \.counterOne, action: /Action.counterOne) {
+	var body: some ReducerOf<Self> {
+		Scope(state: \.counterOne, action: \.counterOne) {
 			Counter()
 		}
-		Scope(state: \.counterTwo, action: /Action.counterTwo) {
+		Scope(state: \.counterTwo, action: \.counterTwo) {
 			Counter()
 		}
-		Scope(state: \.helper, action: /Action.helper) {
+		Scope(state: \.helper, action: \.helper) {
 			Helper()
 		}
-		Scope(state: \.modalNavigation, action: /Action.modalNavigation) {
+		Scope(state: \.modalNavigation, action: \.modalNavigation) {
 			ModalNavigation<Screen>()
 		}
 		Reduce(privateReducer)
@@ -76,7 +77,7 @@ struct ModalShowcase: Reducer {
 				let view = CounterView(
 					store: store.scope(
 						state: \.counterOne,
-						action: Action.counterOne
+						action: \.counterOne
 					)
 				)
 				let host = UIHostingController(rootView: view)
@@ -86,7 +87,7 @@ struct ModalShowcase: Reducer {
 				let view = CounterView(
 					store: store.scope(
 						state: \.counterTwo,
-						action: Action.counterTwo
+						action: \.counterTwo
 					)
 				)
 				let host = UIHostingController(rootView: view)
@@ -96,7 +97,7 @@ struct ModalShowcase: Reducer {
 				return HelperView(
 					store: store.scope(
 						state: \.helper,
-						action: Action.helper
+						action: \.helper
 					)
 				)
 			}
@@ -111,7 +112,7 @@ struct ModalShowcase: Reducer {
 		.withModal(
 			store: store.scope(
 				state: \.modalNavigation,
-				action: Action.modalNavigation
+				action: \.modalNavigation
 			),
 			viewProvider: ViewProvider(store: store)
 		)
@@ -119,7 +120,7 @@ struct ModalShowcase: Reducer {
 }
 
 struct ModalShowcaseView: View {
-	let store: Store<ModalShowcase.State, ModalShowcase.Action>
+	let store: StoreOf<ModalShowcase>
 	
 	var body: some View {
 		VStack(spacing: 20) {
@@ -140,21 +141,19 @@ struct ModalShowcaseView: View {
 // MARK: Helper
 
 extension ModalShowcase {
-	struct Helper: Reducer {
+	@Reducer
+	struct Helper {
 		struct State: Equatable {}
 		
-		enum Action: Equatable {
+		@CasePathable
+		enum Action {
 			case showCounterOne
 			case showCounterTwo
-		}
-		
-		func reduce(into state: inout State, action: Action) -> Effect<Action> {
-			.none
 		}
 	}
 	
 	struct HelperView: View, Presentable {
-		let store: Store<Helper.State, Helper.Action>
+		let store: StoreOf<Helper>
 		
 		var body: some View {
 			VStack(spacing: 20) {

@@ -7,7 +7,8 @@ import SwiftUI
 /// - Two counter screens and a helper screen.
 /// - You can navigate to another tab.
 /// - You can switch the tab order tab.
-struct TabsShowcase: Reducer {
+@Reducer
+struct TabsShowcase {
 	
 	// MARK: TCA
 	
@@ -17,6 +18,7 @@ struct TabsShowcase: Reducer {
 		case helper
 	}
 	
+	@ObservableState
 	struct State: Equatable {
 		var counterOne = Counter.State(id: 1, showDone: false)
 		var counterTwo = Counter.State(id: 2, showDone: false)
@@ -28,7 +30,8 @@ struct TabsShowcase: Reducer {
 		)
 	}
 	
-	enum Action: Equatable {
+	@CasePathable
+	enum Action {
 		case counterOne(Counter.Action)
 		case counterTwo(Counter.Action)
 		case helper(Helper.Action)
@@ -50,17 +53,17 @@ struct TabsShowcase: Reducer {
 		return .none
 	}
 	
-	var body: some Reducer<State, Action> {
-		Scope(state: \.counterOne, action: /Action.counterOne) {
+	var body: some ReducerOf<Self> {
+		Scope(state: \.counterOne, action: \.counterOne) {
 			Counter()
 		}
-		Scope(state: \.counterTwo, action: /Action.counterTwo) {
+		Scope(state: \.counterTwo, action: \.counterTwo) {
 			Counter()
 		}
-		Scope(state: \.helper, action: /Action.helper) {
+		Scope(state: \.helper, action: \.helper) {
 			Helper()
 		}
-		Scope(state: \.tabNavigation, action: /Action.tabNavigation) {
+		Scope(state: \.tabNavigation, action: \.tabNavigation) {
 			TabNavigation<Screen>()
 		}
 		Reduce(privateReducer)
@@ -77,7 +80,7 @@ struct TabsShowcase: Reducer {
 				let view = CounterView(
 					store: store.scope(
 						state: \.counterOne,
-						action: Action.counterOne
+						action: \.counterOne
 					)
 				)
 				return makeHostingView(
@@ -92,7 +95,7 @@ struct TabsShowcase: Reducer {
 				let view = CounterView(
 					store: store.scope(
 						state: \.counterTwo,
-						action: Action.counterTwo
+						action: \.counterTwo
 					)
 				)
 				return makeHostingView(
@@ -107,7 +110,7 @@ struct TabsShowcase: Reducer {
 				let view = HelperView(
 					store: store.scope(
 						state: \.helper,
-						action: Action.helper
+						action: \.helper
 					)
 				)
 				return makeHostingView(
@@ -136,7 +139,7 @@ struct TabsShowcase: Reducer {
 		TabNavigationViewController(
 			store: store.scope(
 				state: \.tabNavigation,
-				action: Action.tabNavigation
+				action: \.tabNavigation
 			),
 			viewProvider: ViewProvider(store: store)
 		)
@@ -146,21 +149,20 @@ struct TabsShowcase: Reducer {
 // MARK: Helper
 
 extension TabsShowcase {
-	struct Helper: Reducer {
+	@Reducer
+	struct Helper {
+		@ObservableState
 		struct State: Equatable {}
 		
-		enum Action: Equatable {
+		@CasePathable
+		enum Action {
 			case switchTabs
 			case showTab(Int)
-		}
-		
-		func reduce(into state: inout State, action: Action) -> Effect<Action> {
-			.none
 		}
 	}
 
 	struct HelperView: View {
-		let store: Store<Helper.State, Helper.Action>
+		let store: StoreOf<Helper>
 		
 		var body: some View {
 			VStack(spacing: 20) {

@@ -9,7 +9,7 @@ public class ModalNavigationViewController<ViewProvider: ViewProviding>: UIViewC
 	
 	public convenience init(
 		contentViewController: UIViewController,
-		store: Store<ModalNavigation<ViewProvider.Item>.State, ModalNavigation<ViewProvider.Item>.Action>,
+		store: StoreOf<ModalNavigation<ViewProvider.Item>>,
 		viewProvider: ViewProvider
 	) {
 		self.init(
@@ -49,7 +49,7 @@ public class ModalNavigationViewController<ViewProvider: ViewProviding>: UIViewC
 
 public extension Presentable {
 	func withModal<ViewProvider: ViewProviding>(
-		store: Store<ModalNavigation<ViewProvider.Item>.State, ModalNavigation<ViewProvider.Item>.Action>,
+		store: StoreOf<ModalNavigation<ViewProvider.Item>>,
 		viewProvider: ViewProvider
 	) -> ModalNavigationViewController<ViewProvider> {
 		ModalNavigationViewController(

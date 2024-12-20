@@ -3,7 +3,8 @@ import SwiftUI
 import ComposableNavigation
 import ComposableArchitecture
 
-struct AlertPlayground: Reducer {
+@Reducer
+struct AlertPlayground {
 	
 	// MARK: TCA
 	
@@ -12,6 +13,7 @@ struct AlertPlayground: Reducer {
 		case actionSheet
 	}
 	
+	@ObservableState
 	struct State: Equatable {
 		static let initialCount = 5
 		
@@ -23,7 +25,8 @@ struct AlertPlayground: Reducer {
 		}
 	}
 	
-	enum Action: Equatable {
+	@CasePathable
+	enum Action {
 		case counter(Counter.Action)
 		case resetCounter
 		case alertNavigation(ModalNavigation<ModalScreen>.Action)
@@ -39,11 +42,11 @@ struct AlertPlayground: Reducer {
 		return .none
 	}
 	
-	var body: some Reducer<State, Action> {
-		Scope(state: \.alertNavigation, action: /Action.alertNavigation) {
+	var body: some ReducerOf<Self> {
+		Scope(state: \.alertNavigation, action: \.alertNavigation) {
 			ModalNavigation<ModalScreen>()
 		}
-		Scope(state: \.counter, action: /Action.counter) {
+		Scope(state: \.counter, action: \.counter) {
 			Counter()
 		}
 		Reduce(privateReducer)
@@ -112,7 +115,7 @@ struct AlertPlayground: Reducer {
 				style: style,
 				action: action,
 				store: store,
-				toNavigationAction: Action.alertNavigation
+				toNavigationCasePath: \.alertNavigation
 			)
 		}
 	}
@@ -123,7 +126,7 @@ struct AlertPlayground: Reducer {
 			.withModal(
 				store: store.scope(
 					state: \.alertNavigation,
-					action: AlertPlayground.Action.alertNavigation
+					action: \.alertNavigation
 				),
 				viewProvider: AlertPlayground.ModalViewProvider(store: store)
 			)
@@ -131,26 +134,24 @@ struct AlertPlayground: Reducer {
 }
 
 struct AlertPlaygroundView: View, Presentable {
-	let store: Store<AlertPlayground.State, AlertPlayground.Action>
+	let store: StoreOf<AlertPlayground>
 
 	var body: some View {
-		WithViewStore(store, observe: { $0 }) { viewStore in
-			VStack {
-				Text("Count: \(viewStore.counter.count)")
-					.font(.largeTitle)
-					.padding()
-				
-				Button("Options") {
-					viewStore.send(.alertNavigation(.presentFullScreen(.actionSheet)))
-				}
+		VStack {
+			Text("Count: \(store.counter.count)")
+				.font(.largeTitle)
 				.padding()
-				
-				Button("Reset") {
-					viewStore.send(.alertNavigation(.presentFullScreen(.resetAlert)))
-				}
-				.disabled(viewStore.isResetDisabled)
-				.padding()
+			
+			Button("Options") {
+				store.send(.alertNavigation(.presentFullScreen(.actionSheet)))
 			}
+			.padding()
+			
+			Button("Reset") {
+				store.send(.alertNavigation(.presentFullScreen(.resetAlert)))
+			}
+			.disabled(store.isResetDisabled)
+			.padding()
 		}
 	}
 }

@@ -6,7 +6,8 @@ import SwiftUI
 /// This example showcases how to model multiple optional states.
 /// This can be necessary if you want to present modal screens without
 /// keeping the modal state after dismissing it.
-struct MultipleOptionalModalStatesShowcase: Reducer {
+@Reducer
+struct MultipleOptionalModalStatesShowcase {
 	// MARK: TCA
 	
 	enum Screen: Hashable {
@@ -14,11 +15,13 @@ struct MultipleOptionalModalStatesShowcase: Reducer {
 		case counterTwo
 	}
 	
+	@CasePathable
 	enum ModalState: Equatable {
 		case counterOne(Counter.State)
 		case counterTwo(Counter.State)
 	}
 	
+	@ObservableState
 	struct State: Equatable {
 		var modalState: ModalState?
 		var selectedCount: Int?
@@ -31,13 +34,23 @@ struct MultipleOptionalModalStatesShowcase: Reducer {
 		}
 		
 		var counterOne: Counter.State? {
-			get { (/ModalState.counterOne).extract(from: modalState) }
-			set { modalState = newValue.map { .counterOne($0) } }
+			get {
+				guard let modalState else { return nil }
+				return ModalState.allCasePaths.counterOne.extract(from: modalState)
+			}
+			set {
+				modalState = newValue.map { .counterOne($0) }
+			}
 		}
 		
 		var counterTwo: Counter.State? {
-			get { (/ModalState.counterTwo).extract(from: modalState) }
-			set { modalState = newValue.map { .counterTwo($0) } }
+			get {
+				guard let modalState else { return nil }
+				return ModalState.allCasePaths.counterTwo.extract(from: modalState)
+			}
+			set {
+				modalState = newValue.map { .counterTwo($0) }
+			}
 		}
 		
 		var modalNavigation: ModalNavigation<Screen>.State {
@@ -68,7 +81,8 @@ struct MultipleOptionalModalStatesShowcase: Reducer {
 		}
 	}
 	
-	enum Action: Equatable {
+	@CasePathable
+	enum Action {
 		case counterOne(Counter.Action)
 		case counterTwo(Counter.Action)
 		case modalNavigation(ModalNavigation<Screen>.Action)
@@ -95,15 +109,15 @@ struct MultipleOptionalModalStatesShowcase: Reducer {
 		return .none
 	}
 	
-	var body: some Reducer<State, Action> {
-		Scope(state: \.modalNavigation, action: /Action.modalNavigation) {
+	var body: some ReducerOf<Self> {
+		Scope(state: \.modalNavigation, action: \.modalNavigation) {
 			ModalNavigation<Screen>()
 		}
 		Reduce(privateReducer)
-			.ifLet(\.counterOne, action: /Action.counterOne) {
+			.ifLet(\.counterOne, action: \.counterOne) {
 				Counter()
 			}
-			.ifLet(\.counterTwo, action: /Action.counterTwo) {
+			.ifLet(\.counterTwo, action: \.counterTwo) {
 				Counter()
 			}
 	}
@@ -116,12 +130,12 @@ struct MultipleOptionalModalStatesShowcase: Reducer {
 			case .counterOne:
 				return store.scope(
 					state: \.counterOne,
-					action: Action.counterOne
+					action: \.counterOne
 				).compactMap(CounterView.init(store:)) ?? UIViewController()
 			case .counterTwo:
 				return store.scope(
 					state: \.counterTwo,
-					action: Action.counterTwo
+					action: \.counterTwo
 				).compactMap(CounterView.init(store:)) ?? UIViewController()
 			}
 		}
@@ -135,7 +149,7 @@ struct MultipleOptionalModalStatesShowcase: Reducer {
 		.withModal(
 			store: store.scope(
 				state: \.modalNavigation,
-				action: Action.modalNavigation
+				action: \.modalNavigation
 			),
 			viewProvider: ViewProvider(store: store)
 		)
@@ -144,22 +158,20 @@ struct MultipleOptionalModalStatesShowcase: Reducer {
 
 
 struct MultipleOptionalModalStatesShowcaseView: View, Presentable {
-	let store: Store<MultipleOptionalModalStatesShowcase.State, MultipleOptionalModalStatesShowcase.Action>
+	let store: StoreOf<MultipleOptionalModalStatesShowcase>
 	
 	var body: some View {
-		WithViewStore(store, observe: { $0 }) { viewStore in
-			VStack {
-				HStack {
-					Button("Counter 1") {
-						viewStore.send(.showCounterOne)
-					}
-					Button("Counter 2") {
-						viewStore.send(.showCounterTwo)
-					}
+		VStack {
+			HStack {
+				Button("Counter 1") {
+					store.send(.showCounterOne)
 				}
-				.padding()
-				Text("Selected count: \(viewStore.selectedCountText)")
+				Button("Counter 2") {
+					store.send(.showCounterTwo)
+				}
 			}
+			.padding()
+			Text("Selected count: \(store.selectedCountText)")
 		}
 	}
 }

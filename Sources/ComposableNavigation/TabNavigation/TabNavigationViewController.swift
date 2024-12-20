@@ -6,7 +6,7 @@ public class TabNavigationViewController<ViewProvider: ViewProviding>: UITabBarC
 	internal let navigationHandler: TabNavigationHandler<ViewProvider>
 	
 	public convenience init(
-		store: Store<TabNavigation<ViewProvider.Item>.State, TabNavigation<ViewProvider.Item>.Action>,
+		store: StoreOf<TabNavigation<ViewProvider.Item>>,
 		viewProvider: ViewProvider
 	) {
 		self.init(navigationHandler: TabNavigationHandler(store: store, viewProvider: viewProvider))

@@ -3,30 +3,27 @@ import SwiftUI
 import ComposableNavigation
 import ComposableArchitecture
 
-struct CountryDetail: Reducer {
+@Reducer
+struct CountryDetail {
+	@ObservableState
 	struct State: Equatable {
 		let country: Country
 	}
 
-	enum Action: Equatable {}
-
-	var body: some Reducer<State, Action> {
-		EmptyReducer()
-	}
+	@CasePathable
+	enum Action {}
 }
 
 struct CountryDetailView: View, Presentable {
-	let store: Store<CountryDetail.State, CountryDetail.Action>
+	let store: StoreOf<CountryDetail>
 	
 	var body: some View {
-		WithViewStore(store, observe: \.country) { viewStore in
-			List {
-				Cell(label: "Name", value: viewStore.name)
-				Cell(label: "Capital", value: viewStore.capital)
-				Cell(label: "Continent", value: viewStore.continent)
-			}
-			.listStyle(InsetGroupedListStyle())
+		List {
+			Cell(label: "Name", value: store.country.name)
+			Cell(label: "Capital", value: store.country.capital)
+			Cell(label: "Continent", value: store.country.continent)
 		}
+		.listStyle(InsetGroupedListStyle())
 	}
 	
 	struct Cell: View {

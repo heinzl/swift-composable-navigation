@@ -12,17 +12,17 @@ public class TabNavigationHandler<ViewProvider: ViewProviding>: NSObject, UITabB
 	public typealias Item = ViewProvider.Item
 	public typealias Navigation = TabNavigation<Item>
 	
-	internal let viewStore: ViewStore<Navigation.State, Navigation.Action>
+	internal let store: StoreOf<Navigation>
 	internal let viewProvider: ViewProvider
 	internal var currentViewControllerItems: OrderedDictionary<Item, UIViewController>
 	
 	private var cancellable: AnyCancellable?
 
 	public init(
-		store: Store<Navigation.State, Navigation.Action>,
+		store: StoreOf<Navigation>,
 		viewProvider: ViewProvider
 	) {
-		self.viewStore = ViewStore(store, observe: { $0 })
+		self.store = store
 		self.viewProvider = viewProvider
 		self.currentViewControllerItems = [:]
 	}
@@ -30,7 +30,7 @@ public class TabNavigationHandler<ViewProvider: ViewProviding>: NSObject, UITabB
 	public func setup(with tabBarController: UITabBarController) {
 		tabBarController.delegate = self
 		
-		cancellable = viewStore.publisher
+		cancellable = store.publisher
 			.sink { [weak self, weak tabBarController] state in
 				guard let self, let tabBarController else { return }
 				self.checkTabBarControllerDelegate(tabBarController)
@@ -105,7 +105,7 @@ public class TabNavigationHandler<ViewProvider: ViewProviding>: NSObject, UITabB
 
 		Task { @MainActor in
 			await Task.yield()
-			viewStore.send(.setActiveIndex(index))
+			store.send(.setActiveIndex(index))
 		}
 	}
 

@@ -2,7 +2,8 @@ import UIKit
 import ComposableNavigation
 import ComposableArchitecture
 
-struct CountryListAndDetail: Reducer {
+@Reducer
+struct CountryListAndDetail {
 	
 	// MARK: TCA
 	
@@ -16,20 +17,11 @@ struct CountryListAndDetail: Reducer {
 		case sort
 	}
 	
+	@ObservableState
 	struct State: Equatable {
 		var countries = [Country]()
 		
-		var list: CountryList.State {
-			get {
-				.init(countries: countries
-					.filter(filter)
-					.sorted(by: sort)
-				)
-			}
-			set {
-				// No op
-			}
-		}
+		var list: CountryList.State = .init(countries: [])
 		
 		var detail: CountryDetail.State?
 		var continentFilter = ContinentFilter.State()
@@ -50,7 +42,9 @@ struct CountryListAndDetail: Reducer {
 				case let .detail(id):
 					detail = countries
 						.first(where: { $0.id == id })
-						.map(CountryDetail.State.init(country:))
+						.map {
+							CountryDetail.State(country: $0)
+						}
 				case .list:
 					detail = nil
 				default:
@@ -61,7 +55,7 @@ struct CountryListAndDetail: Reducer {
 		
 		var modalNavigation = ModalNavigation<ModalScreen>.State()
 		
-		private func filter(_ country: Country) -> Bool {
+		func filter(_ country: Country) -> Bool {
 			if let filter = continentFilter.selectedContinent {
 				return country.continent == filter
 			} else {
@@ -69,7 +63,7 @@ struct CountryListAndDetail: Reducer {
 			}
 		}
 		
-		private func sort(_ lhs: Country, _ rhs: Country) -> Bool {
+		func sort(_ lhs: Country, _ rhs: Country) -> Bool {
 			let comperator: (String, String) -> Bool
 			switch countrySort.sortOrder {
 			case .ascending:
@@ -88,7 +82,8 @@ struct CountryListAndDetail: Reducer {
 		}
 	}
 	
-	enum Action: Equatable {
+	@CasePathable
+	enum Action: BindableAction {
 		case loadCountries
 		
 		case list(CountryList.Action)
@@ -98,6 +93,8 @@ struct CountryListAndDetail: Reducer {
 		
 		case stackNavigation(StackNavigation<StackScreen>.Action)
 		case modalNavigation(ModalNavigation<ModalScreen>.Action)
+		
+		case binding(BindingAction<State>)
 	}
 	
 	@Dependency(\.countryProvider) var countryProvider
@@ -108,41 +105,67 @@ struct CountryListAndDetail: Reducer {
 			let countries = self.countryProvider.getCountryList()
 			state.countries = countries
 			state.continentFilter.continents = Set(countries.map(\.continent)).sorted()
+			updateList(&state)
+			
 		case .list(.selectCountry(let id)):
 			return .send(.stackNavigation(.pushItem(.detail(id: id))))
-		case .list(.selectFilter),
-				.countrySort(.showFilter):
+			
+		case .list(.selectFilter), .countrySort(.showFilter):
 			return .send(.modalNavigation(.presentSheet(.filter)))
-		case .list(.selectSorting),
-				.continentFilter(.showSorting):
+			
+		case .list(.selectSorting), .continentFilter(.showSorting):
 			return .send(.modalNavigation(.presentSheet(.sort)))
-		case .continentFilter(.done),
-				.countrySort(.done):
+			
+		case .continentFilter(.done), .countrySort(.done):
 			return .send(.modalNavigation(.dismiss()))
+			
 		default:
 			break
 		}
 		return .none
 	}
 	
-	var body: some Reducer<State, Action> {
-		Scope(state: \.continentFilter, action: /Action.continentFilter) {
+	private func updateList(_ state: inout State) {
+		state.list = .init(
+			countries: state.countries
+				.filter(state.filter)
+				.sorted(by: state.sort)
+		)
+	}
+	
+	var body: some ReducerOf<Self> {
+		BindingReducer()
+		Scope(state: \.continentFilter, action: \.continentFilter) {
 			ContinentFilter()
 		}
-		Scope(state: \.countrySort, action: /Action.countrySort) {
+		.onChange(of: { $0.continentFilter }){ oldValue, newValue in
+			Reduce { state, action in
+				updateList(&state)
+				return .none
+			}
+		}
+		
+		Scope(state: \.countrySort, action: \.countrySort) {
 			CountrySort()
 		}
-		Scope(state: \.list, action: /Action.list) {
+		.onChange(of: { $0.countrySort }){ oldValue, newValue in
+			Reduce { state, action in
+				updateList(&state)
+				return .none
+			}
+		}
+
+		Scope(state: \.list, action: \.list) {
 			CountryList()
 		}
-		Scope(state: \.stackNavigation, action: /Action.stackNavigation) {
+		Scope(state: \.stackNavigation, action: \.stackNavigation) {
 			StackNavigation<StackScreen>()
 		}
-		Scope(state: \.modalNavigation, action: /Action.modalNavigation) {
+		Scope(state: \.modalNavigation, action: \.modalNavigation) {
 			ModalNavigation<ModalScreen>()
 		}
 		Reduce(privateReducer)
-			.ifLet(\.detail, action: /Action.detail) {
+			.ifLet(\.detail, action: \.detail) {
 				CountryDetail()
 			}
 	}
@@ -158,13 +181,13 @@ struct CountryListAndDetail: Reducer {
 				return CountryListView(
 					store: store.scope(
 						state: \.list,
-						action: Action.list
+						action: \.list
 					)
 				)
 			case .detail:
 				let presentable: Presentable = store.scope(
 					state: \.detail,
-					action: Action.detail
+					action: \.detail
 				)
 				.compactMap(CountryDetailView.init(store:)) ?? UIViewController()
 				let viewController = presentable.viewController
@@ -183,13 +206,13 @@ struct CountryListAndDetail: Reducer {
 				return ContinentFilterView(
 					store: store.scope(
 						state: \.continentFilter,
-						action: Action.continentFilter
+						action: \.continentFilter
 					)
 				)
 			case .sort:
 				return CountrySort.makeView(store.scope(
 					state: \.countrySort,
-					action: Action.countrySort
+					action: \.countrySort
 				))
 			}
 		}
@@ -200,7 +223,7 @@ struct CountryListAndDetail: Reducer {
 		let stackNavigationController = StackNavigationViewController(
 			store: store.scope(
 				state: \.stackNavigation,
-				action: CountryListAndDetail.Action.stackNavigation
+				action: \.stackNavigation
 			),
 			viewProvider: CountryListAndDetail.StackViewProvider(store: store)
 		)
@@ -209,14 +232,14 @@ struct CountryListAndDetail: Reducer {
 			.withModal(
 				store: store.scope(
 					state: \.modalNavigation,
-					action: CountryListAndDetail.Action.modalNavigation
+					action: \.modalNavigation
 				),
 				viewProvider: CountryListAndDetail.ModalViewProvider(store: store)
 			)
 	}
 }
 
-private enum CountryProviderKey: DependencyKey {
+private enum CountryProviderKey: DependencyKey, Sendable {
 	static let liveValue: CountryProviderProtocol = CountryProvider()
 }
 

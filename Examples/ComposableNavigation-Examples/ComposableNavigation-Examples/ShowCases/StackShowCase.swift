@@ -7,7 +7,8 @@ import SwiftUI
 /// - Three counter screens + summary screen at the end.
 /// - The StackNavigation state is a computed property
 /// - Navigation to counter screens from summary screen
-struct StackShowcase: Reducer {
+@Reducer
+struct StackShowcase {
 	
 	// MARK: TCA
 	
@@ -16,6 +17,7 @@ struct StackShowcase: Reducer {
 		case summary
 	}
 	
+	@ObservableState
 	struct State: Equatable {
 		var currentScreen: Screen = .counter(id: 0)
 		var counters: IdentifiedArrayOf<Counter.State> = .init(uniqueElements: (0..<3).map { Counter.State(id: $0) })
@@ -46,15 +48,16 @@ struct StackShowcase: Reducer {
 		}
 	}
 	
-	enum Action: Equatable {
-		case counter(id: Counter.State.ID, action: Counter.Action)
+	@CasePathable
+	enum Action {
+		case counter(IdentifiedActionOf<Counter>)
 		case summary(Summary.Action)
 		case stackNavigation(StackNavigation<Screen>.Action)
 	}
 	
 	private func privateReducer(state: inout State, action: Action) -> Effect<Action> {
 		switch action {
-		case let .counter(id, .done):
+		case let .counter(.element(id, action: .done)):
 			let nextId = id + 1
 			if state.counters.ids.contains(nextId) {
 				return .send(.stackNavigation(.pushItem(.counter(id: nextId))))
@@ -69,15 +72,15 @@ struct StackShowcase: Reducer {
 		return .none
 	}
 	
-	var body: some Reducer<State, Action> {
-		Scope(state: \.summary, action: /Action.summary) {
+	var body: some ReducerOf<Self> {
+		Scope(state: \.summary, action: \.summary) {
 			Summary()
 		}
-		Scope(state: \.stackNavigation, action: /Action.stackNavigation) {
+		Scope(state: \.stackNavigation, action: \.stackNavigation) {
 			StackNavigation<Screen>()
 		}
 		Reduce(privateReducer)
-			.forEach(\.counters, action: /Action.counter(id:action:)) {
+			.forEach(\.counters, action: \.counter) {
 				Counter()
 			}
 	}
@@ -93,14 +96,14 @@ struct StackShowcase: Reducer {
 				return CounterView(
 					store: store.scope(
 						state: { $0.counters[id: id]! },
-						action: { Action.counter(id: id, action:$0) }
+						action: { Action.counter(.element(id: id, action:$0)) }
 					)
 				)
 			case .summary:
 				return SummaryView(
 					store: store.scope(
 						state: \.summary,
-						action: Action.summary
+						action: \.summary
 					)
 				)
 			}
@@ -112,7 +115,7 @@ struct StackShowcase: Reducer {
 		StackNavigationViewController(
 			store: store.scope(
 				state: \.stackNavigation,
-				action: Action.stackNavigation
+				action: \.stackNavigation
 			),
 			viewProvider: ViewProvider(store: store)
 		)
@@ -122,12 +125,15 @@ struct StackShowcase: Reducer {
 // MARK: Helper
 
 extension StackShowcase {
-	struct Summary: Reducer {
+	@Reducer
+	struct Summary {
+		@ObservableState
 		struct State: Equatable {
 			let counters: IdentifiedArrayOf<Counter.State>
 		}
 		
-		enum Action: Equatable {
+		@CasePathable
+		enum Action {
 			case goTo(id: Counter.State.ID)
 		}
 		
@@ -137,23 +143,21 @@ extension StackShowcase {
 	}
 
 	struct SummaryView: View, Presentable {
-		let store: Store<Summary.State, Summary.Action>
+		let store: StoreOf<Summary>
 		
 		var body: some View {
-			WithViewStore(store, observe: \.counters) { viewStore in
-				List {
-					ForEach(viewStore.state) { counter in
-						HStack {
-							VStack(alignment: .leading) {
-								Text("ID: \(counter.id)").font(.caption)
-								Text("Count: \(counter.count)")
-							}
-							Spacer()
-							Button("Go to screen") {
-								viewStore.send(.goTo(id: counter.id))
-							}
-							.buttonStyle(BorderlessButtonStyle())
+			List {
+				ForEach(store.counters) { counter in
+					HStack {
+						VStack(alignment: .leading) {
+							Text("ID: \(counter.id)").font(.caption)
+							Text("Count: \(counter.count)")
 						}
+						Spacer()
+						Button("Go to screen") {
+							store.send(.goTo(id: counter.id))
+						}
+						.buttonStyle(BorderlessButtonStyle())
 					}
 				}
 			}

@@ -3,7 +3,8 @@ import ComposableNavigation
 import ComposableArchitecture
 
 /// This setup is used for a UI test
-struct SwipeDownModalSheet: Reducer {
+@Reducer
+struct SwipeDownModalSheet {
 	
 	// MARK: TCA
 	
@@ -11,16 +12,18 @@ struct SwipeDownModalSheet: Reducer {
 		case sheet
 	}
 	
+	@ObservableState
 	struct State: Equatable {
 		var modalNavigation = ModalNavigation<Screen>.State()
 	}
 	
-	enum Action: Equatable {
+	@CasePathable
+	enum Action {
 		case modalNavigation(ModalNavigation<Screen>.Action)
 	}
 	
-	var body: some Reducer<State, Action> {
-		Scope(state: \.modalNavigation, action: /Action.modalNavigation) {
+	var body: some ReducerOf<Self> {
+		Scope(state: \.modalNavigation, action: \.modalNavigation) {
 			ModalNavigation<Screen>()
 		}
 	}
@@ -31,15 +34,13 @@ struct SwipeDownModalSheet: Reducer {
 		let store: Store<State, Action>
 		
 		var body: some View {
-			WithViewStore(store, observe: { $0 }) { viewStore in
-				VStack(spacing: 20) {
-					Button("Present") {
-						viewStore.send(.modalNavigation(.presentSheet(.sheet)))
-					}
-					.accessibilityIdentifier("present")
-					Text(modalText(state: viewStore.modalNavigation))
-						.accessibilityIdentifier("modalStateRoot")
+			VStack(spacing: 20) {
+				Button("Present") {
+					store.send(.modalNavigation(.presentSheet(.sheet)))
 				}
+				.accessibilityIdentifier("present")
+				Text(modalText(state: store.modalNavigation))
+					.accessibilityIdentifier("modalStateRoot")
 			}
 		}
 	}
@@ -48,10 +49,8 @@ struct SwipeDownModalSheet: Reducer {
 		let store: Store<State, Action>
 		
 		var body: some View {
-			WithViewStore(store, observe: { $0 }) { viewStore in
-				Text(modalText(state: viewStore.modalNavigation))
-					.accessibilityIdentifier("modalStateSheet")
-			}
+			Text(modalText(state: store.modalNavigation))
+				.accessibilityIdentifier("modalStateSheet")
 		}
 	}
 	
@@ -78,7 +77,7 @@ struct SwipeDownModalSheet: Reducer {
 		.withModal(
 			store: store.scope(
 				state: \.modalNavigation,
-				action: SwipeDownModalSheet.Action.modalNavigation
+				action: \.modalNavigation
 			),
 			viewProvider: SwipeDownModalSheet.ViewProvider(
 				store: store

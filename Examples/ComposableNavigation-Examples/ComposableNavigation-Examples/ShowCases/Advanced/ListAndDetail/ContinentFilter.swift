@@ -3,13 +3,16 @@ import SwiftUI
 import ComposableNavigation
 import ComposableArchitecture
 
-struct ContinentFilter: Reducer {
+@Reducer
+struct ContinentFilter {
+	@ObservableState
 	struct State: Equatable {
 		var continents = [String]()
 		var selectedContinent: String?
 	}
 	
-	enum Action: Equatable {
+	@CasePathable
+	enum Action {
 		case selectContinent(String?)
 		case done
 		case showSorting
@@ -27,43 +30,41 @@ struct ContinentFilter: Reducer {
 }
 
 struct ContinentFilterView: View, Presentable {
-	let store: Store<ContinentFilter.State, ContinentFilter.Action>
+	let store: StoreOf<ContinentFilter>
 	
 	var body: some View {
-		WithViewStore(store, observe: { $0 }) { viewStore in
-			NavigationView {
-				List {
+		NavigationView {
+			List {
+				Cell(
+					continent: nil,
+					isSelected: store.selectedContinent == nil,
+					onSelect: {
+						store.send(.selectContinent(nil))
+					}
+				)
+				ForEach(store.continents, id: \.self) { continent in
 					Cell(
-						continent: nil,
-						isSelected: viewStore.selectedContinent == nil,
+						continent: continent,
+						isSelected: continent == store.selectedContinent,
 						onSelect: {
-							viewStore.send(.selectContinent(nil))
+							store.send(.selectContinent(continent))
 						}
 					)
-					ForEach(viewStore.continents, id: \.self) { continent in
-						Cell(
-							continent: continent,
-							isSelected: continent == viewStore.selectedContinent,
-							onSelect: {
-								viewStore.send(.selectContinent(continent))
-							}
-						)
-					}
 				}
-				.listStyle(InsetGroupedListStyle())
-				.navigationTitle("Select continent")
-				.toolbar {
-					ToolbarItem(placement: .navigationBarTrailing) {
-						Button(action: {
-							viewStore.send(.done)
-						}, label: {
-							Text("Close")
-						})
-					}
-					ToolbarItem(placement: .bottomBar) {
-						Button("Show sorting options") {
-							viewStore.send(.showSorting)
-						}
+			}
+			.listStyle(InsetGroupedListStyle())
+			.navigationTitle("Select continent")
+			.toolbar {
+				ToolbarItem(placement: .navigationBarTrailing) {
+					Button(action: {
+						store.send(.done)
+					}, label: {
+						Text("Close")
+					})
+				}
+				ToolbarItem(placement: .bottomBar) {
+					Button("Show sorting options") {
+						store.send(.showSorting)
 					}
 				}
 			}

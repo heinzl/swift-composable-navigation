@@ -11,7 +11,7 @@ public class StackNavigationHandler<ViewProvider: ViewProviding>: NSObject, UINa
 	public typealias Item = ViewProvider.Item
 	public typealias Navigation = StackNavigation<Item>
 	
-	internal let viewStore: ViewStore<Navigation.State, Navigation.Action>
+	internal let store: StoreOf<Navigation>
 	internal let viewProvider: ViewProvider
 	internal var currentViewControllerItems: OrderedDictionary<Item, UIViewController>
 	
@@ -23,11 +23,11 @@ public class StackNavigationHandler<ViewProvider: ViewProviding>: NSObject, UINa
 	public let ignorePreviousViewControllers: Bool
 
 	public init(
-		store: Store<Navigation.State, Navigation.Action>,
+		store: StoreOf<Navigation>,
 		viewProvider: ViewProvider,
 		ignorePreviousViewControllers: Bool = false
 	) {
-		self.viewStore = ViewStore(store, observe: { $0 })
+		self.store = store
 		self.viewProvider = viewProvider
 		self.ignorePreviousViewControllers = ignorePreviousViewControllers
 		self.currentViewControllerItems = [:]
@@ -37,7 +37,7 @@ public class StackNavigationHandler<ViewProvider: ViewProviding>: NSObject, UINa
 		navigationController.delegate = self
 		let numberOfViewControllersOnStackToIgnore = numberOfViewControllersOnStackToIgnore(for: navigationController)
 
-		cancellable = viewStore.publisher
+		cancellable = store.publisher
 			.sink { [weak self, weak navigationController] state in
 				guard let self, let navigationController else { return }
 				self.checkNavigationControllerDelegate(navigationController)
@@ -129,7 +129,7 @@ public class StackNavigationHandler<ViewProvider: ViewProviding>: NSObject, UINa
 
 		Task { @MainActor in
 			await Task.yield()
-			viewStore.send(.popItems(count: popCount))
+			store.send(.popItems(count: popCount))
 		}
 	}
 

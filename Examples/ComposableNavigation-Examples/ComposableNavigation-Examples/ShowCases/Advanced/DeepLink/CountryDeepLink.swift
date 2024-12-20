@@ -3,22 +3,21 @@ import SwiftUI
 import ComposableNavigation
 import ComposableArchitecture
 
-struct CountryDeepLink: Reducer {
+@Reducer
+struct CountryDeepLink {
 	
 	// MARK: TCA
 	
+	@ObservableState
 	struct State: Equatable {}
 	
-	enum Action: Equatable {
+	@CasePathable
+	enum Action {
 		case showCountry(Country.ID)
 		case showSorting
 		case showSortingReset
 		case showAlertOptions
 		case showNestedNavigation
-	}
-	
-	func reduce(into state: inout State, action: Action) -> Effect<Action> {
-		.none
 	}
 	
 	@MainActor
@@ -28,7 +27,7 @@ struct CountryDeepLink: Reducer {
 }
 
 struct CountryDeepLinkView: View, Presentable {
-	let store: Store<CountryDeepLink.State, CountryDeepLink.Action>
+	let store: StoreOf<CountryDeepLink>
 	
 	var body: some View {
 		NavigationView {

@@ -87,6 +87,7 @@ class TabNavigationTests: XCTestCase {
 	
 	private typealias TestFeature = TabNavigation<Int>
 	
+	@MainActor
 	private func makeStore(
 		_ state: TestFeature.State
 	) -> TestStoreOf<TestFeature> {

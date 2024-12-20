@@ -3,7 +3,8 @@ import SwiftUI
 import ComposableNavigation
 import ComposableArchitecture
 
-struct AdvancedTabBar: Reducer {
+@Reducer
+struct AdvancedTabBar {
 	
 	// MARK: TCA
 	
@@ -14,6 +15,7 @@ struct AdvancedTabBar: Reducer {
 		case nestedNavigation
 	}
 	
+	@ObservableState
 	struct State: Equatable {
 		var deepLink = CountryDeepLink.State()
 		var listAndDetail = CountryListAndDetail.State()
@@ -26,7 +28,8 @@ struct AdvancedTabBar: Reducer {
 		)
 	}
 	
-	enum Action: Equatable {
+	@CasePathable
+	enum Action {
 		case deepLink(CountryDeepLink.Action)
 		case listAndDetail(CountryListAndDetail.Action)
 		case alertPlayground(AlertPlayground.Action)
@@ -70,20 +73,20 @@ struct AdvancedTabBar: Reducer {
 		return .none
 	}
 	
-	var body: some Reducer<State, Action> {
-		Scope(state: \.deepLink, action: /Action.deepLink) {
+	var body: some ReducerOf<Self> {
+		Scope(state: \.deepLink, action: \.deepLink) {
 			CountryDeepLink()
 		}
-		Scope(state: \.listAndDetail, action: /Action.listAndDetail) {
+		Scope(state: \.listAndDetail, action: \.listAndDetail) {
 			CountryListAndDetail()
 		}
-		Scope(state: \.alertPlayground, action: /Action.alertPlayground) {
+		Scope(state: \.alertPlayground, action: \.alertPlayground) {
 			AlertPlayground()
 		}
-		Scope(state: \.nestedNavigation, action: /Action.nestedNavigation) {
+		Scope(state: \.nestedNavigation, action: \.nestedNavigation) {
 			NestedStack()
 		}
-		Scope(state: \.tabNavigation, action: /Action.tabNavigation) {
+		Scope(state: \.tabNavigation, action: \.tabNavigation) {
 			TabNavigation<Screen>()
 		}
 		Reduce(privateReducer)
@@ -100,7 +103,7 @@ struct AdvancedTabBar: Reducer {
 				let viewController = CountryDeepLink.makeView(
 					store: store.scope(
 						state: \.deepLink,
-						action: Action.deepLink
+						action: \.deepLink
 					)
 				)
 				viewController.tabBarItem = UITabBarItem(
@@ -113,7 +116,7 @@ struct AdvancedTabBar: Reducer {
 			case .listAndDetail:
 				let listAndDetailStore = store.scope(
 					state: \.listAndDetail,
-					action: Action.listAndDetail
+					action: \.listAndDetail
 				)
 				listAndDetailStore.send(.loadCountries)
 				let viewController = CountryListAndDetail.makeView(store: listAndDetailStore)
@@ -128,7 +131,7 @@ struct AdvancedTabBar: Reducer {
 				let viewController = AlertPlayground.makeView(
 					store: store.scope(
 						state: \.alertPlayground,
-						action: Action.alertPlayground
+						action: \.alertPlayground
 					)
 				)
 				viewController.tabBarItem = UITabBarItem(
@@ -141,7 +144,7 @@ struct AdvancedTabBar: Reducer {
 				let viewController = NestedStack.makeView(
 					store: store.scope(
 						state: \.nestedNavigation,
-						action: Action.nestedNavigation
+						action: \.nestedNavigation
 					)
 				)
 				viewController.tabBarItem = UITabBarItem(
@@ -159,7 +162,7 @@ struct AdvancedTabBar: Reducer {
 		return TabNavigationViewController(
 			store: store.scope(
 				state: \.tabNavigation,
-				action: Action.tabNavigation
+				action: \.tabNavigation
 			),
 			viewProvider: ViewProvider(store: store)
 		)

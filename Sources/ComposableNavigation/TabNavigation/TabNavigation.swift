@@ -6,9 +6,11 @@ import OrderedCollections
 ///
 /// The active navigation item can be changed by setting a new item. Mutations to the items array
 /// are reflected as well (e.g. changing the tab order).
-public struct TabNavigation<Item: Equatable>: Reducer {
+@Reducer
+public struct TabNavigation<Item: Equatable> {
 	public init() {}
 	
+	@ObservableState
 	public struct State: Equatable {
 		public var items: [Item]
 		public var activeItem: Item
@@ -25,7 +27,8 @@ public struct TabNavigation<Item: Equatable>: Reducer {
 		}
 	}
 	
-	public enum Action: Equatable {
+	@CasePathable
+	public enum Action {
 		case setActiveItem(Item)
 		case setActiveIndex(Int)
 		case setItems([Item], animated: Bool = true)

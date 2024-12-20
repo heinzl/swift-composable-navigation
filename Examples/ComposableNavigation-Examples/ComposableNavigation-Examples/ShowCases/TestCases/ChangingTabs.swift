@@ -3,7 +3,8 @@ import ComposableNavigation
 import ComposableArchitecture
 
 /// This setup is used for a UI test
-struct ChangingTabs: Reducer {
+@Reducer
+struct ChangingTabs {
 	
 	// MARK: TCA
 	
@@ -12,6 +13,7 @@ struct ChangingTabs: Reducer {
 		case two
 	}
 	
+	@ObservableState
 	struct State: Equatable {
 		var tabNavigation = TabNavigation<Screen>.State(
 			items: [.one, .two],
@@ -19,12 +21,13 @@ struct ChangingTabs: Reducer {
 		)
 	}
 	
-	enum Action: Equatable {
+	@CasePathable
+	enum Action {
 		case tabNavigation(TabNavigation<Screen>.Action)
 	}
 	
-	var body: some Reducer<State, Action> {
-		Scope(state: \.tabNavigation, action: /Action.tabNavigation) {
+	var body: some ReducerOf<Self> {
+		Scope(state: \.tabNavigation, action: \.tabNavigation) {
 			TabNavigation<Screen>()
 		}
 	}
@@ -35,10 +38,8 @@ struct ChangingTabs: Reducer {
 		let store: Store<State, Action>
 		
 		var body: some View {
-			WithViewStore(store, observe: { $0 }) { viewStore in
-				Text(viewStore.tabNavigation.activeItem.rawValue)
-					.accessibilityIdentifier("tabsState")
-			}
+			Text(store.tabNavigation.activeItem.rawValue)
+				.accessibilityIdentifier("tabsState")
 		}
 	}
 	
@@ -64,7 +65,7 @@ struct ChangingTabs: Reducer {
 		TabNavigationViewController(
 			store: store.scope(
 				state: \.tabNavigation,
-				action: ChangingTabs.Action.tabNavigation
+				action: \.tabNavigation
 			),
 			viewProvider: ChangingTabs.ViewProvider(store: store)
 		)

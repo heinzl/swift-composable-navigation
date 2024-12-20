@@ -145,6 +145,7 @@ class StackNavigationTests: XCTestCase {
 	
 	private typealias TestFeature = StackNavigation<Int>
 	
+	@MainActor
 	private func makeStore(
 		_ state: TestFeature.State
 	) -> TestStoreOf<TestFeature> {

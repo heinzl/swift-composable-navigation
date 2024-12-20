@@ -12,7 +12,7 @@ public class ModalNavigationHandler<ViewProvider: ViewProviding>: NSObject, UIAd
 	public typealias Item = ViewProvider.Item
 	public typealias Navigation = ModalNavigation<Item>
 	
-	internal let viewStore: ViewStore<Navigation.State, Navigation.Action>
+	internal let store: StoreOf<Navigation>
 	internal let viewProvider: ViewProvider
 	internal var currentViewControllerItem: ViewControllerItem?
 	internal let maxWindowWaitingDelay: TimeInterval
@@ -25,18 +25,18 @@ public class ModalNavigationHandler<ViewProvider: ViewProviding>: NSObject, UIAd
 	}
 	
 	public init(
-		store: Store<Navigation.State, Navigation.Action>,
+		store: StoreOf<Navigation>,
 		viewProvider: ViewProvider,
 		maxWindowWaitingDelay: TimeInterval = 4
 	) {
-		self.viewStore = ViewStore(store, observe: { $0 })
+		self.store = store
 		self.viewProvider = viewProvider
 		self.maxWindowWaitingDelay = maxWindowWaitingDelay
 		self.currentViewControllerItem = nil
 	}
 	
 	public func setup(with presentingViewController: UIViewController) {
-		cancellable = viewStore.publisher
+		cancellable = store.publisher
 			.sink { [weak self, weak presentingViewController] state in
 				guard let presentingViewController else { return }
 				Task { [weak self] in
@@ -144,7 +144,7 @@ public class ModalNavigationHandler<ViewProvider: ViewProviding>: NSObject, UIAd
 		
 		Task { @MainActor in
 			await Task.yield()
-			viewStore.send(.dismiss())
+			store.send(.dismiss())
 		}
 	}
 }
@@ -174,6 +174,11 @@ public extension UIAlertAction {
 	/// This convenience initializer sends the provided action to the view store and
 	/// updates the modal navigation state (sends `.dismiss`). This is necessary because
 	/// `UIAlertController` dismisses itself automatically.
+	@available(
+	  *, deprecated,
+	  message:
+		"Use the case path based function instead"
+	)
 	convenience init<State: Equatable, Action, Item: Hashable>(
 		title: String?,
 		style: UIAlertAction.Style,
@@ -185,6 +190,30 @@ public extension UIAlertAction {
 			let statelessNavigationState = store.scope(
 				state: { _ in () },
 				action: toNavigationAction
+			)
+			statelessNavigationState.send(.dismiss())
+			if let action {
+				store.send(action)
+			}
+		}
+	}
+	
+	/// Create and return an action with the specified title and action.
+	///
+	/// This convenience initializer sends the provided action to the view store and
+	/// updates the modal navigation state (sends `.dismiss`). This is necessary because
+	/// `UIAlertController` dismisses itself automatically.
+	convenience init<State: Equatable, Action, Item: Hashable>(
+		title: String?,
+		style: UIAlertAction.Style,
+		action: Action? = nil,
+		store: Store<State, Action>,
+		toNavigationCasePath: CaseKeyPath<Action, ModalNavigation<Item>.Action>
+	) {
+		self.init(title: title, style: style) { _ in
+			let statelessNavigationState = store.scope(
+				state: \.self,
+				action: toNavigationCasePath
 			)
 			statelessNavigationState.send(.dismiss())
 			if let action {
