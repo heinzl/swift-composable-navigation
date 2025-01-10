@@ -20,24 +20,27 @@ It also supports automatic state updates for pull-to-dismiss for views presented
 
 This example shows how a modal-navigation could be implemented using an enum:
 ```swift
-struct Onboarding: Reducer {
+@Reducer
+struct Onboarding {
     enum Screen {
         case login
         case register
     }
 
+	@ObservableState
     struct State: Equatable {
         var modalNavigation = ModalNavigation<Screen>.State()
         ...
     }
 
-    enum Action: Equatable {
+	@CasePathable
+    enum Action {
         case modalNavigation(ModalNavigation<Screen>.Action)
         ...
     }
     
-	var body: some Reducer<State, Action> {
-		Scope(state: \.modalNavigation, action: /Action.modalNavigation) {
+	var body: some ReducerOf<Self> {
+		Scope(state: \.modalNavigation, action: \.modalNavigation) {
 			ModalNavigation<Screen>()
 		}
 		Reduce { state, action in
@@ -62,25 +65,28 @@ It also supports automatic state updates for popping items via the leading-edge 
 
 This example shows how a series of text inputs could be implemented:
 ```swift
-struct Register: Reducer {
+@Reducer
+struct Register {
     enum Screen {
         case email
         case firstName
         case lastName
     }
 
+	@ObservableState
     struct State: Equatable {
         var stackNavigation = StackNavigation<Screen>.State(items: [.email])
         ...
     }
 
-    enum Action: Equatable {
+	@CasePathable
+    enum Action {
         case stackNavigation(StackNavigation<Screen>.Action)
         ...
     }
     
-	var body: some Reducer<State, Action> {
-		Scope(state: \.stackNavigation, action: /Action.stackNavigation) {
+	var body: some ReducerOf<Self> {
+		Scope(state: \.stackNavigation, action: \.stackNavigation) {
 			StackNavigation<Screen>()
 		}
 		Reduce { state, action in
@@ -104,6 +110,7 @@ The active navigation item can be changed by setting a new item. Even mutations 
 
 Example:
 ```swift
+@Reducer
 struct Root {
     enum Screen: CaseIterable {
         case home
@@ -111,6 +118,7 @@ struct Root {
         case settings
     }
 
+	@ObservableState
     struct State: Equatable {
         var tabNavigation = TabNavigation<Screen>.State(
             items: Screen.allCases,
@@ -119,13 +127,14 @@ struct Root {
         ...
     }
 
-    enum Action: Equatable {
+	@CasePathable
+    enum Action {
         case tabNavigation(TabNavigation<Screen>.Action)
         ...
     }
     
-	var body: some Reducer<State, Action> {
-		Scope(state: \.tabNavigation, action: /Action.tabNavigation) {
+	var body: some ReducerOf<Self> {
+		Scope(state: \.tabNavigation, action: \.tabNavigation) {
 			TabNavigation<Screen>()
 		}
 		Reduce { state, action in
@@ -170,7 +179,7 @@ This is an example of a `TabNavigationViewController` in a `SceneDelegate`:
 class SceneDelegate: UIResponder, UIWindowSceneDelegate {
 	var window: UIWindow?
 
-    lazy var store: Store<App.State, App.Action> = ...
+    lazy var store: StoreOf<App> = ...
 
 	func scene(_ scene: UIScene, willConnectTo session: UISceneSession, options connectionOptions: UIScene.ConnectionOptions) {
 		guard let windowScene = scene as? UIWindowScene else {
@@ -180,7 +189,7 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
 		let controller = TabNavigationViewController(
 			store: store.scope(
 				state: \.tabNavigation,
-				action: App.Action.tabNavigation
+				action: \.tabNavigation
 			),
 			viewProvider: App.ViewProvider(store: store)
 		)
@@ -200,16 +209,15 @@ Make sure to call `navigationHandler.setup(with: viewController)` similar to thi
 
 ```swift
 class ExistingViewController: UIViewController {
-	let viewStore: ViewStore<ExistingViewShowcase.State, ExistingViewShowcase.Action>
-	var cancellables: Set<AnyCancellable> = []
+	let store: StoreOf<ExistingViewShowcase>
 	let navigationHandler: ModalNavigationHandler<ExistingViewShowcase.ViewProvider>
 	
-	init(store: Store<ExistingViewShowcase.State, ExistingViewShowcase.Action>) {
-		self.viewStore = ViewStore(store, observe: { $0 })
+	init(store: StoreOf<ExistingViewShowcase>) {
+		self.store = store
 		self.navigationHandler = ModalNavigationHandler(
 			store: store.scope(
 				state: \.modalNavigation,
-				action: ExistingViewShowcase.Action.modalNavigation
+				action: \.modalNavigation
 			), 
 			viewProvider: ExistingViewShowcase.ViewProvider(store: store)
 		)

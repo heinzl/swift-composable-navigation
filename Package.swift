@@ -1,10 +1,10 @@
-// swift-tools-version:5.7
+// swift-tools-version:5.9
 
 import PackageDescription
 
 let package = Package(
 	name: "ComposableNavigation",
-	platforms: [.iOS(.v13)],
+	platforms: [.iOS(.v17)],
 	products: [
 		.library(
 			name: "ComposableNavigation",
@@ -12,7 +12,7 @@ let package = Package(
 		),
 	],
 	dependencies: [
-		.package(url: "https://github.com/pointfreeco/swift-composable-architecture", from: "1.2.0"),
+		.package(url: "https://github.com/pointfreeco/swift-composable-architecture", from: "1.15.0"),
 		.package(url: "https://github.com/apple/swift-collections", from: "1.0.4"),
 	],
 	targets: [

@@ -1,6 +1,6 @@
 import Foundation
 
-protocol CountryProviderProtocol {
+protocol CountryProviderProtocol: Sendable {
 	func getCountryList() -> [Country]
 }
 

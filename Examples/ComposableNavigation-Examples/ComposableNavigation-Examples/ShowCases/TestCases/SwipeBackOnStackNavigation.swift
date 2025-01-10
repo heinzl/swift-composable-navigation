@@ -3,7 +3,8 @@ import ComposableNavigation
 import ComposableArchitecture
 
 /// This setup is used for a UI test
-struct SwipeBackOnStackNavigation: Reducer {
+@Reducer
+struct SwipeBackOnStackNavigation {
 	
 	// MARK: TCA
 	
@@ -12,16 +13,18 @@ struct SwipeBackOnStackNavigation: Reducer {
 		case pushed
 	}
 	
+	@ObservableState
 	struct State: Equatable {
 		var stackNavigation = StackNavigation<Screen>.State(items: [.root])
 	}
 	
-	enum Action: Equatable {
+	@CasePathable
+	enum Action {
 		case stackNavigation(StackNavigation<Screen>.Action)
 	}
 	
-	var body: some Reducer<State, Action> {
-		Scope(state: \.stackNavigation, action: /Action.stackNavigation) {
+	var body: some ReducerOf<Self> {
+		Scope(state: \.stackNavigation, action: \.stackNavigation) {
 			StackNavigation<Screen>()
 		}
 	}
@@ -32,15 +35,13 @@ struct SwipeBackOnStackNavigation: Reducer {
 		let store: Store<State, Action>
 		
 		var body: some View {
-			WithViewStore(store, observe: { $0 }) { viewStore in
-				VStack(spacing: 20) {
-					Button("Push") {
-						viewStore.send(.stackNavigation(.pushItem(.pushed)))
-					}
-					.accessibilityIdentifier("push")
-					Text(modalText(state: viewStore.stackNavigation))
-						.accessibilityIdentifier("stackStateRoot")
+			VStack(spacing: 20) {
+				Button("Push") {
+					store.send(.stackNavigation(.pushItem(.pushed)))
 				}
+				.accessibilityIdentifier("push")
+				Text(modalText(state: store.stackNavigation))
+					.accessibilityIdentifier("stackStateRoot")
 			}
 		}
 	}
@@ -49,10 +50,8 @@ struct SwipeBackOnStackNavigation: Reducer {
 		let store: Store<State, Action>
 		
 		var body: some View {
-			WithViewStore(store, observe: { $0 }) { viewStore in
-				Text(modalText(state: viewStore.stackNavigation))
-					.accessibilityIdentifier("stackStatePushed")
-			}
+			Text(modalText(state: store.stackNavigation))
+				.accessibilityIdentifier("stackStatePushed")
 		}
 	}
 	
@@ -78,7 +77,7 @@ struct SwipeBackOnStackNavigation: Reducer {
 		StackNavigationViewController(
 			store: store.scope(
 				state: \.stackNavigation,
-				action: SwipeBackOnStackNavigation.Action.stackNavigation
+				action: \.stackNavigation
 			),
 			viewProvider: SwipeBackOnStackNavigation.ViewProvider(
 				store: store

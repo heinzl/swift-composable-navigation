@@ -6,7 +6,7 @@ public class StackNavigationViewController<ViewProvider: ViewProviding>: UINavig
 	internal let navigationHandler: StackNavigationHandler<ViewProvider>
 	
 	public convenience init(
-		store: Store<StackNavigation<ViewProvider.Item>.State, StackNavigation<ViewProvider.Item>.Action>,
+		store: StoreOf<StackNavigation<ViewProvider.Item>>,
 		viewProvider: ViewProvider
 	) {
 		self.init(navigationHandler: StackNavigationHandler(store: store, viewProvider: viewProvider))

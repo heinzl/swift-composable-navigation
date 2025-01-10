@@ -5,7 +5,8 @@ import ComposableArchitecture
 
 /// This example showcases a UIAlertController
 /// - Send TCA action from UIAlertAction
-struct AlertShowcase: Reducer {
+@Reducer
+struct AlertShowcase {
 	
 	// MARK: TCA
 	
@@ -13,6 +14,7 @@ struct AlertShowcase: Reducer {
 		case resetAlert
 	}
 	
+	@ObservableState
 	struct State: Equatable {
 		var counter = Counter.State(id: 1, showDone: false)
 		var modalNavigation = ModalNavigation<Screen>.State()
@@ -22,7 +24,8 @@ struct AlertShowcase: Reducer {
 		}
 	}
 	
-	enum Action: Equatable {
+	@CasePathable
+	enum Action {
 		case counter(Counter.Action)
 		case resetCounter
 		
@@ -39,11 +42,11 @@ struct AlertShowcase: Reducer {
 		return .none
 	}
 	
-	var body: some Reducer<State, Action> {
-		Scope(state: \.counter, action: /Action.counter) {
+	var body: some ReducerOf<Self> {
+		Scope(state: \.counter, action: \.counter) {
 			Counter()
 		}
-		Scope(state: \.modalNavigation, action: /Action.modalNavigation) {
+		Scope(state: \.modalNavigation, action: \.modalNavigation) {
 			ModalNavigation<Screen>()
 		}
 		Reduce(privateReducer)
@@ -67,14 +70,14 @@ struct AlertShowcase: Reducer {
 					style: .cancel,
 					action: nil,
 					store: store,
-					toNavigationAction: Action.modalNavigation
+					toNavigationCasePath: \.modalNavigation
 				))
 				alert.addAction(UIAlertAction(
 					title: "Reset",
 					style: .destructive,
 					action: .resetCounter,
 					store: store,
-					toNavigationAction: Action.modalNavigation
+					toNavigationCasePath: \.modalNavigation
 				))
 				return alert
 			}
@@ -89,7 +92,7 @@ struct AlertShowcase: Reducer {
 		.withModal(
 			store: store.scope(
 				state: \.modalNavigation,
-				action: Action.modalNavigation
+				action: \.modalNavigation
 			),
 			viewProvider: ViewProvider(store: store)
 		)
@@ -100,14 +103,15 @@ struct AlertShowcaseView: View {
 	let store: Store<AlertShowcase.State, AlertShowcase.Action>
 	
 	var body: some View {
-		WithViewStore(store, observe: \.isResetButtonDisabled) { viewStore in
-			VStack(spacing: 20) {
-				CounterView(store: store.scope(state: \.counter, action: AlertShowcase.Action.counter))
-				Button("Reset counter to 0") {
-					viewStore.send(.modalNavigation(.presentFullScreen(.resetAlert)))
-				}
-				.disabled(viewStore.state)
+		VStack(spacing: 20) {
+			CounterView(store: store.scope(
+				state: \.counter,
+				action: \.counter
+			))
+			Button("Reset counter to 0") {
+				store.send(.modalNavigation(.presentFullScreen(.resetAlert)))
 			}
+			.disabled(store.isResetButtonDisabled)
 		}
 	}
 }

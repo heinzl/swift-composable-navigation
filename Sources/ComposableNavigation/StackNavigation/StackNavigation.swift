@@ -3,9 +3,11 @@ import OrderedCollections
 
 /// `StackNavigation` models state and actions of a stack-based scheme for navigating hierarchical content.
 /// Views can be pushed on the stack or popped from the stack. Even mutations to the whole stack can be performed.
-public struct StackNavigation<Item: Equatable>: Reducer {
+@Reducer
+public struct StackNavigation<Item: Equatable> {
 	public init() {}
 	
+	@ObservableState
 	public struct State: Equatable {
 		public var items: [Item]
 		public var areAnimationsEnabled: Bool
@@ -23,6 +25,7 @@ public struct StackNavigation<Item: Equatable>: Reducer {
 		}
 	}
 	
+	@CasePathable
 	public enum Action: Equatable {
 		case pushItem(Item, animated: Bool = true)
 		case pushItems([Item], animated: Bool = true)

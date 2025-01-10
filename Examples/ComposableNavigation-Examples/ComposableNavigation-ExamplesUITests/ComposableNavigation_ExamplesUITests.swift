@@ -4,12 +4,14 @@ import XCTest
 class ComposableNavigation_ExamplesUITests: XCTestCase {
 	var app: XCUIApplication!
 	
+	@MainActor
     override func setUpWithError() throws {
 		try super.setUpWithError()
         continueAfterFailure = false
 		app = XCUIApplication()
     }
 
+	@MainActor
 	override func tearDownWithError() throws {
 		try super.tearDownWithError()
 		app = nil

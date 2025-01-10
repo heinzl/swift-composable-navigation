@@ -4,7 +4,9 @@ import ComposableArchitecture
 
 /// This setup is used for a UI test
 
-struct NestedModal: Reducer {
+@Reducer
+struct NestedModal {
+	@ObservableState
 	struct State: Equatable, Identifiable {
 		let modalLevel: Int
 		let stackLevel: Int
@@ -35,7 +37,8 @@ struct NestedModal: Reducer {
 		}
 	}
 	
-	enum Action: Equatable {
+	@CasePathable
+	enum Action {
 		case pushTapped
 		case presentTapped
 		
@@ -43,8 +46,8 @@ struct NestedModal: Reducer {
 		case modal(ModalNavigation<Int>.Action)
 	}
 	
-	var body: some Reducer<State, Action> {
-		Scope(state: \.modal, action: /Action.modal) {
+	var body: some ReducerOf<Self> {
+		Scope(state: \.modal, action: \.modal) {
 			ModalNavigation<Int>()
 		}
 		
@@ -57,7 +60,7 @@ struct NestedModal: Reducer {
 				return .none
 			}
 		}
-		.ifLet(\.nestedStack, action: /Action.nestedStack) {
+		.ifLet(\.nestedStack, action: \.nestedStack) {
 			NestedStack()
 		}
 	}
@@ -66,26 +69,24 @@ struct NestedModal: Reducer {
 		let store: Store<State, Action>
 		
 		var body: some View {
-			WithViewStore(store, observe: { $0 }) { viewStore in
-				VStack(spacing: 8) {
-					HStack {
-						Text("Modal level:")
-						Text("\(viewStore.modalLevel)")
-							.bold()
-							.accessibilityIdentifier("modalLevel")
-					}
-					HStack {
-						Text("Stack level:")
-						Text("\(viewStore.stackLevel)")
-							.bold()
-							.accessibilityIdentifier("stackLevel")
-					}
-					Button("Push") {
-						viewStore.send(.pushTapped)
-					}
-					Button("Present") {
-						viewStore.send(.presentTapped)
-					}
+			VStack(spacing: 8) {
+				HStack {
+					Text("Modal level:")
+					Text("\(store.modalLevel)")
+						.bold()
+						.accessibilityIdentifier("modalLevel")
+				}
+				HStack {
+					Text("Stack level:")
+					Text("\(store.stackLevel)")
+						.bold()
+						.accessibilityIdentifier("stackLevel")
+				}
+				Button("Push") {
+					store.send(.pushTapped)
+				}
+				Button("Present") {
+					store.send(.presentTapped)
 				}
 			}
 		}
@@ -95,7 +96,10 @@ struct NestedModal: Reducer {
 	static func makeView(store: Store<State, Action>) -> UIViewController {
 		UIHostingController(rootView: ContentView(store: store))
 			.withModal(
-				store: store.scope(state: \.modal, action: Action.modal),
+				store: store.scope(
+					state: \.modal,
+					action: \.modal
+				),
 				viewProvider: ViewProvider(store: store)
 			)
 	}
@@ -106,14 +110,16 @@ struct NestedModal: Reducer {
 		func makePresentable(for navigationItem: Int) -> Presentable {
 			return store.scope(
 				state: \.nestedStack,
-				action: Action.nestedStack
+				action: \.nestedStack
 			)
 			.compactMap(NestedStack.makeView(store:)) ?? UIViewController()
 		}
 	}
 }
 
-struct NestedStack: Reducer {
+@Reducer
+struct NestedStack {
+	@ObservableState
 	struct State: Equatable {
 		let modalLevel: Int
 		
@@ -135,26 +141,27 @@ struct NestedStack: Reducer {
 		}
 	}
 	
-	indirect enum Action: Equatable {
-		case nestedModal(id: NestedModal.State.ID, action: NestedModal.Action)
+	@CasePathable
+	indirect enum Action {
+		case nestedModal(IdentifiedActionOf<NestedModal>)
 		case stack(StackNavigation<Int>.Action)
 	}
 	
-	var body: some Reducer<State, Action> {
-		Scope(state: \.stack, action: /Action.stack) {
+	var body: some ReducerOf<Self> {
+		Scope(state: \.stack, action: \.stack) {
 			StackNavigation<Int>()
 		}
 		
 		Reduce { state, action in
 			switch action {
-			case .nestedModal(_, .pushTapped):
+			case .nestedModal(.element(id: _, action: .pushTapped)):
 				let nextStackLevel = state.nestedModals.last!.stackLevel + 1
 				return .send(.stack(.pushItem(nextStackLevel)))
 			default:
 				return .none
 			}
 		}
-		.forEach(\.nestedModals, action: /Action.nestedModal(id:action:)) {
+		.forEach(\.nestedModals, action: \.nestedModal) {
 			NestedModal()
 		}
 	}
@@ -162,7 +169,10 @@ struct NestedStack: Reducer {
 	@MainActor
 	static func makeView(store: Store<State, Action>) -> UIViewController {
 		StackNavigationViewController(
-			store: store.scope(state: \.stack, action: Action.stack),
+			store: store.scope(
+				state: \.stack,
+				action: \.stack
+			),
 			viewProvider: ViewProvider(store: store)
 		)
 	}
@@ -174,7 +184,7 @@ struct NestedStack: Reducer {
 			let cacheElement = store.withState { $0.nestedModals[id: navigationItem]! }
 			return NestedModal.makeView(store: store.scope(
 				state: { $0.nestedModals[id: navigationItem] ?? cacheElement },
-				action: { Action.nestedModal(id: navigationItem, action: $0) }
+				action: { Action.nestedModal(.element(id: navigationItem, action: $0)) }
 			))
 		}
 	}

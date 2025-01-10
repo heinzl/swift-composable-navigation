@@ -82,6 +82,7 @@ class ModalNavigationTests: XCTestCase {
 	
 	private typealias TestFeature = ModalNavigation<Int>
 	
+	@MainActor
 	private func makeStore(
 		_ state: TestFeature.State
 	) -> TestStoreOf<TestFeature> {

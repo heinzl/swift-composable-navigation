@@ -6,7 +6,8 @@ import Combine
 
 /// This example showcases how to reuse an already existing UIViewController subclass
 /// by using a `NavigationHandler` in this case a `ModalNavigationHandler`
-struct ExistingViewShowcase: Reducer {
+@Reducer
+struct ExistingViewShowcase {
 	
 	// MARK: TCA
 	
@@ -14,12 +15,14 @@ struct ExistingViewShowcase: Reducer {
 		case optionSelection
 	}
 	
+	@ObservableState
 	struct State: Equatable {
 		var selectedOption: Option?
 		var modalNavigation = ModalNavigation<Screen>.State()
 	}
 	
-	enum Action: Equatable {
+	@CasePathable
+	enum Action {
 		case optionSelected(Option)
 		case modalNavigation(ModalNavigation<Screen>.Action)
 	}
@@ -34,8 +37,8 @@ struct ExistingViewShowcase: Reducer {
 		return .none
 	}
 	
-	var body: some Reducer<State, Action> {
-		Scope(state: \.modalNavigation, action: /Action.modalNavigation) {
+	var body: some ReducerOf<Self> {
+		Scope(state: \.modalNavigation, action: \.modalNavigation) {
 			ModalNavigation<Screen>()
 		}
 		Reduce(privateReducer)
@@ -72,7 +75,7 @@ struct ExistingViewShowcase: Reducer {
 					style: .cancel,
 					action: nil,
 					store: store,
-					toNavigationAction: Action.modalNavigation
+					toNavigationCasePath: \.modalNavigation
 				))
 				return alert
 			}
@@ -84,7 +87,7 @@ struct ExistingViewShowcase: Reducer {
 				style: .default,
 				action: .optionSelected(option),
 				store: store,
-				toNavigationAction: Action.modalNavigation
+				toNavigationCasePath: \.modalNavigation
 			)
 		}
 	}
@@ -96,16 +99,16 @@ struct ExistingViewShowcase: Reducer {
 }
 
 class ExistingViewController: UIViewController {
-	let viewStore: ViewStore<ExistingViewShowcase.State, ExistingViewShowcase.Action>
 	var cancellables: Set<AnyCancellable> = []
+	let store: StoreOf<ExistingViewShowcase>
 	let navigationHandler: ModalNavigationHandler<ExistingViewShowcase.ViewProvider>
 	
 	init(store: Store<ExistingViewShowcase.State, ExistingViewShowcase.Action>) {
-		self.viewStore = ViewStore(store, observe: { $0 })
+		self.store = store
 		self.navigationHandler = ModalNavigationHandler(
 			store: store.scope(
 				state: \.modalNavigation,
-				action: ExistingViewShowcase.Action.modalNavigation
+				action: \.modalNavigation
 			), viewProvider: ExistingViewShowcase.ViewProvider(store: store)
 		)
 		super.init(nibName: nil, bundle: nil)
@@ -139,14 +142,14 @@ class ExistingViewController: UIViewController {
 			stackView.centerYAnchor.constraint(equalTo: view.safeAreaLayoutGuide.centerYAnchor),
 		])
 		
-		viewStore.publisher.selectedOption
+		store.publisher.selectedOption
 			.map { $0?.text ?? "No option selected" }
 			.assign(to: \.text, on: optionLabel)
 			.store(in: &cancellables)
 	}
 	
 	@objc func selectButtonTapped() {
-		viewStore.send(.modalNavigation(.presentFullScreen(.optionSelection)))
+		store.send(.modalNavigation(.presentFullScreen(.optionSelection)))
 	}
 	
 	public required init?(coder: NSCoder) {

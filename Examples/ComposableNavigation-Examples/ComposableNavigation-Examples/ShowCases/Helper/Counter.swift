@@ -3,14 +3,17 @@ import ComposableArchitecture
 import ComposableNavigation
 import SwiftUI
 
-struct Counter: Reducer {
+@Reducer
+struct Counter {
+	@ObservableState
 	struct State: Equatable, Identifiable {
 		let id: Int
 		var count: Int = 0
 		var showDone = true
 	}
 	
-	enum Action: Equatable {
+	@CasePathable
+	enum Action {
 		case up
 		case down
 		case done
@@ -30,34 +33,32 @@ struct Counter: Reducer {
 }
 
 struct CounterView: View, Presentable {
-	let store: Store<Counter.State, Counter.Action>
+	let store: StoreOf<Counter>
 	
 	var body: some View {
-		WithViewStore(store, observe: { $0 }) { viewStore in
-			VStack {
-				HStack {
-					Button(action: {
-						viewStore.send(.down)
-					}) {
-						Image(systemName: "chevron.down.circle")
-					}
-					Text("\(viewStore.count)")
-						.font(.headline)
-					Button(action: {
-						viewStore.send(.up)
-					}) {
-						Image(systemName: "chevron.up.circle")
-					}
+		VStack {
+			HStack {
+				Button(action: {
+					store.send(.down)
+				}) {
+					Image(systemName: "chevron.down.circle")
 				}
-				.padding()
-				if viewStore.showDone {
-					Button("Done") {
-						viewStore.send(.done)
-					}
+				Text("\(store.count)")
+					.font(.headline)
+				Button(action: {
+					store.send(.up)
+				}) {
+					Image(systemName: "chevron.up.circle")
 				}
 			}
-			.navigationTitle("ID: \(viewStore.id)")
+			.padding()
+			if store.showDone {
+				Button("Done") {
+					store.send(.done)
+				}
+			}
 		}
+		.navigationTitle("ID: \(store.id)")
 	}
 }
 

@@ -3,9 +3,11 @@ import ComposableArchitecture
 
 /// `ModalNavigation` models state and actions of a commonly used modal view presentation.
 /// Views can be presented with a certain style and dismissed.
-public struct ModalNavigation<Item: Equatable>: Reducer {
+@Reducer
+public struct ModalNavigation<Item: Equatable> {
 	public init() {}
 	
+	@ObservableState
 	public struct State: Equatable {
 		public var styledItem: StyledItem?
 		public var areAnimationsEnabled: Bool
@@ -19,6 +21,7 @@ public struct ModalNavigation<Item: Equatable>: Reducer {
 		}
 	}
 	
+	@CasePathable
 	public enum Action: Equatable {
 		case set(StyledItem?, animated: Bool = true)
 		case dismiss(animated: Bool = true)

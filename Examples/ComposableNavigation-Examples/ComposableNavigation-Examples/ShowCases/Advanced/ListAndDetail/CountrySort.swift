@@ -3,7 +3,8 @@ import SwiftUI
 import ComposableNavigation
 import ComposableArchitecture
 
-struct CountrySort: Reducer {
+@Reducer
+struct CountrySort {
 	enum SortKey: CaseIterable {
 		case country
 		case capital
@@ -18,6 +19,7 @@ struct CountrySort: Reducer {
 		case resetAlert
 	}
 	
+	@ObservableState
 	struct State: Equatable {
 		var sortKey: SortKey = .country
 		var sortOrder: SortOrder = .ascending
@@ -28,7 +30,8 @@ struct CountrySort: Reducer {
 		}
 	}
 	
-	enum Action: Equatable {
+	@CasePathable
+	enum Action {
 		case selectSortKey(SortKey)
 		case selectSortOrder(SortOrder)
 		case done
@@ -55,8 +58,8 @@ struct CountrySort: Reducer {
 		return .none
 	}
 	
-	var body: some Reducer<State, Action> {
-		Scope(state: \.alertNavigation, action: /Action.alertNavigation) {
+	var body: some ReducerOf<Self> {
+		Scope(state: \.alertNavigation, action: \.alertNavigation) {
 			ModalNavigation<ModalScreen>()
 		}
 		Reduce(privateReducer)
@@ -79,27 +82,27 @@ struct CountrySort: Reducer {
 					title: "Cancel",
 					style: .cancel,
 					store: store,
-					toNavigationAction: Action.alertNavigation
+					toNavigationCasePath: \.alertNavigation
 				))
 				alert.addAction(UIAlertAction(
 					title: "Reset",
 					style: .destructive,
 					action: .resetConfirmed,
 					store: store,
-					toNavigationAction: Action.alertNavigation
+					toNavigationCasePath: \.alertNavigation
 				))
 				return alert
 			}
 		}
 	}
-
+	
 	@MainActor
 	static func makeView(_ store: Store<State, Action>) -> UIViewController {
 		return CountrySortView(store: store)
 			.viewController.withModal(
 				store: store.scope(
 					state: \.alertNavigation,
-					action: Action.alertNavigation
+					action: \.alertNavigation
 				),
 				viewProvider: ViewProvider(store: store)
 			)
@@ -107,55 +110,53 @@ struct CountrySort: Reducer {
 }
 
 struct CountrySortView: View, Presentable {
-	let store: Store<CountrySort.State, CountrySort.Action>
+	let store: StoreOf<CountrySort>
 	
 	var body: some View {
-		WithViewStore(store, observe: { $0 }) { viewStore in
-			NavigationView {
-				Form {
-					Section {
-						ForEach(CountrySort.SortKey.allCases, id: \.self) { sortKey in
-							Cell(
-								name: text(for: sortKey),
-								isSelected: viewStore.sortKey == sortKey,
-								onSelect: { viewStore.send(.selectSortKey(sortKey)) }
-							)
-						}
-					}
-					Section {
-						ForEach(CountrySort.SortOrder.allCases, id: \.self) { sortOrder in
-							Cell(
-								name: text(for: sortOrder),
-								isSelected: viewStore.sortOrder == sortOrder,
-								onSelect: { viewStore.send(.selectSortOrder(sortOrder)) }
-							)
-						}
+		NavigationView {
+			Form {
+				Section {
+					ForEach(CountrySort.SortKey.allCases, id: \.self) { sortKey in
+						Cell(
+							name: text(for: sortKey),
+							isSelected: store.sortKey == sortKey,
+							onSelect: { store.send(.selectSortKey(sortKey)) }
+						)
 					}
 				}
-				.listStyle(InsetGroupedListStyle())
-				.navigationTitle("Select sort order")
-				.toolbar {
-					ToolbarItemGroup(placement: .bottomBar) {
-						Button("Show filter options") {
-							viewStore.send(.showFilter)
-						}
-						Spacer()
-						Button(action: {
-							viewStore.send(.resetTapped)
-						}, label: {
-							Text("Reset")
-								.foregroundColor(.red)
-								.bold()
-						})
-						.disabled(viewStore.isResetDisabled)
+				Section {
+					ForEach(CountrySort.SortOrder.allCases, id: \.self) { sortOrder in
+						Cell(
+							name: text(for: sortOrder),
+							isSelected: store.sortOrder == sortOrder,
+							onSelect: { store.send(.selectSortOrder(sortOrder)) }
+						)
 					}
-					ToolbarItem(placement: .navigationBarTrailing) {
-						Button(action: {
-							viewStore.send(.done)
-						}, label: {
-							Text("Close")
-						})
+				}
+			}
+			.listStyle(InsetGroupedListStyle())
+			.navigationTitle("Select sort order")
+			.toolbar {
+				ToolbarItemGroup(placement: .bottomBar) {
+					Button("Show filter options") {
+						store.send(.showFilter)
 					}
+					Spacer()
+					Button(action: {
+						store.send(.resetTapped)
+					}, label: {
+						Text("Reset")
+							.foregroundColor(.red)
+							.bold()
+					})
+					.disabled(store.isResetDisabled)
+				}
+				ToolbarItem(placement: .navigationBarTrailing) {
+					Button(action: {
+						store.send(.done)
+					}, label: {
+						Text("Close")
+					})
 				}
 			}
 		}

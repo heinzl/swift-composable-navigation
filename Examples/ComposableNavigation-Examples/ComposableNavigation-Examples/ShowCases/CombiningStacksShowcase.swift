@@ -16,7 +16,8 @@ import UIKit
 /// `ViewProviding` is implemented by forwarding the call to
 /// the respective sub-stack. `ViewProviding.Item` is wrapping the items
 /// of respective the sub-stacks as well.
-struct CombiningStacksShowCase: Reducer {
+@Reducer
+struct CombiningStacksShowCase {
 	struct State: Equatable {
 		var stack1: IndividualStack.State
 		var stack2: IndividualStack.State
@@ -41,7 +42,8 @@ struct CombiningStacksShowCase: Reducer {
 		}
 	}
 	
-	enum Action: Equatable {
+	@CasePathable
+	enum Action {
 		case stackNavigation(StackNavigation<CombinedScreen>.Action)
 		case stack1(IndividualStack.Action)
 		case stack2(IndividualStack.Action)
@@ -57,14 +59,14 @@ struct CombiningStacksShowCase: Reducer {
 		}
 	}
 	
-	var body: some Reducer<State, Action> {
-		Scope(state: \.stack1, action: /Action.stack1) {
+	var body: some ReducerOf<Self> {
+		Scope(state: \.stack1, action: \.stack1) {
 			IndividualStack()
 		}
-		Scope(state: \.stack2, action: /Action.stack2) {
+		Scope(state: \.stack2, action: \.stack2) {
 			IndividualStack()
 		}
-		Scope(state: \.stackNavigation, action: /Action.stackNavigation) {
+		Scope(state: \.stackNavigation, action: \.stackNavigation) {
 			StackNavigation<CombinedScreen>()
 		}
 		Reduce(privateReducer)
@@ -73,6 +75,24 @@ struct CombiningStacksShowCase: Reducer {
 	enum CombinedScreen: Hashable {
 		case stack1(IndividualStack.Screen)
 		case stack2(IndividualStack.Screen)
+		
+		var stack1Item: CombiningStacksShowCase.IndividualStack.Screen? {
+			switch self {
+			case .stack1(let screen):
+				return screen
+			default:
+				return nil
+			}
+		}
+		
+		var stack2Item: CombiningStacksShowCase.IndividualStack.Screen? {
+			switch self {
+			case .stack2(let screen):
+				return screen
+			default:
+				return nil
+			}
+		}
 	}
 	
 	struct CombinedViewProvider: ViewProviding {
@@ -82,12 +102,12 @@ struct CombiningStacksShowCase: Reducer {
 			switch navigationItem {
 			case .stack1(let screen):
 				return IndividualStack.ViewProvider(
-					store: store.scope(state: \.stack1, action: Action.stack1)
+					store: store.scope(state: \.stack1, action: \.stack1)
 				)
 				.makePresentable(for: screen)
 			case .stack2(let screen):
 				return IndividualStack.ViewProvider(
-					store: store.scope(state: \.stack2, action: Action.stack2)
+					store: store.scope(state: \.stack2, action: \.stack2)
 				)
 				.makePresentable(for: screen)
 			}
@@ -99,37 +119,17 @@ struct CombiningStacksShowCase: Reducer {
 		StackNavigationViewController(
 			store: store.scope(
 				state: \.stackNavigation,
-				action: Action.stackNavigation
+				action: \.stackNavigation
 			),
 			viewProvider: CombinedViewProvider(store: store)
 		)
 	}
-}
 
-extension CombiningStacksShowCase.CombinedScreen {
-	var stack1Item: CombiningStacksShowCase.IndividualStack.Screen? {
-		switch self {
-		case .stack1(let screen):
-			return screen
-		default:
-			return nil
-		}
-	}
-	
-	var stack2Item: CombiningStacksShowCase.IndividualStack.Screen? {
-		switch self {
-		case .stack2(let screen):
-			return screen
-		default:
-			return nil
-		}
-	}
-}
+	// MARK: CounterStack
 
-// MARK: CounterStack
-
-extension CombiningStacksShowCase {
-	struct IndividualStack: Reducer {
+	@Reducer
+	struct IndividualStack {
+		@ObservableState
 		struct State: Equatable {
 			var counter1: Counter.State
 			var counter2: Counter.State
@@ -147,7 +147,8 @@ extension CombiningStacksShowCase {
 			}
 		}
 		
-		enum Action: Equatable {
+		@CasePathable
+		enum Action {
 			case stackNavigation(StackNavigation<Screen>.Action)
 			case counter1(Counter.Action)
 			case counter2(Counter.Action)
@@ -162,14 +163,14 @@ extension CombiningStacksShowCase {
 			}
 		}
 		
-		var body: some Reducer<State, Action> {
-			Scope(state: \.counter1, action: /Action.counter1) {
+		var body: some ReducerOf<Self> {
+			Scope(state: \.counter1, action: \.counter1) {
 				Counter()
 			}
-			Scope(state: \.counter2, action: /Action.counter2) {
+			Scope(state: \.counter2, action: \.counter2) {
 				Counter()
 			}
-			Scope(state: \.stackNavigation, action: /Action.stackNavigation) {
+			Scope(state: \.stackNavigation, action: \.stackNavigation) {
 				StackNavigation<Screen>()
 			}
 			Reduce(privateReducer)
@@ -189,14 +190,14 @@ extension CombiningStacksShowCase {
 					return CounterView(
 						store: store.scope(
 							state: \.counter1,
-							action: Action.counter1
+							action: \.counter1
 						)
 					)
 				case .counter2:
 					return CounterView(
 						store: store.scope(
 							state: \.counter2,
-							action: Action.counter2
+							action: \.counter2
 						)
 					)
 				}
@@ -208,7 +209,7 @@ extension CombiningStacksShowCase {
 			StackNavigationViewController(
 				store: store.scope(
 					state: \.stackNavigation,
-					action: Action.stackNavigation
+					action: \.stackNavigation
 				),
 				viewProvider: ViewProvider(store: store)
 			)
