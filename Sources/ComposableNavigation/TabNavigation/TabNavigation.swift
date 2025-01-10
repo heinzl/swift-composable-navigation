@@ -25,6 +25,7 @@ public struct TabNavigation<Item: Equatable>: Reducer {
 		}
 	}
 	
+	@CasePathable
 	public enum Action: Equatable {
 		case setActiveItem(Item)
 		case setActiveIndex(Int)

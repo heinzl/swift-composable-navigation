@@ -19,6 +19,7 @@ public struct ModalNavigation<Item: Equatable>: Reducer {
 		}
 	}
 	
+	@CasePathable
 	public enum Action: Equatable {
 		case set(StyledItem?, animated: Bool = true)
 		case dismiss(animated: Bool = true)
