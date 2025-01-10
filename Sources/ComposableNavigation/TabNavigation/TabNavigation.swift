@@ -28,7 +28,7 @@ public struct TabNavigation<Item: Equatable> {
 	}
 	
 	@CasePathable
-	public enum Action {
+	public enum Action: Equatable {
 		case setActiveItem(Item)
 		case setActiveIndex(Int)
 		case setItems([Item], animated: Bool = true)

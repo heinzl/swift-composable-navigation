@@ -22,7 +22,7 @@ public struct ModalNavigation<Item: Equatable> {
 	}
 	
 	@CasePathable
-	public enum Action {
+	public enum Action: Equatable {
 		case set(StyledItem?, animated: Bool = true)
 		case dismiss(animated: Bool = true)
 		case presentFullScreen(Item, animated: Bool = true)

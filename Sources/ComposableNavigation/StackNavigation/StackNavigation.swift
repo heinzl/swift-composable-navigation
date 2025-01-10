@@ -26,7 +26,7 @@ public struct StackNavigation<Item: Equatable> {
 	}
 	
 	@CasePathable
-	public enum Action {
+	public enum Action: Equatable {
 		case pushItem(Item, animated: Bool = true)
 		case pushItems([Item], animated: Bool = true)
 		case popItem(animated: Bool = true)
