@@ -23,6 +23,7 @@ public struct StackNavigation<Item: Equatable>: Reducer {
 		}
 	}
 	
+	@CasePathable
 	public enum Action: Equatable {
 		case pushItem(Item, animated: Bool = true)
 		case pushItems([Item], animated: Bool = true)

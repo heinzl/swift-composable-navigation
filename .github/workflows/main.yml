@@ -12,9 +12,11 @@ jobs:
   test:
     runs-on: macos-14
     steps:
-      - uses: actions/checkout@v4.1.7
+      - uses: actions/checkout@v4.2.2
       - name: Run tests
         run: |
+            defaults write com.apple.dt.Xcode IDESkipMacroFingerprintValidation -bool YES
+
             xcodebuild -resolvePackageDependencies \
               -project 'Examples/ComposableNavigation-Examples/ComposableNavigation-Examples.xcodeproj' \
               -scheme 'ComposableNavigation-Examples' \
@@ -22,13 +24,12 @@ jobs:
               -clonedSourcePackagesDirPath ClonedSourcePackages
 
             xcodebuild clean test \
-              -sdk iphonesimulator \
               -project 'Examples/ComposableNavigation-Examples/ComposableNavigation-Examples.xcodeproj' \
               -scheme 'ComposableNavigation-Examples' \
               -derivedDataPath DerivedData \
               -clonedSourcePackagesDirPath ClonedSourcePackages \
               -enableCodeCoverage YES \
-              -destination 'platform=iOS Simulator,name=iPhone 14' \
+              -destination 'platform=iOS Simulator,name=iPhone 15' \
               | xcpretty --report junit --output test_report.xml
       - name: Extract code coverage
         run: |
@@ -36,13 +37,13 @@ jobs:
             profile=DerivedData/Build/ProfileData/*/Coverage.profdata
             xcrun --run llvm-cov show $binary --instr-profile $profile >> coverage.txt
       - name: Upload coverage to Codecov
-        uses: codecov/codecov-action@v4.5.0
+        uses: codecov/codecov-action@v5.1.2
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
           files: ./coverage.txt
           fail_ci_if_error: true
       - name: Publish Test Report
-        uses: mikepenz/action-junit-report@v4.3.1
+        uses: mikepenz/action-junit-report@v5.2.0
         with:
           report_paths: 'test_report.xml'
      
