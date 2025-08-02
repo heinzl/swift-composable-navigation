@@ -108,6 +108,7 @@ public class StackNavigationHandler<ViewProvider: ViewProviding>: NSObject, UINa
 	) {
 		guard
 			let transition = navigationController.transitionCoordinator,
+            !transition.isCancelled,
 			let fromViewController = transition.viewController(forKey: .from),
 			let toViewController = transition.viewController(forKey: .to)
 		else {
